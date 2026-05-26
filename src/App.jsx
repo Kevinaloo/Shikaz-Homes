@@ -333,35 +333,122 @@ function PriceBreakdown({ listing, checkIn, checkOut, guests }) {
 }
 
 // ─── MPESA PAYMENT MODAL ──────────────────────────────────────────
+// PayHero credentials — replace these values with your real ones from
+// https://app.payhero.co.ke  (Settings → API Keys)
+const PAYHERO_API_USERNAME = import.meta.env.VITE_PAYHERO_USERNAME ?? "";
+const PAYHERO_API_PASSWORD = import.meta.env.VITE_PAYHERO_PASSWORD ?? "";
+const PAYHERO_CHANNEL_ID   = import.meta.env.VITE_PAYHERO_CHANNEL_ID ?? "";
+// Base64-encode "username:password" for Basic Auth
+const payheroBasicAuth = () =>
+  btoa(`${PAYHERO_API_USERNAME}:${PAYHERO_API_PASSWORD}`);
+
+async function initiateStkPush({ phone, amount, ref, callbackUrl }) {
+  const res = await fetch("https://backend.payhero.co.ke/api/v2/payments", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Basic ${payheroBasicAuth()}`,
+    },
+    body: JSON.stringify({
+      amount,
+      phone_number: phone,
+      channel_id: Number(PAYHERO_CHANNEL_ID),
+      provider: "m-pesa",
+      external_reference: ref,
+      callback_url: callbackUrl || "https://shikazhomes.netlify.app/",
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err?.message || `PayHero error ${res.status}`);
+  }
+  return res.json(); // contains { reference, ... }
+}
+
+async function checkStkStatus(reference) {
+  const res = await fetch(
+    `https://backend.payhero.co.ke/api/v2/transaction-status?reference=${encodeURIComponent(reference)}`,
+    {
+      headers: { Authorization: `Basic ${payheroBasicAuth()}` },
+    }
+  );
+  if (!res.ok) throw new Error(`Status check failed (${res.status})`);
+  return res.json(); // { status: "SUCCESS" | "FAILED" | "PENDING" | "QUEUED" }
+}
+
 function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess }) {
   const nights  = nightsBetween(checkIn,checkOut);
   const total   = nights*listing.pricePerNight + listing.cleaningFee;
-  const [step,setStep]=useState("form"); // form | sending | confirm | success | failed
+  // steps: form | sending | waitingPin | polling | success | failed
+  const [step,setStep]=useState("form");
   const [name,setName]=useState("");
   const [phone,setPhone]=useState("");
   const [err,setErr]=useState("");
-  const ref = genRef();
+  const [statusMsg,setStatusMsg]=useState("");
+  const [payheroRef,setPayheroRef]=useState(null);
+  const bookingRef = useState(()=>genRef())[0];
+  const pollTimer  = useState(null);
 
   const validatePhone=p=>/^(?:254|0)[17]\d{8}$/.test(p.replace(/\s/g,""));
   const normalisePhone=p=>{ const c=p.replace(/\s/g,""); return c.startsWith("0")?"254"+c.slice(1):c; };
 
-  const submit=()=>{
+  // Stop any running poll on unmount
+  useEffect(()=>()=>{ if(pollTimer.current) clearInterval(pollTimer.current); },[]);
+
+  const submit=async()=>{
     if(!name.trim()){ setErr("Please enter your full name."); return; }
     if(!validatePhone(phone)){ setErr("Enter a valid Safaricom number (07xx or 254xx)."); return; }
     setErr(""); setStep("sending");
-    setTimeout(()=>setStep("confirm"),2200);
+    try {
+      const data = await initiateStkPush({
+        phone: normalisePhone(phone),
+        amount: total,
+        ref: bookingRef,
+        callbackUrl: window.location.origin + "/",
+      });
+      const extRef = data?.reference || data?.CheckoutRequestID || bookingRef;
+      setPayheroRef(extRef);
+      setStep("waitingPin");
+      // Start polling after 5s (give user time to enter PIN)
+      setTimeout(()=>startPolling(extRef), 5000);
+    } catch(e) {
+      setErr(`Failed to send STK push: ${e.message}`);
+      setStep("form");
+    }
   };
 
-  const confirmPay=()=>{
-    setStep("sending");
-    setTimeout(()=>{
-      // 90% success rate simulation
-      setStep(Math.random()>0.1?"success":"failed");
-    },3500);
+  const startPolling=(ref)=>{
+    setStep("polling");
+    setStatusMsg("Checking payment…");
+    let attempts=0;
+    const MAX=18; // ~90 seconds
+    pollTimer.current=setInterval(async()=>{
+      attempts++;
+      try {
+        const data=await checkStkStatus(ref);
+        const st=(data?.status||"").toUpperCase();
+        if(st==="SUCCESS"||st==="COMPLETE"||st==="COMPLETED"){
+          clearInterval(pollTimer.current);
+          setStep("success");
+        } else if(st==="FAILED"||st==="CANCELLED"||st==="CANCELED"){
+          clearInterval(pollTimer.current);
+          setErr(data?.message||"Payment was not completed.");
+          setStep("failed");
+        } else if(attempts>=MAX){
+          clearInterval(pollTimer.current);
+          setErr("Payment timed out. If you entered your PIN please contact support with ref: "+bookingRef);
+          setStep("failed");
+        } else {
+          setStatusMsg(`Waiting for payment (${attempts}/${MAX})…`);
+        }
+      } catch {
+        // network blip — keep trying
+      }
+    },5000);
   };
 
   const handleSuccess=()=>{
-    onSuccess({ ref, name, phone:normalisePhone(phone), checkIn, checkOut, guests, listing, total, nights });
+    onSuccess({ ref:bookingRef, name, phone:normalisePhone(phone), checkIn, checkOut, guests, listing, total, nights });
     onClose();
   };
 
@@ -420,28 +507,39 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess }
           </div>
         )}
 
-        {/* ── CONFIRM PIN ── */}
-        {step==="confirm"&&(
+        {/* ── WAITING FOR PIN ── */}
+        {step==="waitingPin"&&(
           <div style={{animation:"fadeIn 0.3s ease"}}>
             <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
               <div style={{fontSize:"2.5rem",marginBottom:"0.7rem"}}>📱</div>
               <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.2rem",color:"#0E2B1F",marginBottom:"0.5rem"}}>Check Your Phone</div>
               <div style={{fontSize:"0.85rem",color:C.muted,lineHeight:1.7}}>
                 An M-Pesa STK push has been sent to<br/>
-                <strong style={{color:C.gold}}>+{normalisePhone(phone)}</strong>
+                <strong style={{color:C.gold}}>+{normalisePhone(phone)}</strong><br/>
+                Enter your PIN on your phone to pay.
               </div>
             </div>
             <div style={{background:C.goldDim,border:`1px solid ${C.border}`,borderRadius:"6px",padding:"1rem 1.2rem",marginBottom:"1.2rem"}}>
-              {[["Listing",listing.name],["Dates",`${fmtDate(checkIn)} – ${fmtDate(checkOut)}`],["Nights",`${nights} night${nights>1?"s":""}`],["Amount",`KES ${fmt(total)}`],["Reference",ref]].map(([l,r])=>(
+              {[["Listing",listing.name],["Dates",`${fmtDate(checkIn)} – ${fmtDate(checkOut)}`],["Nights",`${nights} night${nights>1?"s":""}`],["Amount",`KES ${fmt(total)}`],["Reference",bookingRef]].map(([l,r])=>(
                 <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:"0.8rem",padding:"0.3rem 0",borderBottom:`1px solid ${C.border}`}}>
                   <span style={{color:C.muted}}>{l}</span><span style={{color:l==="Amount"||l==="Reference"?C.gold:C.cream,fontWeight:l==="Amount"?600:400}}>{r}</span>
                 </div>
               ))}
             </div>
-            <button onClick={confirmPay} style={{width:"100%",padding:"1rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontSize:"0.85rem",fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.2s"}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>
-              ✓ I've Entered My PIN
-            </button>
-            <p style={{textAlign:"center",fontSize:"0.7rem",color:C.muted,marginTop:"0.6rem"}}>Enter your M-Pesa PIN on your phone to complete payment</p>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"0.6rem",fontSize:"0.78rem",color:C.muted}}>
+              <div style={{width:"14px",height:"14px",border:`2px solid ${C.goldDim}`,borderTop:`2px solid ${C.gold}`,borderRadius:"50%",animation:"spin 0.9s linear infinite",flexShrink:0}}/>
+              Waiting for you to enter your PIN…
+            </div>
+          </div>
+        )}
+
+        {/* ── POLLING ── */}
+        {step==="polling"&&(
+          <div style={{textAlign:"center",padding:"2rem 0",animation:"fadeIn 0.3s ease"}}>
+            <div style={{width:"50px",height:"50px",border:`3px solid ${C.goldDim}`,borderTop:`3px solid ${C.gold}`,borderRadius:"50%",animation:"spin 0.9s linear infinite",margin:"0 auto 1.5rem"}}/>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.1rem",color:"#0E2B1F",marginBottom:"0.5rem"}}>Verifying Payment…</div>
+            <div style={{fontSize:"0.82rem",color:C.muted}}>{statusMsg}</div>
+            <div style={{fontSize:"0.72rem",color:C.muted,marginTop:"0.4rem"}}>Ref: {bookingRef}</div>
           </div>
         )}
 
@@ -451,10 +549,10 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess }
             <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
               <div style={{width:"56px",height:"56px",background:C.successDim,border:`2px solid ${C.success}`,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.5rem",margin:"0 auto 1rem"}}>✓</div>
               <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.3rem",color:"#0E2B1F",marginBottom:"0.4rem"}}>Booking Confirmed!</div>
-              <div style={{fontSize:"0.83rem",color:C.muted}}>Payment received · Confirmation sent to {normalisePhone(phone)}</div>
+              <div style={{fontSize:"0.83rem",color:C.muted}}>Payment received · M-Pesa confirmation sent</div>
             </div>
             <div style={{background:C.successDim,border:`1px solid rgba(76,175,125,0.25)`,borderRadius:"8px",padding:"1.2rem",marginBottom:"1.2rem"}}>
-              {[["Guest",name],["Property",listing.name],["Check-in",fmtDate(checkIn)],["Check-out",fmtDate(checkOut)],["Nights",`${nights}`],["Guests",`${guests}`],["Total Paid",`KES ${fmt(total)}`],["Booking Ref",ref]].map(([l,r])=>(
+              {[["Guest",name],["Property",listing.name],["Check-in",fmtDate(checkIn)],["Check-out",fmtDate(checkOut)],["Nights",`${nights}`],["Guests",`${guests}`],["Total Paid",`KES ${fmt(total)}`],["Booking Ref",bookingRef]].map(([l,r])=>(
                 <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:"0.8rem",padding:"0.3rem 0",borderBottom:`1px solid rgba(76,175,125,0.15)`}}>
                   <span style={{color:C.muted}}>{l}</span>
                   <span style={{color:l==="Total Paid"||l==="Booking Ref"?C.success:C.cream,fontWeight:["Total Paid","Booking Ref"].includes(l)?600:400}}>{r}</span>
