@@ -1452,13 +1452,38 @@ function PhotoManager({ photos, onChange }) {
   const [newUrl,setNewUrl]=useState("");
   const [preview,setPreview]=useState(null);
   const [err,setErr]=useState("");
-  const [dragging,setDragging]=useState(null);
+  const [uploading,setUploading]=useState(false);
+  const [tab,setTab]=useState("upload"); // "upload" | "url"
+  const fileInputRef = useState(null);
 
   const addUrl=()=>{
     if(!newUrl.trim()){setErr("Enter a URL.");return;}
     if(photos.includes(newUrl.trim())){setErr("Already added.");return;}
     onChange([...photos,newUrl.trim()]);
     setNewUrl(""); setErr(""); setPreview(null);
+  };
+
+  const handleFileChange=(e)=>{
+    const files=Array.from(e.target.files);
+    if(!files.length) return;
+    setUploading(true);
+    setErr("");
+    const readers=files.map(file=>new Promise((resolve,reject)=>{
+      if(!file.type.startsWith("image/")){reject(new Error(`${file.name} is not an image.`));return;}
+      if(file.size>10*1024*1024){reject(new Error(`${file.name} exceeds 10MB limit.`));return;}
+      const reader=new FileReader();
+      reader.onload=ev=>resolve(ev.target.result);
+      reader.onerror=()=>reject(new Error(`Failed to read ${file.name}`));
+      reader.readAsDataURL(file);
+    }));
+    Promise.allSettled(readers).then(results=>{
+      const succeeded=results.filter(r=>r.status==="fulfilled").map(r=>r.value);
+      const failed=results.filter(r=>r.status==="rejected").map(r=>r.reason.message);
+      if(succeeded.length) onChange([...photos,...succeeded]);
+      if(failed.length) setErr(failed.join(" "));
+      setUploading(false);
+      e.target.value="";
+    });
   };
 
   const remove=(i)=>onChange(photos.filter((_,idx)=>idx!==i));
@@ -1473,7 +1498,6 @@ function PhotoManager({ photos, onChange }) {
           <div key={i} style={{position:"relative",borderRadius:"6px",overflow:"hidden",border:`2px solid ${i===0?C.gold:C.border}`,background:C.ink}}>
             <img src={url} alt="" style={{width:"100%",height:"100px",objectFit:"cover",display:"block"}} onError={e=>e.target.style.display="none"}/>
             {i===0&&<div style={{position:"absolute",top:"0.3rem",left:"0.3rem",background:C.gold,color:C.obsidian,fontSize:"0.55rem",fontWeight:700,letterSpacing:"0.1em",padding:"0.15rem 0.4rem",borderRadius:"2px"}}>COVER</div>}
-            {/* Controls */}
             <div style={{position:"absolute",bottom:0,left:0,right:0,display:"flex",background:"rgba(14,43,31,0.85)"}}>
               <button onClick={()=>moveUp(i)} disabled={i===0} style={{flex:1,background:"none",border:"none",color:i===0?C.muted:C.mutedLight,cursor:i===0?"default":"pointer",padding:"0.3rem",fontSize:"0.9rem",transition:"color 0.15s"}} onMouseEnter={e=>{if(i>0)e.target.style.color=C.gold;}} onMouseLeave={e=>e.target.style.color=i===0?C.muted:C.mutedLight} title="Move left">←</button>
               <button onClick={()=>moveDown(i)} disabled={i===photos.length-1} style={{flex:1,background:"none",border:"none",color:i===photos.length-1?C.muted:C.mutedLight,cursor:i===photos.length-1?"default":"pointer",padding:"0.3rem",fontSize:"0.9rem",transition:"color 0.15s"}} onMouseEnter={e=>{if(i<photos.length-1)e.target.style.color=C.gold;}} onMouseLeave={e=>e.target.style.color=i===photos.length-1?C.muted:C.mutedLight} title="Move right">→</button>
@@ -1481,23 +1505,54 @@ function PhotoManager({ photos, onChange }) {
             </div>
           </div>
         ))}
-        {photos.length===0&&<div style={{gridColumn:"1/-1",textAlign:"center",padding:"2rem",color:C.muted,fontSize:"0.82rem",border:`1px dashed ${C.border}`,borderRadius:"6px"}}>No photos yet. Add image URLs below.</div>}
+        {photos.length===0&&<div style={{gridColumn:"1/-1",textAlign:"center",padding:"2rem",color:C.muted,fontSize:"0.82rem",border:`1px dashed ${C.border}`,borderRadius:"6px"}}>No photos yet. Upload photos or add an image URL below.</div>}
       </div>
-      {/* Add URL */}
-      <div style={{display:"flex",gap:"0.6rem",marginBottom:"0.5rem"}}>
-        <input value={newUrl} onChange={e=>{setNewUrl(e.target.value);setErr("");setPreview(e.target.value.trim()||null);}}
-          placeholder="https://images.unsplash.com/…" style={{...field,flex:1}}
-          onFocus={fieldFocus} onBlur={fieldBlur}
-          onKeyDown={e=>e.key==="Enter"&&addUrl()}/>
-        <button onClick={addUrl} style={{padding:"0.75rem 1.2rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"5px",fontWeight:600,cursor:"pointer",fontSize:"0.82rem",flexShrink:0,transition:"background 0.2s"}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>Add</button>
+
+      {/* Tab switcher */}
+      <div style={{display:"flex",gap:"0",marginBottom:"0.8rem",border:`1px solid ${C.border}`,borderRadius:"6px",overflow:"hidden"}}>
+        {[{id:"upload",label:"📁 Upload Photos"},{id:"url",label:"🔗 Add by URL"}].map(t=>(
+          <button key={t.id} onClick={()=>{setTab(t.id);setErr("");}} style={{flex:1,padding:"0.6rem 0.8rem",background:tab===t.id?C.gold:"transparent",color:tab===t.id?C.obsidian:C.muted,border:"none",cursor:"pointer",fontSize:"0.75rem",fontWeight:tab===t.id?700:400,letterSpacing:"0.08em",transition:"all 0.2s"}}>{t.label}</button>
+        ))}
       </div>
-      {err&&<div style={{fontSize:"0.75rem",color:C.error,marginBottom:"0.4rem"}}>{err}</div>}
-      {preview&&(
-        <div style={{marginTop:"0.6rem",borderRadius:"6px",overflow:"hidden",height:"80px",border:`1px solid ${C.border}`}}>
-          <img src={preview} alt="preview" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={e=>e.target.parentElement.style.display="none"}/>
+
+      {/* Upload tab */}
+      {tab==="upload"&&(
+        <div>
+          <label style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"0.6rem",padding:"2rem 1.5rem",border:`2px dashed ${C.gold}`,borderRadius:"8px",background:"rgba(197,151,58,0.04)",cursor:uploading?"not-allowed":"pointer",transition:"background 0.2s"}}
+            onMouseEnter={e=>{if(!uploading)e.currentTarget.style.background="rgba(197,151,58,0.09)";}}
+            onMouseLeave={e=>e.currentTarget.style.background="rgba(197,151,58,0.04)"}>
+            <input type="file" accept="image/*" multiple onChange={handleFileChange} disabled={uploading} style={{display:"none"}}/>
+            {uploading
+              ? <><div style={{fontSize:"1.5rem",animation:"spin 1s linear infinite"}}>⏳</div><div style={{fontSize:"0.82rem",color:C.muted}}>Processing photos…</div></>
+              : <><div style={{fontSize:"2rem"}}>📷</div>
+                  <div style={{fontSize:"0.9rem",fontWeight:600,color:C.sage}}>Click to choose photos</div>
+                  <div style={{fontSize:"0.75rem",color:C.muted,textAlign:"center"}}>JPG, PNG, WEBP · Up to 10MB each · Multiple allowed</div></>
+            }
+          </label>
         </div>
       )}
-      <div style={{fontSize:"0.7rem",color:C.muted,marginTop:"0.5rem"}}>Tip: Use Unsplash URLs (…unsplash.com/photo-…?w=1200&q=85) for best quality. First photo is the cover image.</div>
+
+      {/* URL tab */}
+      {tab==="url"&&(
+        <div>
+          <div style={{display:"flex",gap:"0.6rem",marginBottom:"0.5rem"}}>
+            <input value={newUrl} onChange={e=>{setNewUrl(e.target.value);setErr("");setPreview(e.target.value.trim()||null);}}
+              placeholder="https://images.unsplash.com/…" style={{...field,flex:1}}
+              onFocus={fieldFocus} onBlur={fieldBlur}
+              onKeyDown={e=>e.key==="Enter"&&addUrl()}/>
+            <button onClick={addUrl} style={{padding:"0.75rem 1.2rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"5px",fontWeight:600,cursor:"pointer",fontSize:"0.82rem",flexShrink:0,transition:"background 0.2s"}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>Add</button>
+          </div>
+          {preview&&(
+            <div style={{marginTop:"0.6rem",borderRadius:"6px",overflow:"hidden",height:"80px",border:`1px solid ${C.border}`}}>
+              <img src={preview} alt="preview" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={e=>e.target.parentElement.style.display="none"}/>
+            </div>
+          )}
+          <div style={{fontSize:"0.7rem",color:C.muted,marginTop:"0.5rem"}}>Tip: Use Unsplash URLs (…unsplash.com/photo-…?w=1200&q=85) for best quality.</div>
+        </div>
+      )}
+
+      {err&&<div style={{fontSize:"0.75rem",color:C.error,marginTop:"0.5rem",padding:"0.4rem 0.7rem",background:"rgba(220,38,38,0.07)",borderRadius:"4px",border:"1px solid rgba(220,38,38,0.18)"}}>{err}</div>}
+      <div style={{fontSize:"0.7rem",color:C.muted,marginTop:"0.6rem"}}>First photo is used as the cover image on listing cards.</div>
     </div>
   );
 }
