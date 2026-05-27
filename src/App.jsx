@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "./supabase.js";
 
 // ─── DESIGN TOKENS ────────────────────────────────────────────────
@@ -655,8 +655,11 @@ function ListingCard({ listing, onClick }) {
 function useLeaflet() {
   const [L, setL] = useState(null);
   useEffect(() => {
-    if (window.L) { setL(window.L); return; }
-    // Load CSS
+    let cancelled = false;
+    const resolve = () => { if (!cancelled && window.L) setL(window.L); };
+
+    if (window.L) { resolve(); return; }
+
     if (!document.getElementById("leaflet-css")) {
       const link = document.createElement("link");
       link.id = "leaflet-css";
@@ -664,18 +667,22 @@ function useLeaflet() {
       link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
       document.head.appendChild(link);
     }
-    // Load JS
-    if (!document.getElementById("leaflet-js")) {
-      const script = document.createElement("script");
-      script.id = "leaflet-js";
-      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
-      script.onload = () => setL(window.L);
-      document.head.appendChild(script);
-    } else {
-      const check = setInterval(() => {
-        if (window.L) { setL(window.L); clearInterval(check); }
-      }, 100);
+
+    const existing = document.getElementById("leaflet-js");
+    if (existing) {
+      // Script already injected — poll until window.L appears
+      const iv = setInterval(() => { if (window.L) { clearInterval(iv); resolve(); } }, 80);
+      return () => { cancelled = true; clearInterval(iv); };
     }
+
+    const script = document.createElement("script");
+    script.id = "leaflet-js";
+    script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+    script.onload = resolve;
+    script.onerror = () => console.warn("Leaflet failed to load");
+    document.head.appendChild(script);
+
+    return () => { cancelled = true; };
   }, []);
   return L;
 }
@@ -684,65 +691,59 @@ function ListingMap({ lat, lng, name, neighborhood }) {
   const L = useLeaflet();
   const mapRef = useRef(null);
   const instanceRef = useRef(null);
+  const timerRef = useRef(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!L || !mapRef.current || instanceRef.current) return;
+    if (!L || !mapRef.current) return;
+    if (instanceRef.current) return; // already mounted
 
-    // Tiny delay so container has rendered dimensions
-    setTimeout(() => {
-      const map = L.map(mapRef.current, {
-        center: [lat, lng],
-        zoom: 15,
-        zoomControl: true,
-        scrollWheelZoom: false,
-        attributionControl: true,
-      });
+    timerRef.current = setTimeout(() => {
+      if (!mapRef.current) return; // unmounted during delay
+      try {
+        const map = L.map(mapRef.current, {
+          center: [lat, lng],
+          zoom: 15,
+          zoomControl: true,
+          scrollWheelZoom: false,
+        });
 
-      // OpenStreetMap tile layer — completely free
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-        maxZoom: 19,
-      }).addTo(map);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+          maxZoom: 19,
+        }).addTo(map);
 
-      // Custom branded marker using a div icon
-      const icon = L.divIcon({
-        className: "",
-        html: `<div style="
-          background:linear-gradient(135deg,#C5973A,#D4AF37);
-          color:#0E2B1F;
-          width:36px;height:36px;
-          border-radius:50% 50% 50% 0;
-          transform:rotate(-45deg);
-          border:3px solid #fff;
-          box-shadow:0 4px 16px rgba(197,151,58,0.5),0 2px 8px rgba(0,0,0,0.3);
-          display:flex;align-items:center;justify-content:center;
-        "><span style="transform:rotate(45deg);font-size:14px;">🏠</span></div>`,
-        iconSize: [36, 36],
-        iconAnchor: [18, 36],
-        popupAnchor: [0, -40],
-      });
+        const icon = L.divIcon({
+          className: "",
+          html: '<div style="background:linear-gradient(135deg,#C5973A,#D4AF37);color:#0E2B1F;width:36px;height:36px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 4px 16px rgba(197,151,58,0.5);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);font-size:14px;">🏠</span></div>',
+          iconSize: [36, 36],
+          iconAnchor: [18, 36],
+          popupAnchor: [0, -40],
+        });
 
-      const marker = L.marker([lat, lng], { icon }).addTo(map);
+        L.marker([lat, lng], { icon }).addTo(map)
+          .bindPopup(
+            '<div style="font-family:serif;min-width:140px;text-align:center;padding:4px 0;">' +
+            '<div style="font-size:0.95rem;font-weight:600;color:#0E2B1F;margin-bottom:2px;">' + name + '</div>' +
+            '<div style="font-size:0.72rem;color:#888;">' + neighborhood + ', Nairobi</div></div>',
+            { maxWidth: 200 }
+          ).openPopup();
 
-      marker.bindPopup(`
-        <div style="font-family:'Playfair Display',serif;min-width:160px;text-align:center;padding:4px 0;">
-          <div style="font-size:1rem;font-weight:600;color:#0E2B1F;margin-bottom:2px;">${name}</div>
-          <div style="font-size:0.75rem;color:#888;">${neighborhood}, Nairobi</div>
-        </div>
-      `, { maxWidth: 200 }).openPopup();
-
-      instanceRef.current = map;
-      setReady(true);
-    }, 80);
+        instanceRef.current = map;
+        setReady(true);
+      } catch(e) {
+        console.warn("Map init error:", e);
+      }
+    }, 120);
 
     return () => {
+      clearTimeout(timerRef.current);
       if (instanceRef.current) {
-        instanceRef.current.remove();
+        try { instanceRef.current.remove(); } catch(_) {}
         instanceRef.current = null;
       }
     };
-  }, [L, lat, lng]);
+  }, [L]);
 
   return (
     <div style={{position:"relative",borderRadius:"10px",overflow:"hidden",border:`1px solid ${C.border}`,boxShadow:"0 4px 20px rgba(14,43,31,0.08)"}}>
@@ -752,8 +753,7 @@ function ListingMap({ lat, lng, name, neighborhood }) {
           <div style={{fontSize:"0.78rem",color:C.muted}}>Loading map…</div>
         </div>
       )}
-      <div ref={mapRef} style={{height:"380px",width:"100%",display:ready?"block":"none"}}/>
-      {/* Attribution override for brand consistency */}
+      <div ref={mapRef} style={{height:"380px",width:"100%",visibility:ready?"visible":"hidden"}}/>
       <div style={{position:"absolute",bottom:0,left:0,right:0,height:"28px",pointerEvents:"none",background:"linear-gradient(to top,rgba(253,250,245,0.7),transparent)"}}/>
     </div>
   );
@@ -765,68 +765,95 @@ function LocationPicker({ lat, lng, onChange }) {
   const mapRef = useRef(null);
   const instanceRef = useRef(null);
   const markerRef = useRef(null);
-  const [localLat, setLocalLat] = useState(lat || -1.2921);
-  const [localLng, setLocalLng] = useState(lng || 36.8219);
+  const timerRef = useRef(null);
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+
+  const initLat = lat || -1.2921;
+  const initLng = lng || 36.8219;
+  const [localLat, setLocalLat] = useState(initLat);
+  const [localLng, setLocalLng] = useState(initLng);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    if (!L || !mapRef.current || instanceRef.current) return;
-    setTimeout(() => {
-      const map = L.map(mapRef.current, {
-        center: [localLat, localLng],
-        zoom: 15,
-        zoomControl: true,
-        scrollWheelZoom: true,
-      });
+    if (!L || !mapRef.current) return;
+    if (instanceRef.current) return;
 
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19,
-      }).addTo(map);
+    timerRef.current = setTimeout(() => {
+      if (!mapRef.current) return;
+      try {
+        const map = L.map(mapRef.current, {
+          center: [localLat, localLng],
+          zoom: 15,
+          zoomControl: true,
+          scrollWheelZoom: true,
+        });
 
-      const icon = L.divIcon({
-        className: "",
-        html: `<div style="background:linear-gradient(135deg,#C5973A,#D4AF37);color:#0E2B1F;width:36px;height:36px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 4px 16px rgba(197,151,58,0.5);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);font-size:14px;">📍</span></div>`,
-        iconSize: [36, 36], iconAnchor: [18, 36],
-      });
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 19,
+        }).addTo(map);
 
-      markerRef.current = L.marker([localLat, localLng], { icon, draggable: true }).addTo(map);
+        const markerIcon = L.divIcon({
+          className: "",
+          html: '<div style="background:linear-gradient(135deg,#C5973A,#D4AF37);color:#0E2B1F;width:36px;height:36px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 4px 16px rgba(197,151,58,0.5);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);font-size:14px;">📍</span></div>',
+          iconSize: [36, 36],
+          iconAnchor: [18, 36],
+        });
 
-      const updatePos = (latVal, lngVal) => {
-        const rLat = Math.round(latVal * 1e6) / 1e6;
-        const rLng = Math.round(lngVal * 1e6) / 1e6;
-        setLocalLat(rLat); setLocalLng(rLng);
-        onChange({ lat: rLat, lng: lngVal });
-      };
+        const marker = L.marker([localLat, localLng], { icon: markerIcon, draggable: true }).addTo(map);
+        markerRef.current = marker;
 
-      markerRef.current.on("dragend", e => {
-        const { lat: la, lng: lo } = e.target.getLatLng();
-        updatePos(la, lo);
-      });
+        const updatePos = (la, lo) => {
+          const rLat = Math.round(la * 1e6) / 1e6;
+          const rLng = Math.round(lo * 1e6) / 1e6;
+          setLocalLat(rLat);
+          setLocalLng(rLng);
+          onChangeRef.current({ lat: rLat, lng: rLng });
+        };
 
-      map.on("click", e => {
-        markerRef.current.setLatLng(e.latlng);
-        updatePos(e.latlng.lat, e.latlng.lng);
-      });
+        marker.on("dragend", e => {
+          const pos = e.target.getLatLng();
+          updatePos(pos.lat, pos.lng);
+        });
 
-      instanceRef.current = map;
-      setReady(true);
-    }, 80);
+        map.on("click", e => {
+          marker.setLatLng(e.latlng);
+          updatePos(e.latlng.lat, e.latlng.lng);
+        });
+
+        instanceRef.current = map;
+        setReady(true);
+      } catch(e) {
+        console.warn("LocationPicker init error:", e);
+      }
+    }, 150);
 
     return () => {
-      if (instanceRef.current) { instanceRef.current.remove(); instanceRef.current = null; }
+      clearTimeout(timerRef.current);
+      if (instanceRef.current) {
+        try { instanceRef.current.remove(); } catch(_) {}
+        instanceRef.current = null;
+        markerRef.current = null;
+      }
     };
   }, [L]);
 
-  // Sync external lat/lng changes
-  useEffect(() => {
-    if (!instanceRef.current || !markerRef.current) return;
-    if (lat && lng && (lat !== localLat || lng !== localLng)) {
-      markerRef.current.setLatLng([lat, lng]);
-      instanceRef.current.setView([lat, lng], 15);
-      setLocalLat(lat); setLocalLng(lng);
+  const setCoord = (field, rawVal) => {
+    const v = parseFloat(rawVal);
+    if (isNaN(v)) return;
+    const newLat = field === "lat" ? v : localLat;
+    const newLng = field === "lng" ? v : localLng;
+    if (field === "lat") setLocalLat(v);
+    else setLocalLng(v);
+    onChangeRef.current({ lat: newLat, lng: newLng });
+    if (markerRef.current && instanceRef.current) {
+      try {
+        markerRef.current.setLatLng([newLat, newLng]);
+        instanceRef.current.setView([newLat, newLng]);
+      } catch(_) {}
     }
-  }, [lat, lng]);
+  };
 
   return (
     <div>
@@ -837,19 +864,19 @@ function LocationPicker({ lat, lng, onChange }) {
             <span style={{fontSize:"0.78rem",color:C.muted}}>Loading map…</span>
           </div>
         )}
-        <div ref={mapRef} style={{height:"320px",width:"100%",display:ready?"block":"none"}}/>
+        <div ref={mapRef} style={{height:"320px",width:"100%",visibility:ready?"visible":"hidden"}}/>
       </div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.5rem"}}>
         <div>
           <label style={{display:"block",fontSize:"0.62rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,marginBottom:"0.3rem"}}>Latitude</label>
           <input type="number" step="0.000001" value={localLat}
-            onChange={e=>{const v=parseFloat(e.target.value);if(!isNaN(v)){setLocalLat(v);onChange({lat:v,lng:localLng});if(markerRef.current&&instanceRef.current){markerRef.current.setLatLng([v,localLng]);instanceRef.current.setView([v,localLng]);}}}}
+            onChange={e=>setCoord("lat", e.target.value)}
             style={{...field,fontFamily:"monospace",fontSize:"0.85rem"}} onFocus={fieldFocus} onBlur={fieldBlur}/>
         </div>
         <div>
           <label style={{display:"block",fontSize:"0.62rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,marginBottom:"0.3rem"}}>Longitude</label>
           <input type="number" step="0.000001" value={localLng}
-            onChange={e=>{const v=parseFloat(e.target.value);if(!isNaN(v)){setLocalLng(v);onChange({lat:localLat,lng:v});if(markerRef.current&&instanceRef.current){markerRef.current.setLatLng([localLat,v]);instanceRef.current.setView([localLat,v]);}}}}
+            onChange={e=>setCoord("lng", e.target.value)}
             style={{...field,fontFamily:"monospace",fontSize:"0.85rem"}} onFocus={fieldFocus} onBlur={fieldBlur}/>
         </div>
       </div>
