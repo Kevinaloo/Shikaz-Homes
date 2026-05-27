@@ -57,7 +57,8 @@ const DEFAULT_LISTINGS = [
     photos:["https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&q=85","https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&q=85","https://images.unsplash.com/photo-1567767292278-a4f21aa2d36e?w=1200&q=85","https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=1200&q=85","https://images.unsplash.com/photo-1484154218962-a197022b5858?w=1200&q=85"],
     description:"Wake up above the city in this spectacular penthouse apartment. Floor-to-ceiling glass wraps the living space, framing a panorama of Nairobi's skyline at golden hour. The open-plan kitchen is fully equipped, the master suite has a walk-in wardrobe, and residents enjoy rooftop pool and gym access.\n\nPerfect for corporate travellers and couples seeking an elevated stay.",
     houseRules:["No smoking","No parties","Check-in 2PM","Checkout 11AM"],
-    bookedDates:["2026-06-03","2026-06-04","2026-06-05","2026-06-12","2026-06-13"] },
+    bookedDates:["2026-06-03","2026-06-04","2026-06-05","2026-06-12","2026-06-13"],
+    lat:-1.2676,lng:36.8119,locationNote:"15th floor of Westlands Square. Use the south entrance on Mpaka Road. Parking in basement B2." },
   { id:"lst-002", name:"Kilimani Garden Studio", neighborhood:"Kilimani", city:"Nairobi",
     tagline:"Leafy calm in the heart of the city", type:"Studio",
     bedrooms:1, bathrooms:1, guests:2, sqm:45, pricePerNight:3200, cleaningFee:800,
@@ -66,7 +67,8 @@ const DEFAULT_LISTINGS = [
     photos:["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=85","https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1200&q=85","https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=1200&q=85","https://images.unsplash.com/photo-1493809842364-78817add7ffb?w=1200&q=85"],
     description:"A beautifully designed studio tucked behind lush gardens in Kilimani — one of Nairobi's most coveted addresses. Minimalist interiors with warm wood tones, a queen bed, and a fully-fitted kitchenette. Walk to Java, Carrefour and the best cafes in under 5 minutes.\n\nIdeal for solo travellers or couples on short business or leisure stays.",
     houseRules:["No smoking","No parties","Check-in 2PM","Checkout 11AM"],
-    bookedDates:["2026-06-08","2026-06-09","2026-06-20","2026-06-21","2026-06-22"] },
+    bookedDates:["2026-06-08","2026-06-09","2026-06-20","2026-06-21","2026-06-22"],
+    lat:-1.2921,lng:36.7863,locationNote:"Off Argwings Kodhek Road. Gate is green — ring the bell and mention Shikaz Homes. Parking within compound." },
   { id:"lst-003", name:"Lavington Family Retreat", neighborhood:"Lavington", city:"Nairobi",
     tagline:"Space, comfort & a garden for the whole family", type:"2-Bedroom Apartment",
     bedrooms:2, bathrooms:2, guests:5, sqm:130, pricePerNight:11000, cleaningFee:2000,
@@ -75,7 +77,8 @@ const DEFAULT_LISTINGS = [
     photos:["https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=85","https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=85","https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=1200&q=85","https://images.unsplash.com/photo-1583847268964-b28dc8f51f92?w=1200&q=85","https://images.unsplash.com/photo-1507089947368-19c1da9775ae?w=1200&q=85"],
     description:"Nairobi's most family-friendly short stay. This generous 2-bedroom apartment sits in a quiet compound in Lavington, with a private garden, fully equipped kitchen, and laundry. Space for everyone — adults and children alike.\n\nClose to Lavington Mall, international schools, and a short drive from the CBD.",
     houseRules:["No smoking","Quiet hours 10PM–7AM","Check-in 2PM","Checkout 11AM"],
-    bookedDates:["2026-06-15","2026-06-16","2026-06-17","2026-06-28","2026-06-29"] },
+    bookedDates:["2026-06-15","2026-06-16","2026-06-17","2026-06-28","2026-06-29"],
+    lat:-1.2780,lng:36.7627,locationNote:"Off James Gichuru Road, second compound on the left. Blue gate with a mango tree. Free parking inside." },
   { id:"lst-004", name:"Parklands Executive Suite", neighborhood:"Parklands", city:"Nairobi",
     tagline:"Corporate-grade comfort in a quiet enclave", type:"1-Bedroom Suite",
     bedrooms:1, bathrooms:1, guests:2, sqm:65, pricePerNight:5500, cleaningFee:1000,
@@ -84,7 +87,8 @@ const DEFAULT_LISTINGS = [
     photos:["https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=1200&q=85","https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=1200&q=85","https://images.unsplash.com/photo-1591088398332-8a7791972843?w=1200&q=85","https://images.unsplash.com/photo-1574643156929-51fa098b0394?w=1200&q=85"],
     description:"Purpose-built for the business traveller who refuses to compromise. A crisp, modern 1-bedroom suite with a dedicated workspace, high-speed fibre WiFi, and a fully equipped kitchen. The building has a pool and gym — unwind after a long day in Nairobi.\n\nClose to Aga Khan Hospital, UN offices, and Westlands business district.",
     houseRules:["No smoking","No parties","Check-in 2PM","Checkout 11AM"],
-    bookedDates:["2026-06-02","2026-06-10","2026-06-11","2026-06-25"] },
+    bookedDates:["2026-06-02","2026-06-10","2026-06-11","2026-06-25"],
+    lat:-1.2593,lng:36.8219,locationNote:"Apollo Centre, 3rd Parklands Avenue. Check in at the reception desk — they'll direct you to the suite. Visitor parking available." },
   { id:"lst-005", name:"Riverside Loft", neighborhood:"Riverside", city:"Nairobi",
     tagline:"Industrial chic meets Nairobi's creative quarter", type:"Loft Studio",
     bedrooms:1, bathrooms:1, guests:2, sqm:60, pricePerNight:4800, cleaningFee:1000,
@@ -93,7 +97,8 @@ const DEFAULT_LISTINGS = [
     photos:["https://images.unsplash.com/photo-1540518614846-7eded433c457?w=1200&q=85","https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=1200&q=85","https://images.unsplash.com/photo-1598928506311-c55ded91a20c?w=1200&q=85","https://images.unsplash.com/photo-1484101403633-562f891dc89a?w=1200&q=85"],
     description:"A double-height loft in the creative Riverside neighbourhood. Exposed concrete, warm pendant lighting, and curated local art make this a truly memorable space. The bed sits on a mezzanine above an open living area with river-facing windows.\n\nFive minutes from Nairobi's best restaurants and gallery spaces.",
     houseRules:["No smoking","No parties","Respect art pieces","Check-in 2PM","Checkout 11AM"],
-    bookedDates:["2026-06-06","2026-06-07","2026-06-18","2026-06-19"] },
+    bookedDates:["2026-06-06","2026-06-07","2026-06-18","2026-06-19"],
+    lat:-1.2872,lng:36.7981,locationNote:"Riverside Drive, cream building opposite the Muthaiga roundabout side. Apartment is on the 2nd floor, unit 2C. Intercom at gate." },
   { id:"lst-006", name:"Karen Countryside Villa", neighborhood:"Karen", city:"Nairobi",
     tagline:"A private villa among acacia and bougainvillea", type:"3-Bedroom Villa",
     bedrooms:3, bathrooms:3, guests:7, sqm:280, pricePerNight:22000, cleaningFee:4000,
@@ -102,7 +107,8 @@ const DEFAULT_LISTINGS = [
     photos:["https://images.unsplash.com/photo-1613977257363-707ba9348227?w=1200&q=85","https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=1200&q=85","https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=1200&q=85","https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&q=85","https://images.unsplash.com/photo-1600607687644-aac4c3eac7f4?w=1200&q=85"],
     description:"The crown jewel of Shikaz Homes. Set on half an acre in Karen, this three-bedroom villa offers absolute privacy, a heated private pool, outdoor BBQ and a fully staffed experience. Mornings begin with garden breakfasts and sunsets end by the fireplace.\n\nIdeal for families, special celebrations, and executives seeking a genuine retreat.",
     houseRules:["No loud music after 10PM","Max 7 guests","No smoking indoors","Check-in 3PM","Checkout 11AM"],
-    bookedDates:["2026-06-01","2026-06-14","2026-06-30"] },
+    bookedDates:["2026-06-01","2026-06-14","2026-06-30"],
+    lat:-1.3500,lng:36.7100,locationNote:"Off Karen Road, past the Karen Blixen Museum — brown timber gate, look for the Shikaz Homes sign. Caretaker on site to welcome you." },
 ];
 
 const BADGE_STYLE = {
@@ -159,6 +165,25 @@ body{font-family:'DM Sans',sans-serif;background:#FDFAF5;color:#1C1C1C;overflow-
 @keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
 @keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@keyframes popIn{0%{opacity:0;transform:scale(0.7) translateY(60px)}70%{transform:scale(1.04) translateY(-6px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes popOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(0.8) translateY(40px)}}
+@keyframes floatUp{0%{opacity:0;transform:translateY(0)}10%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateY(-80px)}}
+@keyframes swing{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(120px) rotate(720deg);opacity:0}}
+@keyframes firework{0%{transform:scale(0);opacity:1}100%{transform:scale(1.5);opacity:0}}
+@keyframes ribbonSlide{0%{transform:translateX(-110%)}100%{transform:translateX(0)}}
+@keyframes heartBeat{0%,100%{transform:scale(1)}14%{transform:scale(1.3)}28%{transform:scale(1)}42%{transform:scale(1.2)}70%{transform:scale(1)}}
+@keyframes starTwinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.3;transform:scale(0.6)}}
+@keyframes rotateSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes bounceIn{0%{transform:scale(0.3);opacity:0}50%{transform:scale(1.05)}70%{transform:scale(0.95)}100%{transform:scale(1);opacity:1}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 20px rgba(197,151,58,0.4)}50%{box-shadow:0 0 60px rgba(197,151,58,0.9),0 0 100px rgba(197,151,58,0.4)}}
+@keyframes slideInLeft{from{transform:translateX(-100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes flagWave{0%,100%{transform:skewX(0deg)}25%{transform:skewX(-3deg)}75%{transform:skewX(3deg)}}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}100%{transform:scaleY(1);transform-origin:top}}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes scanline{0%{top:0%}100%{top:100%}}
+@keyframes disco{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
 .fade-up{animation:fadeUp 0.7s ease both}
 input,select,textarea,button{font-family:inherit}
 a{text-decoration:none;color:inherit}
@@ -333,123 +358,35 @@ function PriceBreakdown({ listing, checkIn, checkOut, guests }) {
 }
 
 // ─── MPESA PAYMENT MODAL ──────────────────────────────────────────
-// PayHero credentials — replace these values with your real ones from
-// https://app.payhero.co.ke  (Settings → API Keys)
-const PAYHERO_API_USERNAME = import.meta.env.VITE_PAYHERO_USERNAME ?? "";
-const PAYHERO_API_PASSWORD = import.meta.env.VITE_PAYHERO_PASSWORD ?? "";
-const PAYHERO_CHANNEL_ID   = import.meta.env.VITE_PAYHERO_CHANNEL_ID ?? "";
-// Base64-encode "username:password" for Basic Auth
-const payheroBasicAuth = () =>
-  btoa(`${PAYHERO_API_USERNAME}:${PAYHERO_API_PASSWORD}`);
-
-async function initiateStkPush({ phone, amount, ref, callbackUrl }) {
-  const res = await fetch("https://backend.payhero.co.ke/api/v2/payments", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Basic ${payheroBasicAuth()}`,
-    },
-    body: JSON.stringify({
-      amount,
-      phone_number: phone,
-      channel_id: Number(PAYHERO_CHANNEL_ID),
-      provider: "m-pesa",
-      external_reference: ref,
-      callback_url: callbackUrl || "https://shikazhomes.netlify.app/",
-    }),
-  });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err?.message || `PayHero error ${res.status}`);
-  }
-  return res.json(); // contains { reference, ... }
-}
-
-async function checkStkStatus(reference) {
-  const res = await fetch(
-    `https://backend.payhero.co.ke/api/v2/transaction-status?reference=${encodeURIComponent(reference)}`,
-    {
-      headers: { Authorization: `Basic ${payheroBasicAuth()}` },
-    }
-  );
-  if (!res.ok) throw new Error(`Status check failed (${res.status})`);
-  return res.json(); // { status: "SUCCESS" | "FAILED" | "PENDING" | "QUEUED" }
-}
-
-function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess, customAmount, isDeposit }) {
+function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess }) {
   const nights  = nightsBetween(checkIn,checkOut);
-  const fullTotal = nights*listing.pricePerNight + listing.cleaningFee;
-  const total   = (isDeposit && customAmount) ? customAmount : fullTotal;
-  const balanceDue = isDeposit ? fullTotal - total : 0;
-  const [step,setStep]=useState("form");
+  const total   = nights*listing.pricePerNight + listing.cleaningFee;
+  const [step,setStep]=useState("form"); // form | sending | confirm | success | failed
   const [name,setName]=useState("");
   const [phone,setPhone]=useState("");
   const [err,setErr]=useState("");
-  const [statusMsg,setStatusMsg]=useState("");
-  const [payheroRef,setPayheroRef]=useState(null);
-  const bookingRef = useState(()=>genRef())[0];
-  const pollTimer  = useState(null);
+  const ref = genRef();
 
   const validatePhone=p=>/^(?:254|0)[17]\d{8}$/.test(p.replace(/\s/g,""));
   const normalisePhone=p=>{ const c=p.replace(/\s/g,""); return c.startsWith("0")?"254"+c.slice(1):c; };
 
-  // Stop any running poll on unmount
-  useEffect(()=>()=>{ if(pollTimer.current) clearInterval(pollTimer.current); },[]);
-
-  const submit=async()=>{
+  const submit=()=>{
     if(!name.trim()){ setErr("Please enter your full name."); return; }
     if(!validatePhone(phone)){ setErr("Enter a valid Safaricom number (07xx or 254xx)."); return; }
     setErr(""); setStep("sending");
-    try {
-      const data = await initiateStkPush({
-        phone: normalisePhone(phone),
-        amount: total,
-        ref: bookingRef,
-        callbackUrl: window.location.origin + "/",
-      });
-      const extRef = data?.reference || data?.CheckoutRequestID || bookingRef;
-      setPayheroRef(extRef);
-      setStep("waitingPin");
-      // Start polling after 5s (give user time to enter PIN)
-      setTimeout(()=>startPolling(extRef), 5000);
-    } catch(e) {
-      setErr(`Failed to send STK push: ${e.message}`);
-      setStep("form");
-    }
+    setTimeout(()=>setStep("confirm"),2200);
   };
 
-  const startPolling=(ref)=>{
-    setStep("polling");
-    setStatusMsg("Checking payment…");
-    let attempts=0;
-    const MAX=18; // ~90 seconds
-    pollTimer.current=setInterval(async()=>{
-      attempts++;
-      try {
-        const data=await checkStkStatus(ref);
-        const st=(data?.status||"").toUpperCase();
-        if(st==="SUCCESS"||st==="COMPLETE"||st==="COMPLETED"){
-          clearInterval(pollTimer.current);
-          setStep("success");
-        } else if(st==="FAILED"||st==="CANCELLED"||st==="CANCELED"){
-          clearInterval(pollTimer.current);
-          setErr(data?.message||"Payment was not completed.");
-          setStep("failed");
-        } else if(attempts>=MAX){
-          clearInterval(pollTimer.current);
-          setErr("Payment timed out. If you entered your PIN please contact support with ref: "+bookingRef);
-          setStep("failed");
-        } else {
-          setStatusMsg(`Waiting for payment (${attempts}/${MAX})…`);
-        }
-      } catch {
-        // network blip — keep trying
-      }
-    },5000);
+  const confirmPay=()=>{
+    setStep("sending");
+    setTimeout(()=>{
+      // 90% success rate simulation
+      setStep(Math.random()>0.1?"success":"failed");
+    },3500);
   };
 
   const handleSuccess=()=>{
-    onSuccess({ ref:bookingRef, name, phone:normalisePhone(phone), checkIn, checkOut, guests, listing, total, nights });
+    onSuccess({ ref, name, phone:normalisePhone(phone), checkIn, checkOut, guests, listing, total, nights });
     onClose();
   };
 
@@ -463,21 +400,13 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess, 
 
         {/* Header */}
         <div style={{marginBottom:"1.5rem"}}>
-          <div style={{display:"flex",alignItems:"center",gap:"0.6rem",marginBottom:"0.4rem",flexWrap:"wrap"}}>
-            <div style={{fontSize:"0.65rem",letterSpacing:"0.25em",textTransform:"uppercase",color:"rgba(197,151,58,0.9)"}}>
-              {step==="success"?(isDeposit?"Deposit Confirmed":"Booking Confirmed"):step==="failed"?"Payment Failed":(isDeposit?"Hold Dates — Deposit":"Secure Checkout")}
-            </div>
-            {isDeposit&&<span style={{fontSize:"0.6rem",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",padding:"0.15rem 0.5rem",background:"rgba(197,151,58,0.15)",color:C.gold,border:`1px solid rgba(197,151,58,0.35)`,borderRadius:"3px"}}>Deposit</span>}
+          <div style={{fontSize:"0.65rem",letterSpacing:"0.25em",textTransform:"uppercase",color:"rgba(197,151,58,0.9)",marginBottom:"0.4rem"}}>
+            {step==="success"?"Booking Confirmed":step==="failed"?"Payment Failed":"Secure Checkout"}
           </div>
           <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.35rem",color:"#0E2B1F"}}>{listing.name}</div>
           <div style={{fontSize:"0.8rem",color:C.muted,marginTop:"0.2rem"}}>
             {fmtDate(checkIn)} → {fmtDate(checkOut)} · {nights} night{nights>1?"s":""} · {guests} guest{guests>1?"s":""}
           </div>
-          {isDeposit&&step==="form"&&(
-            <div style={{marginTop:"0.6rem",padding:"0.5rem 0.8rem",background:"rgba(197,151,58,0.08)",border:`1px solid rgba(197,151,58,0.25)`,borderRadius:"4px",fontSize:"0.75rem",color:C.mutedLight,lineHeight:1.6}}>
-              Paying <strong style={{color:C.gold}}>KES {fmt(total)}</strong> deposit now · Balance of <strong style={{color:C.gold}}>KES {fmt(balanceDue)}</strong> due at check-in
-            </div>
-          )}
         </div>
 
         {/* ── FORM ── */}
@@ -516,39 +445,28 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess, 
           </div>
         )}
 
-        {/* ── WAITING FOR PIN ── */}
-        {step==="waitingPin"&&(
+        {/* ── CONFIRM PIN ── */}
+        {step==="confirm"&&(
           <div style={{animation:"fadeIn 0.3s ease"}}>
             <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
               <div style={{fontSize:"2.5rem",marginBottom:"0.7rem"}}>📱</div>
               <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.2rem",color:"#0E2B1F",marginBottom:"0.5rem"}}>Check Your Phone</div>
               <div style={{fontSize:"0.85rem",color:C.muted,lineHeight:1.7}}>
                 An M-Pesa STK push has been sent to<br/>
-                <strong style={{color:C.gold}}>+{normalisePhone(phone)}</strong><br/>
-                Enter your PIN on your phone to pay.
+                <strong style={{color:C.gold}}>+{normalisePhone(phone)}</strong>
               </div>
             </div>
             <div style={{background:C.goldDim,border:`1px solid ${C.border}`,borderRadius:"6px",padding:"1rem 1.2rem",marginBottom:"1.2rem"}}>
-              {[["Listing",listing.name],["Dates",`${fmtDate(checkIn)} – ${fmtDate(checkOut)}`],["Nights",`${nights} night${nights>1?"s":""}`],["Amount",`KES ${fmt(total)}`],["Reference",bookingRef]].map(([l,r])=>(
+              {[["Listing",listing.name],["Dates",`${fmtDate(checkIn)} – ${fmtDate(checkOut)}`],["Nights",`${nights} night${nights>1?"s":""}`],["Amount",`KES ${fmt(total)}`],["Reference",ref]].map(([l,r])=>(
                 <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:"0.8rem",padding:"0.3rem 0",borderBottom:`1px solid ${C.border}`}}>
                   <span style={{color:C.muted}}>{l}</span><span style={{color:l==="Amount"||l==="Reference"?C.gold:C.cream,fontWeight:l==="Amount"?600:400}}>{r}</span>
                 </div>
               ))}
             </div>
-            <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"0.6rem",fontSize:"0.78rem",color:C.muted}}>
-              <div style={{width:"14px",height:"14px",border:`2px solid ${C.goldDim}`,borderTop:`2px solid ${C.gold}`,borderRadius:"50%",animation:"spin 0.9s linear infinite",flexShrink:0}}/>
-              Waiting for you to enter your PIN…
-            </div>
-          </div>
-        )}
-
-        {/* ── POLLING ── */}
-        {step==="polling"&&(
-          <div style={{textAlign:"center",padding:"2rem 0",animation:"fadeIn 0.3s ease"}}>
-            <div style={{width:"50px",height:"50px",border:`3px solid ${C.goldDim}`,borderTop:`3px solid ${C.gold}`,borderRadius:"50%",animation:"spin 0.9s linear infinite",margin:"0 auto 1.5rem"}}/>
-            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.1rem",color:"#0E2B1F",marginBottom:"0.5rem"}}>Verifying Payment…</div>
-            <div style={{fontSize:"0.82rem",color:C.muted}}>{statusMsg}</div>
-            <div style={{fontSize:"0.72rem",color:C.muted,marginTop:"0.4rem"}}>Ref: {bookingRef}</div>
+            <button onClick={confirmPay} style={{width:"100%",padding:"1rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontSize:"0.85rem",fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.2s"}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>
+              ✓ I've Entered My PIN
+            </button>
+            <p style={{textAlign:"center",fontSize:"0.7rem",color:C.muted,marginTop:"0.6rem"}}>Enter your M-Pesa PIN on your phone to complete payment</p>
           </div>
         )}
 
@@ -557,22 +475,17 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess, 
           <div style={{animation:"fadeIn 0.4s ease"}}>
             <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
               <div style={{width:"56px",height:"56px",background:C.successDim,border:`2px solid ${C.success}`,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.5rem",margin:"0 auto 1rem"}}>✓</div>
-              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.3rem",color:"#0E2B1F",marginBottom:"0.4rem"}}>{isDeposit?"Dates Held!":"Booking Confirmed!"}</div>
-              <div style={{fontSize:"0.83rem",color:C.muted}}>{isDeposit?"Deposit received · Your dates are reserved":"Payment received · M-Pesa confirmation sent"}</div>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.3rem",color:"#0E2B1F",marginBottom:"0.4rem"}}>Booking Confirmed!</div>
+              <div style={{fontSize:"0.83rem",color:C.muted}}>Payment received · Confirmation sent to {normalisePhone(phone)}</div>
             </div>
-            <div style={{background:C.successDim,border:`1px solid rgba(76,175,125,0.25)`,borderRadius:"8px",padding:"1.2rem",marginBottom:isDeposit?"0.6rem":"1.2rem"}}>
-              {[["Guest",name],["Property",listing.name],["Check-in",fmtDate(checkIn)],["Check-out",fmtDate(checkOut)],["Nights",`${nights}`],["Guests",`${guests}`],[isDeposit?"Deposit Paid":"Total Paid",`KES ${fmt(total)}`],["Booking Ref",bookingRef]].map(([l,r])=>(
+            <div style={{background:C.successDim,border:`1px solid rgba(76,175,125,0.25)`,borderRadius:"8px",padding:"1.2rem",marginBottom:"1.2rem"}}>
+              {[["Guest",name],["Property",listing.name],["Check-in",fmtDate(checkIn)],["Check-out",fmtDate(checkOut)],["Nights",`${nights}`],["Guests",`${guests}`],["Total Paid",`KES ${fmt(total)}`],["Booking Ref",ref]].map(([l,r])=>(
                 <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:"0.8rem",padding:"0.3rem 0",borderBottom:`1px solid rgba(76,175,125,0.15)`}}>
                   <span style={{color:C.muted}}>{l}</span>
-                  <span style={{color:l.includes("Paid")||l==="Booking Ref"?C.success:C.cream,fontWeight:[isDeposit?"Deposit Paid":"Total Paid","Booking Ref"].includes(l)?600:400}}>{r}</span>
+                  <span style={{color:l==="Total Paid"||l==="Booking Ref"?C.success:C.cream,fontWeight:["Total Paid","Booking Ref"].includes(l)?600:400}}>{r}</span>
                 </div>
               ))}
             </div>
-            {isDeposit&&(
-              <div style={{padding:"0.7rem 1rem",background:"rgba(197,151,58,0.08)",border:`1px solid rgba(197,151,58,0.25)`,borderRadius:"6px",marginBottom:"1rem",fontSize:"0.75rem",color:C.mutedLight,lineHeight:1.7}}>
-                💰 Balance due at check-in: <strong style={{color:C.gold}}>KES {fmt(balanceDue)}</strong>
-              </div>
-            )}
             <button onClick={handleSuccess} style={{width:"100%",padding:"0.9rem",background:C.success,color:"#fff",border:"none",borderRadius:"6px",fontSize:"0.82rem",fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer"}}>
               Done — View My Booking
             </button>
@@ -586,7 +499,7 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess, 
             <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.2rem",color:"#0E2B1F",marginBottom:"0.5rem"}}>Payment Unsuccessful</div>
             <div style={{fontSize:"0.83rem",color:C.muted,lineHeight:1.7,marginBottom:"1.5rem"}}>The transaction was not completed. Please check your M-Pesa balance and try again, or contact us on WhatsApp.</div>
             <div style={{display:"flex",gap:"0.8rem"}}>
-              <button onClick={()=>setStep("form")} style={{flex:1,padding:"0.9rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontSize:"0.8rem",fontWeight:600,cursor:"pointer"}}>Try Again</button>
+              <button onClick={()=>setStep("confirm")} style={{flex:1,padding:"0.9rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontSize:"0.8rem",fontWeight:600,cursor:"pointer"}}>Try Again</button>
               <a href="https://wa.me/254745802200" target="_blank" rel="noreferrer" style={{flex:1,padding:"0.9rem",background:"transparent",color:C.success,border:`1px solid ${C.success}`,borderRadius:"6px",fontSize:"0.8rem",fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.3rem"}}>WhatsApp</a>
             </div>
           </div>
@@ -603,31 +516,15 @@ function BookingWidget({ listing, onBookingMade }) {
   const [guests,setGuests]=useState(1);
   const [showCal,setShowCal]=useState(false);
   const [showModal,setShowModal]=useState(false);
-  // deposit state
-  const [showDeposit,setShowDeposit]=useState(false);
-  const [depositAmt,setDepositAmt]=useState("");
-  const [depositErr,setDepositErr]=useState("");
-  const [showDepositModal,setShowDepositModal]=useState(false);
   const nights=nightsBetween(checkIn,checkOut);
 
   const handleSelect=({checkIn:ci,checkOut:co})=>{ setCheckIn(ci); setCheckOut(co); };
-  const handleBookingSuccess=(booking)=>{ onBookingMade(booking); };
+
+  const handleBookingSuccess=(booking)=>{
+    onBookingMade(booking);
+  };
+
   const canBook=checkIn&&checkOut&&nights>0;
-  const fullTotal=canBook?nights*listing.pricePerNight+listing.cleaningFee:0;
-
-  const openDeposit=()=>{
-    if(!canBook){ setShowCal(true); return; }
-    setShowDeposit(s=>!s);
-    setDepositErr("");
-  };
-
-  const submitDeposit=()=>{
-    const v=parseInt(depositAmt.replace(/,/g,""),10);
-    if(!depositAmt||isNaN(v)||v<500){ setDepositErr("Minimum deposit is KES 500."); return; }
-    if(v>=fullTotal){ setDepositErr(`Enter an amount less than KES ${fmt(fullTotal)} (the full total). Use "Reserve" above to pay in full.`); return; }
-    setDepositErr("");
-    setShowDepositModal(true);
-  };
 
   return (
     <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:"10px",padding:"1.8rem",boxShadow:"0 16px 60px rgba(14,43,31,0.12)",position:"sticky",top:"92px"}}>
@@ -641,7 +538,7 @@ function BookingWidget({ listing, onBookingMade }) {
       {/* Date display pills */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.5rem",marginBottom:"0.8rem"}}>
         {[{label:"Check-in",val:checkIn},{label:"Check-out",val:checkOut}].map(f=>(
-          <button key={f.label} onClick={()=>setShowCal(true)} style={{padding:"0.7rem 0.8rem",background:"#F7F2EA",border:`1px solid ${C.border}`,borderRadius:"5px",textAlign:"left",cursor:"pointer",transition:"border-color 0.2s"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.gold} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
+          <button key={f.label} onClick={()=>setShowCal(true)} style={{padding:"0.7rem 0.8rem",background:"#F7F2EA",border:`1px solid ${checkIn||checkOut?C.border:C.border}`,borderRadius:"5px",textAlign:"left",cursor:"pointer",transition:"border-color 0.2s"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.gold} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
             <div style={{fontSize:"0.6rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,marginBottom:"0.2rem"}}>{f.label}</div>
             <div style={{fontSize:"0.85rem",color:f.val?C.cream:C.muted}}>{f.val?fmtDate(f.val):"Add date"}</div>
           </button>
@@ -662,7 +559,7 @@ function BookingWidget({ listing, onBookingMade }) {
       </div>
 
       {/* Calendar toggle */}
-      <button onClick={()=>setShowCal(s=>!s)} style={{width:"100%",padding:"0.6rem",background:"transparent",border:`1px dashed ${C.border}`,borderRadius:"5px",color:C.muted,fontSize:"0.75rem",cursor:"pointer",marginBottom:"0.8rem",letterSpacing:"0.1em",transition:"all 0.2s"}} onMouseEnter={e=>{e.target.style.borderColor=C.gold;e.target.style.color=C.gold;}} onMouseLeave={e=>{e.target.style.borderColor=C.border;e.target.style.color=C.muted;}}>
+      <button onClick={()=>setShowCal(s=>!s)} style={{width:"100%",padding:"0.6rem",background:"transparent",border:`1px dashed ${C.border}`,borderRadius:"5px",color:C.muted,fontSize:"0.75rem",fontSize:"0.75rem",cursor:"pointer",marginBottom:"0.8rem",letterSpacing:"0.1em",transition:"all 0.2s"}} onMouseEnter={e=>{e.target.style.borderColor=C.gold;e.target.style.color=C.gold;}} onMouseLeave={e=>{e.target.style.borderColor=C.border;e.target.style.color=C.muted;}}>
         {showCal?"▲ Hide Calendar":"▦ Open Availability Calendar"}
       </button>
 
@@ -679,81 +576,13 @@ function BookingWidget({ listing, onBookingMade }) {
       {/* Price breakdown */}
       {canBook&&<div style={{marginBottom:"0.8rem"}}><PriceBreakdown listing={listing} checkIn={checkIn} checkOut={checkOut} guests={guests}/></div>}
 
-      {/* ── MAIN CTA ── */}
+      {/* CTA */}
       <button onClick={()=>{ if(canBook) setShowModal(true); else setShowCal(true); }} style={{width:"100%",padding:"1.1rem",background:canBook?C.gold:"rgba(212,175,95,0.3)",color:canBook?C.obsidian:"rgba(212,175,95,0.6)",border:"none",borderRadius:"6px",fontSize:"0.82rem",fontWeight:700,letterSpacing:"0.18em",textTransform:"uppercase",cursor:canBook?"pointer":"default",transition:"all 0.2s"}} onMouseEnter={e=>{ if(canBook) e.target.style.background=C.goldLight; }} onMouseLeave={e=>{ if(canBook) e.target.style.background=C.gold; }}>
-        {canBook?`Reserve · KES ${fmt(fullTotal)}`:"Select Dates to Reserve"}
+        {canBook?`Reserve · KES ${fmt(nights*listing.pricePerNight+listing.cleaningFee)}`:"Select Dates to Reserve"}
       </button>
       <p style={{textAlign:"center",fontSize:"0.7rem",color:C.muted,marginTop:"0.6rem"}}>
         {canBook?"You won't be charged until payment is confirmed":"Free cancellation · No hidden fees"}
       </p>
-
-      {/* ── DIVIDER ── */}
-      <div style={{display:"flex",alignItems:"center",gap:"0.7rem",margin:"1rem 0"}}>
-        <div style={{flex:1,height:"1px",background:C.border}}/>
-        <span style={{fontSize:"0.65rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,flexShrink:0}}>or</span>
-        <div style={{flex:1,height:"1px",background:C.border}}/>
-      </div>
-
-      {/* ── DEPOSIT CTA ── */}
-      <button onClick={openDeposit}
-        style={{width:"100%",padding:"0.95rem",background:"transparent",border:`1.5px solid ${canBook?C.gold:C.border}`,borderRadius:"6px",fontSize:"0.8rem",fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",color:canBook?C.gold:C.muted,cursor:"pointer",transition:"all 0.2s",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem"}}
-        onMouseEnter={e=>{ if(canBook){e.currentTarget.style.background=C.goldDim;} }}
-        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
-        🔒 Pay a Deposit to Hold Dates
-      </button>
-      <p style={{textAlign:"center",fontSize:"0.68rem",color:C.muted,marginTop:"0.4rem",lineHeight:1.5}}>
-        {canBook?"Pay any amount now to secure your dates — balance due at check-in":"Select dates first to pay a deposit"}
-      </p>
-
-      {/* ── DEPOSIT INPUT PANEL ── */}
-      {showDeposit&&canBook&&(
-        <div style={{marginTop:"0.9rem",padding:"1rem 1.1rem",background:"rgba(197,151,58,0.05)",border:`1px solid ${C.border}`,borderRadius:"8px",animation:"fadeIn 0.2s ease"}}>
-          <div style={{fontSize:"0.65rem",letterSpacing:"0.18em",textTransform:"uppercase",color:C.gold,marginBottom:"0.8rem",fontWeight:600}}>Custom Deposit Amount</div>
-          <div style={{fontSize:"0.78rem",color:C.muted,marginBottom:"0.7rem",lineHeight:1.6}}>
-            Full total is <strong style={{color:C.gold}}>KES {fmt(fullTotal)}</strong>. Enter how much you'd like to pay now — minimum KES 500.
-          </div>
-          <div style={{display:"flex",gap:"0.5rem",alignItems:"stretch"}}>
-            <div style={{flex:1,position:"relative"}}>
-              <span style={{position:"absolute",left:"0.8rem",top:"50%",transform:"translateY(-50%)",fontSize:"0.75rem",color:C.muted,fontWeight:500,pointerEvents:"none"}}>KES</span>
-              <input
-                type="number"
-                min="500"
-                max={fullTotal-1}
-                value={depositAmt}
-                onChange={e=>{ setDepositAmt(e.target.value); setDepositErr(""); }}
-                placeholder="e.g. 5000"
-                style={{width:"100%",padding:"0.75rem 0.8rem 0.75rem 2.8rem",background:"#fff",border:`1px solid ${depositErr?C.error:C.border}`,borderRadius:"5px",fontSize:"0.9rem",color:"#1C1C1C",outline:"none",transition:"border-color 0.2s"}}
-                onFocus={e=>e.target.style.borderColor=C.gold}
-                onBlur={e=>e.target.style.borderColor=depositErr?C.error:C.border}
-              />
-            </div>
-            <button onClick={submitDeposit}
-              style={{padding:"0 1.1rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"5px",fontWeight:700,fontSize:"0.78rem",cursor:"pointer",letterSpacing:"0.08em",flexShrink:0,transition:"background 0.2s"}}
-              onMouseEnter={e=>e.target.style.background=C.goldLight}
-              onMouseLeave={e=>e.target.style.background=C.gold}>
-              Pay
-            </button>
-          </div>
-          {/* quick-pick suggestions */}
-          {fullTotal>0&&(
-            <div style={{display:"flex",gap:"0.4rem",marginTop:"0.6rem",flexWrap:"wrap"}}>
-              {[0.25,0.5].map(pct=>{
-                const suggested=Math.round(fullTotal*pct/100)*100;
-                if(suggested<500||suggested>=fullTotal) return null;
-                return (
-                  <button key={pct} onClick={()=>{ setDepositAmt(String(suggested)); setDepositErr(""); }}
-                    style={{padding:"0.3rem 0.7rem",background:"transparent",border:`1px solid ${C.border}`,borderRadius:"3px",fontSize:"0.68rem",color:C.muted,cursor:"pointer",transition:"all 0.15s"}}
-                    onMouseEnter={e=>{e.target.style.borderColor=C.gold;e.target.style.color=C.gold;}}
-                    onMouseLeave={e=>{e.target.style.borderColor=C.border;e.target.style.color=C.muted;}}>
-                    {Math.round(pct*100)}% · KES {fmt(suggested)}
-                  </button>
-                );
-              })}
-            </div>
-          )}
-          {depositErr&&<div style={{fontSize:"0.73rem",color:C.error,marginTop:"0.5rem",lineHeight:1.5}}>{depositErr}</div>}
-        </div>
-      )}
 
       {/* WhatsApp alternative */}
       <a href={`https://wa.me/254745802200?text=${encodeURIComponent(`Hi! I'd like to book ${listing.name} from ${checkIn||"TBD"} to ${checkOut||"TBD"} for ${guests} guest(s). Please confirm availability.`)}`} target="_blank" rel="noreferrer"
@@ -761,19 +590,7 @@ function BookingWidget({ listing, onBookingMade }) {
         <span>📱</span> Book via WhatsApp instead
       </a>
 
-      {/* Full payment modal */}
       {showModal&&<PaymentModal listing={listing} checkIn={checkIn} checkOut={checkOut} guests={guests} onClose={()=>setShowModal(false)} onSuccess={handleBookingSuccess}/>}
-
-      {/* Deposit payment modal — passes custom amount + isDeposit flag */}
-      {showDepositModal&&(
-        <PaymentModal
-          listing={listing} checkIn={checkIn} checkOut={checkOut} guests={guests}
-          customAmount={parseInt(depositAmt.replace(/,/g,""),10)}
-          isDeposit={true}
-          onClose={()=>setShowDepositModal(false)}
-          onSuccess={(booking)=>{ handleBookingSuccess({...booking, isDeposit:true, depositAmount:parseInt(depositAmt.replace(/,/g,""),10), balanceDue:fullTotal-parseInt(depositAmt.replace(/,/g,""),10)}); }}
-        />
-      )}
     </div>
   );
 }
@@ -831,6 +648,218 @@ function ListingCard({ listing, onClick }) {
 }
 
 // ─── LISTING PAGE ─────────────────────────────────────────────────
+
+// ─── INTERACTIVE LOCATION MAP ─────────────────────────────────────
+// Uses Leaflet.js loaded dynamically — no API key needed.
+
+function useLeaflet() {
+  const [L, setL] = useState(null);
+  useEffect(() => {
+    if (window.L) { setL(window.L); return; }
+    // Load CSS
+    if (!document.getElementById("leaflet-css")) {
+      const link = document.createElement("link");
+      link.id = "leaflet-css";
+      link.rel = "stylesheet";
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
+      document.head.appendChild(link);
+    }
+    // Load JS
+    if (!document.getElementById("leaflet-js")) {
+      const script = document.createElement("script");
+      script.id = "leaflet-js";
+      script.src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+      script.onload = () => setL(window.L);
+      document.head.appendChild(script);
+    } else {
+      const check = setInterval(() => {
+        if (window.L) { setL(window.L); clearInterval(check); }
+      }, 100);
+    }
+  }, []);
+  return L;
+}
+
+function ListingMap({ lat, lng, name, neighborhood }) {
+  const L = useLeaflet();
+  const mapRef = useRef(null);
+  const instanceRef = useRef(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!L || !mapRef.current || instanceRef.current) return;
+
+    // Tiny delay so container has rendered dimensions
+    setTimeout(() => {
+      const map = L.map(mapRef.current, {
+        center: [lat, lng],
+        zoom: 15,
+        zoomControl: true,
+        scrollWheelZoom: false,
+        attributionControl: true,
+      });
+
+      // OpenStreetMap tile layer — completely free
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 19,
+      }).addTo(map);
+
+      // Custom branded marker using a div icon
+      const icon = L.divIcon({
+        className: "",
+        html: `<div style="
+          background:linear-gradient(135deg,#C5973A,#D4AF37);
+          color:#0E2B1F;
+          width:36px;height:36px;
+          border-radius:50% 50% 50% 0;
+          transform:rotate(-45deg);
+          border:3px solid #fff;
+          box-shadow:0 4px 16px rgba(197,151,58,0.5),0 2px 8px rgba(0,0,0,0.3);
+          display:flex;align-items:center;justify-content:center;
+        "><span style="transform:rotate(45deg);font-size:14px;">🏠</span></div>`,
+        iconSize: [36, 36],
+        iconAnchor: [18, 36],
+        popupAnchor: [0, -40],
+      });
+
+      const marker = L.marker([lat, lng], { icon }).addTo(map);
+
+      marker.bindPopup(`
+        <div style="font-family:'Playfair Display',serif;min-width:160px;text-align:center;padding:4px 0;">
+          <div style="font-size:1rem;font-weight:600;color:#0E2B1F;margin-bottom:2px;">${name}</div>
+          <div style="font-size:0.75rem;color:#888;">${neighborhood}, Nairobi</div>
+        </div>
+      `, { maxWidth: 200 }).openPopup();
+
+      instanceRef.current = map;
+      setReady(true);
+    }, 80);
+
+    return () => {
+      if (instanceRef.current) {
+        instanceRef.current.remove();
+        instanceRef.current = null;
+      }
+    };
+  }, [L, lat, lng]);
+
+  return (
+    <div style={{position:"relative",borderRadius:"10px",overflow:"hidden",border:`1px solid ${C.border}`,boxShadow:"0 4px 20px rgba(14,43,31,0.08)"}}>
+      {!ready && (
+        <div style={{height:"380px",background:"#F7F2EA",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"0.8rem"}}>
+          <div style={{width:"36px",height:"36px",border:`3px solid rgba(197,151,58,0.2)`,borderTop:`3px solid ${C.gold}`,borderRadius:"50%",animation:"spin 0.9s linear infinite"}}/>
+          <div style={{fontSize:"0.78rem",color:C.muted}}>Loading map…</div>
+        </div>
+      )}
+      <div ref={mapRef} style={{height:"380px",width:"100%",display:ready?"block":"none"}}/>
+      {/* Attribution override for brand consistency */}
+      <div style={{position:"absolute",bottom:0,left:0,right:0,height:"28px",pointerEvents:"none",background:"linear-gradient(to top,rgba(253,250,245,0.7),transparent)"}}/>
+    </div>
+  );
+}
+
+// Admin: location picker — click on map to set pin
+function LocationPicker({ lat, lng, onChange }) {
+  const L = useLeaflet();
+  const mapRef = useRef(null);
+  const instanceRef = useRef(null);
+  const markerRef = useRef(null);
+  const [localLat, setLocalLat] = useState(lat || -1.2921);
+  const [localLng, setLocalLng] = useState(lng || 36.8219);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!L || !mapRef.current || instanceRef.current) return;
+    setTimeout(() => {
+      const map = L.map(mapRef.current, {
+        center: [localLat, localLng],
+        zoom: 15,
+        zoomControl: true,
+        scrollWheelZoom: true,
+      });
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19,
+      }).addTo(map);
+
+      const icon = L.divIcon({
+        className: "",
+        html: `<div style="background:linear-gradient(135deg,#C5973A,#D4AF37);color:#0E2B1F;width:36px;height:36px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 4px 16px rgba(197,151,58,0.5);display:flex;align-items:center;justify-content:center;"><span style="transform:rotate(45deg);font-size:14px;">📍</span></div>`,
+        iconSize: [36, 36], iconAnchor: [18, 36],
+      });
+
+      markerRef.current = L.marker([localLat, localLng], { icon, draggable: true }).addTo(map);
+
+      const updatePos = (latVal, lngVal) => {
+        const rLat = Math.round(latVal * 1e6) / 1e6;
+        const rLng = Math.round(lngVal * 1e6) / 1e6;
+        setLocalLat(rLat); setLocalLng(rLng);
+        onChange({ lat: rLat, lng: lngVal });
+      };
+
+      markerRef.current.on("dragend", e => {
+        const { lat: la, lng: lo } = e.target.getLatLng();
+        updatePos(la, lo);
+      });
+
+      map.on("click", e => {
+        markerRef.current.setLatLng(e.latlng);
+        updatePos(e.latlng.lat, e.latlng.lng);
+      });
+
+      instanceRef.current = map;
+      setReady(true);
+    }, 80);
+
+    return () => {
+      if (instanceRef.current) { instanceRef.current.remove(); instanceRef.current = null; }
+    };
+  }, [L]);
+
+  // Sync external lat/lng changes
+  useEffect(() => {
+    if (!instanceRef.current || !markerRef.current) return;
+    if (lat && lng && (lat !== localLat || lng !== localLng)) {
+      markerRef.current.setLatLng([lat, lng]);
+      instanceRef.current.setView([lat, lng], 15);
+      setLocalLat(lat); setLocalLng(lng);
+    }
+  }, [lat, lng]);
+
+  return (
+    <div>
+      <div style={{position:"relative",borderRadius:"8px",overflow:"hidden",border:`1px solid ${C.border}`,marginBottom:"0.8rem"}}>
+        {!ready && (
+          <div style={{height:"320px",background:"#F7F2EA",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.6rem"}}>
+            <div style={{width:"28px",height:"28px",border:`2px solid rgba(197,151,58,0.2)`,borderTop:`2px solid ${C.gold}`,borderRadius:"50%",animation:"spin 0.9s linear infinite"}}/>
+            <span style={{fontSize:"0.78rem",color:C.muted}}>Loading map…</span>
+          </div>
+        )}
+        <div ref={mapRef} style={{height:"320px",width:"100%",display:ready?"block":"none"}}/>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.6rem",marginBottom:"0.5rem"}}>
+        <div>
+          <label style={{display:"block",fontSize:"0.62rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,marginBottom:"0.3rem"}}>Latitude</label>
+          <input type="number" step="0.000001" value={localLat}
+            onChange={e=>{const v=parseFloat(e.target.value);if(!isNaN(v)){setLocalLat(v);onChange({lat:v,lng:localLng});if(markerRef.current&&instanceRef.current){markerRef.current.setLatLng([v,localLng]);instanceRef.current.setView([v,localLng]);}}}}
+            style={{...field,fontFamily:"monospace",fontSize:"0.85rem"}} onFocus={fieldFocus} onBlur={fieldBlur}/>
+        </div>
+        <div>
+          <label style={{display:"block",fontSize:"0.62rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,marginBottom:"0.3rem"}}>Longitude</label>
+          <input type="number" step="0.000001" value={localLng}
+            onChange={e=>{const v=parseFloat(e.target.value);if(!isNaN(v)){setLocalLng(v);onChange({lat:localLat,lng:v});if(markerRef.current&&instanceRef.current){markerRef.current.setLatLng([localLat,v]);instanceRef.current.setView([localLat,v]);}}}}
+            style={{...field,fontFamily:"monospace",fontSize:"0.85rem"}} onFocus={fieldFocus} onBlur={fieldBlur}/>
+        </div>
+      </div>
+      <div style={{fontSize:"0.72rem",color:C.muted,padding:"0.5rem 0.7rem",background:"rgba(197,151,58,0.06)",borderRadius:"4px",border:`1px solid rgba(197,151,58,0.2)`}}>
+        💡 Click anywhere on the map or drag the pin to set the exact location. You can also paste coordinates above.
+      </div>
+    </div>
+  );
+}
+
 function ListingPage({ listing, onBack, onNavigate, onBookingMade }) {
   const [activePhoto,setActivePhoto]=useState(0);
   const [lightbox,setLightbox]=useState(false);
@@ -923,6 +952,59 @@ function ListingPage({ listing, onBack, onNavigate, onBookingMade }) {
           <BookingWidget listing={listing} onBookingMade={onBookingMade}/>
         </div>
       </div>
+
+      {/* ── LOCATION ── */}
+      {listing.lat && listing.lng && (
+        <div style={{maxWidth:"1200px",margin:"0 auto",padding:"0 1.5rem 5rem"}}>
+          <div style={{borderTop:`1px solid ${C.border}`,paddingTop:"3rem"}}>
+            <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",flexWrap:"wrap",gap:"1rem",marginBottom:"1.8rem"}}>
+              <div>
+                <div style={{fontSize:"0.65rem",letterSpacing:"0.35em",textTransform:"uppercase",color:C.gold,marginBottom:"0.5rem"}}>Location</div>
+                <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"1.8rem",color:"#0E2B1F",fontWeight:400,marginBottom:"0.3rem"}}>Where you'll be</h2>
+                <div style={{fontSize:"0.9rem",color:C.muted}}>{listing.neighborhood}, {listing.city}, Kenya</div>
+              </div>
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${listing.lat},${listing.lng}`}
+                target="_blank" rel="noreferrer"
+                style={{display:"inline-flex",alignItems:"center",gap:"0.5rem",padding:"0.7rem 1.3rem",background:C.gold,color:C.obsidian,borderRadius:"5px",fontWeight:700,fontSize:"0.78rem",letterSpacing:"0.12em",textTransform:"uppercase",textDecoration:"none",transition:"all 0.2s",flexShrink:0}}
+                onMouseEnter={e=>e.currentTarget.style.background=C.goldLight}
+                onMouseLeave={e=>e.currentTarget.style.background=C.gold}>
+                🗺 Get Directions
+              </a>
+            </div>
+
+            <ListingMap lat={listing.lat} lng={listing.lng} name={listing.name} neighborhood={listing.neighborhood}/>
+
+            {listing.locationNote && (
+              <div style={{marginTop:"1.2rem",padding:"1.1rem 1.4rem",background:"#F7F2EA",border:`1px solid ${C.border}`,borderRadius:"8px",display:"flex",gap:"0.9rem",alignItems:"flex-start"}}>
+                <span style={{fontSize:"1.1rem",flexShrink:0,marginTop:"0.1rem"}}>📍</span>
+                <div>
+                  <div style={{fontSize:"0.65rem",letterSpacing:"0.2em",textTransform:"uppercase",color:C.gold,marginBottom:"0.3rem",fontWeight:600}}>Finding us</div>
+                  <p style={{fontSize:"0.88rem",color:C.mutedLight,lineHeight:1.75,margin:0}}>{listing.locationNote}</p>
+                </div>
+              </div>
+            )}
+
+            <div style={{display:"flex",gap:"1rem",marginTop:"1.2rem",flexWrap:"wrap"}}>
+              <a href={`https://maps.apple.com/?daddr=${listing.lat},${listing.lng}`}
+                target="_blank" rel="noreferrer"
+                style={{display:"inline-flex",alignItems:"center",gap:"0.4rem",padding:"0.55rem 1.1rem",background:"transparent",border:`1px solid ${C.border}`,borderRadius:"4px",fontSize:"0.75rem",color:C.muted,fontWeight:500,textDecoration:"none",transition:"all 0.2s"}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor=C.gold;e.currentTarget.style.color=C.gold;}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.muted;}}>
+                🍎 Apple Maps
+              </a>
+              <a href={`https://waze.com/ul?ll=${listing.lat},${listing.lng}&navigate=yes`}
+                target="_blank" rel="noreferrer"
+                style={{display:"inline-flex",alignItems:"center",gap:"0.4rem",padding:"0.55rem 1.1rem",background:"transparent",border:`1px solid ${C.border}`,borderRadius:"4px",fontSize:"0.75rem",color:C.muted,fontWeight:500,textDecoration:"none",transition:"all 0.2s"}}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor=C.gold;e.currentTarget.style.color=C.gold;}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.muted;}}>
+                🔵 Open in Waze
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Lightbox */}
       {lightbox&&(
         <div onClick={()=>setLightbox(false)} style={{position:"fixed",inset:0,zIndex:9999,background:"rgba(14,43,31,0.95)",display:"flex",alignItems:"center",justifyContent:"center"}}>
@@ -940,7 +1022,7 @@ function ListingPage({ listing, onBack, onNavigate, onBookingMade }) {
 }
 
 // ─── LISTINGS PAGE ────────────────────────────────────────────────
-function ListingsPage({ listings, onSelect }) {
+function ListingsPage({ listings, onSelect, promoConfig }) {
   const [filter,setFilter]=useState("All");
   const types=["All","Studio","1-Bedroom","2+ Bedrooms","Villa"];
   const filtered=filter==="All"?listings:listings.filter(l=>
@@ -949,8 +1031,10 @@ function ListingsPage({ listings, onSelect }) {
     filter==="1-Bedroom"?l.bedrooms===1&&!l.type.toLowerCase().includes("studio"):
     filter==="2+ Bedrooms"?l.bedrooms>=2&&!l.type.toLowerCase().includes("villa"):true
   );
+  const upcomingForTicker = promoConfig ? getUpcomingHolidays(promoConfig, 6) : [];
   return (
     <div style={{minHeight:"100vh",paddingTop:"72px",background:"#FDFAF5"}}>
+      {upcomingForTicker.length > 0 && <PromoTicker holidays={upcomingForTicker}/>}
       <div style={{background:"linear-gradient(180deg,#EEE9E0 0%,#F7F2EA 100%)",padding:"4rem 1.5rem 2rem",borderBottom:`1px solid ${C.border}`}}>
         <div style={{maxWidth:"1200px",margin:"0 auto"}}>
           <div style={{fontSize:"0.68rem",letterSpacing:"0.35em",textTransform:"uppercase",color:C.gold,marginBottom:"0.8rem"}}>Our Portfolio</div>
@@ -1222,6 +1306,1011 @@ function ContactPage() {
   );
 }
 
+
+// ═══════════════════════════════════════════════════════════════════
+// ─── HOLIDAY & PROMO ENGINE ───────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+
+// ── Kenya Public Holidays + Recurring Promos ──────────────────────
+// Each entry: { id, name, emoji, month(1-12), day(1-31), daysAhead,
+//   theme, palette, animStyle, defaultDiscount }
+const KENYA_HOLIDAYS = [
+  { id:"new_year",     name:"New Year",           emoji:"🎆", month:1,  day:1,  daysAhead:3,
+    theme:"new_year",   defaultDiscount:15 },
+  { id:"valentines",   name:"Valentine's Day",     emoji:"💕", month:2,  day:14, daysAhead:5,
+    theme:"valentines", defaultDiscount:10 },
+  { id:"good_friday",  name:"Good Friday",         emoji:"✝️", month:4,  day:7,  daysAhead:4,
+    theme:"easter",     defaultDiscount:12 },
+  { id:"easter",       name:"Easter Weekend",      emoji:"🐣", month:4,  day:9,  daysAhead:4,
+    theme:"easter",     defaultDiscount:12 },
+  { id:"labour_day",   name:"Labour Day",          emoji:"⚒️", month:5,  day:1,  daysAhead:3,
+    theme:"labour",     defaultDiscount:10 },
+  { id:"madaraka",     name:"Madaraka Day",        emoji:"🇰🇪", month:6,  day:1,  daysAhead:4,
+    theme:"kenya",      defaultDiscount:20 },
+  { id:"eid",          name:"Eid Al-Adha",         emoji:"🌙", month:6,  day:17, daysAhead:5,
+    theme:"eid",        defaultDiscount:15 },
+  { id:"huduma",       name:"Huduma Day",           emoji:"🤝", month:10, day:10, daysAhead:3,
+    theme:"kenya",      defaultDiscount:15 },
+  { id:"mashujaa",     name:"Mashujaa Day",        emoji:"🦁", month:10, day:20, daysAhead:4,
+    theme:"mashujaa",   defaultDiscount:20 },
+  { id:"jamhuri",      name:"Jamhuri Day",         emoji:"🇰🇪", month:12, day:12, daysAhead:5,
+    theme:"kenya",      defaultDiscount:25 },
+  { id:"christmas",    name:"Christmas",           emoji:"🎄", month:12, day:25, daysAhead:7,
+    theme:"christmas",  defaultDiscount:15 },
+  { id:"boxing_day",   name:"Boxing Day",          emoji:"🎁", month:12, day:26, daysAhead:2,
+    theme:"christmas",  defaultDiscount:10 },
+  { id:"new_year_eve", name:"New Year's Eve",      emoji:"🥂", month:12, day:31, daysAhead:3,
+    theme:"new_year",   defaultDiscount:12 },
+];
+
+// Theme palettes for each holiday style
+const HOLIDAY_THEMES = {
+  new_year:   { bg:"#03020A", accent:"#FFD700", accent2:"#C0C0C0", text:"#FFD700", particles:"🎆🎇✨🥂🍾" },
+  valentines: { bg:"#1a0010", accent:"#FF4D6D", accent2:"#FFB3C1", text:"#FF4D6D", particles:"💕💖💗💓💝" },
+  easter:     { bg:"#0d1a00", accent:"#7EC845", accent2:"#FFE066", text:"#7EC845", particles:"🐣🌸🌷🐰🥚" },
+  labour:     { bg:"#0A0A0A", accent:"#E8C870", accent2:"#FF6B35", text:"#E8C870", particles:"⚒️🔧🏗️💪✊" },
+  kenya:      { bg:"#000000", accent:"#006600", accent2:"#CC0000", text:"#FFFFFF", particles:"🇰🇪🦁🌍⚡🎊" },
+  eid:        { bg:"#001a0d", accent:"#C5A028", accent2:"#4CAF50", text:"#C5A028", particles:"🌙⭐🕌🌟✨" },
+  mashujaa:   { bg:"#0a0000", accent:"#CC0000", accent2:"#006600", text:"#FFFFFF", particles:"🦁⚔️🛡️🌍🔥" },
+  christmas:  { bg:"#001400", accent:"#FF3333", accent2:"#FFD700", text:"#FFFFFF", particles:"🎄🎅🎁❄️⛄" },
+};
+
+// Supabase load/save for promo config
+async function loadPromos() {
+  try {
+    const { data, error } = await supabase
+      .from("kv_store").select("value").eq("key","shikaz:promos").single();
+    if (error || !data) return {};
+    return JSON.parse(data.value);
+  } catch { return {}; }
+}
+async function savePromos(d) {
+  try {
+    await supabase.from("kv_store").upsert(
+      { key:"shikaz:promos", value:JSON.stringify(d) }, { onConflict:"key" }
+    );
+  } catch {}
+}
+
+// Find active holiday for today
+function getActiveHoliday(promoConfig) {
+  const now = new Date();
+  const m = now.getMonth()+1;
+  const d = now.getDate();
+  for (const h of KENYA_HOLIDAYS) {
+    // Check if we are within daysAhead window before the holiday
+    const hDate = new Date(now.getFullYear(), h.month-1, h.day);
+    const diffDays = Math.ceil((hDate - now) / (1000*60*60*24));
+    if (diffDays >= 0 && diffDays <= h.daysAhead) {
+      const cfg = promoConfig[h.id];
+      if (cfg?.disabled) return null;
+      const discount = cfg?.discount ?? h.defaultDiscount;
+      const customMsg = cfg?.message ?? null;
+      return { ...h, discount, customMsg, theme: HOLIDAY_THEMES[h.theme] || HOLIDAY_THEMES.kenya };
+    }
+  }
+  return null;
+}
+
+// ── Particle Canvas helpers ─────────────────────────────────────────
+function FloatingEmoji({ emoji, style }) {
+  return (
+    <div style={{
+      position:"absolute", fontSize:"1.4rem", pointerEvents:"none", userSelect:"none",
+      animation:`floatUp ${2+Math.random()*3}s ease-in ${Math.random()*2}s both`,
+      ...style
+    }}>{emoji}</div>
+  );
+}
+
+function Confetti({ count=18, colors }) {
+  const pieces = Array.from({length:count}, (_,i) => ({
+    id:i,
+    x: Math.random()*100,
+    delay: Math.random()*1.5,
+    dur: 1.2+Math.random()*1.5,
+    color: colors[i % colors.length],
+    size: 6+Math.random()*8,
+    shape: Math.random()>0.5?"circle":"square",
+  }));
+  return (
+    <div style={{position:"absolute",inset:0,overflow:"hidden",pointerEvents:"none"}}>
+      {pieces.map(p=>(
+        <div key={p.id} style={{
+          position:"absolute", left:`${p.x}%`, top:"-20px",
+          width:`${p.size}px`, height:`${p.size}px`,
+          background:p.color,
+          borderRadius:p.shape==="circle"?"50%":"2px",
+          animation:`confettiFall ${p.dur}s ease-in ${p.delay}s both`,
+          opacity:0.85,
+        }}/>
+      ))}
+    </div>
+  );
+}
+
+// ── NEW YEAR POPUP ─────────────────────────────────────────────────
+function NewYearPopup({ holiday, onClose, onBook }) {
+  const t = holiday.theme;
+  const [visible, setVisible] = useState(false);
+  useEffect(()=>{ setTimeout(()=>setVisible(true),80); },[]);
+  const particles = t.particles.split("").filter(c=>c.trim());
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:9000,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(3,2,10,0.92)",backdropFilter:"blur(8px)"}} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        position:"relative",width:"min(480px,92vw)",overflow:"hidden",borderRadius:"16px",
+        background:`linear-gradient(160deg,${t.bg} 0%,#0d0520 100%)`,
+        border:`1px solid ${t.accent}44`,
+        boxShadow:`0 0 80px ${t.accent}33, 0 40px 120px rgba(0,0,0,0.8)`,
+        animation:visible?"popIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both":"none",
+        padding:"0",
+      }}>
+        <Confetti count={22} colors={[t.accent,t.accent2,"#fff","#FFB3FF","#80FFFF"]}/>
+        {/* Firework rings */}
+        {[0,1,2].map(i=>(
+          <div key={i} style={{
+            position:"absolute", borderRadius:"50%",
+            border:`2px solid ${i===0?t.accent:i===1?t.accent2:"#fff"}`,
+            width:`${140+i*60}px`, height:`${140+i*60}px`,
+            top:"50%", left:"50%", transform:"translate(-50%,-50%)",
+            animation:`firework ${1.5+i*0.3}s ease-out ${i*0.2}s infinite`,
+            opacity:0.15,
+          }}/>
+        ))}
+        <div style={{position:"relative",zIndex:1,padding:"2.5rem 2rem 2rem",textAlign:"center"}}>
+          <div style={{fontSize:"3.5rem",marginBottom:"0.2rem",filter:"drop-shadow(0 0 20px gold)"}}>🎆</div>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"2.2rem",color:t.accent,fontWeight:600,lineHeight:1.1,marginBottom:"0.4rem",textShadow:`0 0 30px ${t.accent}88`}}>
+            Happy New Year!
+          </div>
+          <div style={{fontSize:"0.7rem",letterSpacing:"0.4em",textTransform:"uppercase",color:t.accent2,marginBottom:"1.2rem"}}>
+            {new Date().getFullYear()} Celebrations
+          </div>
+          {holiday.customMsg
+            ? <p style={{fontSize:"0.9rem",color:"rgba(255,255,255,0.8)",lineHeight:1.7,marginBottom:"1.4rem"}}>{holiday.customMsg}</p>
+            : <p style={{fontSize:"0.9rem",color:"rgba(255,255,255,0.8)",lineHeight:1.7,marginBottom:"1.4rem"}}>Ring in the New Year in style. Book your Nairobi stay now and celebrate with <strong style={{color:t.accent}}>{holiday.discount}% off</strong> — exclusive New Year rates.</p>
+          }
+          <div style={{background:`linear-gradient(135deg,${t.accent}22,${t.accent2}11)`,border:`1px solid ${t.accent}55`,borderRadius:"10px",padding:"1rem 1.5rem",marginBottom:"1.5rem",animation:"glowPulse 2s ease infinite"}}>
+            <div style={{fontSize:"0.6rem",letterSpacing:"0.3em",textTransform:"uppercase",color:t.accent2,marginBottom:"0.3rem"}}>New Year Offer</div>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"2.5rem",color:t.accent,fontWeight:700}}>{holiday.discount}% OFF</div>
+            <div style={{fontSize:"0.72rem",color:"rgba(255,255,255,0.5)",marginTop:"0.2rem"}}>Use code: <strong style={{color:t.accent2,letterSpacing:"0.1em"}}>NEWYEAR{new Date().getFullYear()}</strong></div>
+          </div>
+          <button onClick={onBook} style={{width:"100%",padding:"1rem",background:`linear-gradient(135deg,${t.accent},${t.accent2})`,color:"#000",border:"none",borderRadius:"8px",fontSize:"0.85rem",fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",cursor:"pointer",marginBottom:"0.8rem"}}>
+            🥂 Claim My New Year Deal
+          </button>
+          <button onClick={onClose} style={{background:"none",border:"none",color:"rgba(255,255,255,0.4)",fontSize:"0.75rem",cursor:"pointer",letterSpacing:"0.1em"}}>
+            Maybe later
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── VALENTINES POPUP ───────────────────────────────────────────────
+function ValentinesPopup({ holiday, onClose, onBook }) {
+  const t = holiday.theme;
+  const [visible, setVisible] = useState(false);
+  const [hearts, setHearts] = useState([]);
+  useEffect(()=>{
+    setTimeout(()=>setVisible(true),80);
+    const h = Array.from({length:12},(_,i)=>({ id:i, x:Math.random()*100, delay:Math.random()*2, size:1+Math.random()*1.5 }));
+    setHearts(h);
+  },[]);
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:9000,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(26,0,16,0.93)",backdropFilter:"blur(10px)"}} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        position:"relative",width:"min(440px,92vw)",borderRadius:"20px",overflow:"hidden",
+        background:`linear-gradient(135deg,#1a0010 0%,#2d0020 50%,#1a0010 100%)`,
+        border:`2px solid ${t.accent}66`,
+        boxShadow:`0 0 60px ${t.accent}44, 0 40px 100px rgba(0,0,0,0.8)`,
+        animation:visible?"popIn 0.7s cubic-bezier(0.34,1.56,0.64,1) both":"none",
+      }}>
+        {/* Floating hearts background */}
+        <div style={{position:"absolute",inset:0,overflow:"hidden",pointerEvents:"none"}}>
+          {hearts.map(h=>(
+            <div key={h.id} style={{
+              position:"absolute",left:`${h.x}%`,bottom:"-20px",
+              fontSize:`${h.size}rem`,
+              animation:`floatUp ${3+Math.random()*2}s ease-in ${h.delay}s infinite`,
+              opacity:0.35,
+            }}>💕</div>
+          ))}
+        </div>
+        {/* Ribbon */}
+        <div style={{
+          position:"absolute",top:"1.2rem",right:"-2rem",
+          background:`linear-gradient(135deg,${t.accent},#c0003c)`,
+          padding:"0.35rem 3rem",
+          fontSize:"0.65rem",fontWeight:700,letterSpacing:"0.2em",textTransform:"uppercase",color:"#fff",
+          transform:"rotate(35deg)",
+          boxShadow:"0 4px 12px rgba(0,0,0,0.4)",
+        }}>Limited</div>
+        <div style={{position:"relative",zIndex:1,padding:"2.5rem 2rem 2rem",textAlign:"center"}}>
+          <div style={{fontSize:"3rem",marginBottom:"0.3rem",animation:"heartBeat 1.5s ease infinite"}}>💖</div>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"2rem",color:t.accent,fontWeight:600,marginBottom:"0.3rem",textShadow:`0 0 25px ${t.accent}77`}}>
+            Love is in the Air
+          </div>
+          <div style={{fontSize:"0.7rem",letterSpacing:"0.3em",textTransform:"uppercase",color:t.accent2,marginBottom:"1.2rem"}}>
+            Valentine's Day · {holiday.name}
+          </div>
+          {holiday.customMsg
+            ? <p style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.75)",lineHeight:1.7,marginBottom:"1.4rem"}}>{holiday.customMsg}</p>
+            : <p style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.75)",lineHeight:1.7,marginBottom:"1.4rem"}}>Surprise your partner with a romantic Nairobi escape. Our curated stays are perfect for couples — candles, views, and memories included.</p>
+          }
+          <div style={{
+            display:"flex",alignItems:"center",justifyContent:"center",gap:"1rem",
+            background:"rgba(255,77,109,0.1)",border:`1px solid ${t.accent}44`,borderRadius:"12px",
+            padding:"1rem 1.5rem",marginBottom:"1.4rem",
+          }}>
+            <div style={{textAlign:"center"}}>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"2.8rem",color:t.accent,lineHeight:1}}>{holiday.discount}%</div>
+              <div style={{fontSize:"0.65rem",color:t.accent2,letterSpacing:"0.2em",textTransform:"uppercase"}}>Discount</div>
+            </div>
+            <div style={{width:"1px",height:"50px",background:`${t.accent}33`}}/>
+            <div style={{textAlign:"center"}}>
+              <div style={{fontSize:"1.5rem"}}>💕</div>
+              <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.5)",marginTop:"0.2rem"}}>For couples</div>
+            </div>
+          </div>
+          <button onClick={onBook} style={{width:"100%",padding:"1rem",background:`linear-gradient(135deg,${t.accent},#c0003c)`,color:"#fff",border:"none",borderRadius:"10px",fontSize:"0.85rem",fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",marginBottom:"0.7rem",boxShadow:`0 8px 24px ${t.accent}55`}}>
+            💕 Book a Romantic Stay
+          </button>
+          <button onClick={onClose} style={{background:"none",border:"none",color:"rgba(255,255,255,0.35)",fontSize:"0.75rem",cursor:"pointer"}}>Skip for now</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── KENYA NATIONAL DAY POPUP (Madaraka / Jamhuri / Huduma / Mashujaa) ──
+function KenyaDayPopup({ holiday, onClose, onBook }) {
+  const t = holiday.theme;
+  const isMashujaa = holiday.id === "mashujaa";
+  const [visible, setVisible] = useState(false);
+  const [scanPos, setScanPos] = useState(0);
+  useEffect(()=>{
+    setTimeout(()=>setVisible(true),80);
+    const interval = setInterval(()=>setScanPos(p=>(p+2)%100),30);
+    return ()=>clearInterval(interval);
+  },[]);
+  const flagColors = ["#006600","#CC0000","#000000","#FFFFFF"];
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:9000,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.92)",backdropFilter:"blur(10px)"}} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        position:"relative",width:"min(500px,92vw)",borderRadius:"16px",overflow:"hidden",
+        background:"linear-gradient(170deg,#000 0%,#001a00 60%,#1a0000 100%)",
+        border:"2px solid transparent",
+        backgroundClip:"padding-box",
+        boxShadow:"0 0 0 2px #006600, 0 0 0 4px #CC0000, 0 0 80px rgba(0,102,0,0.4)",
+        animation:visible?"bounceIn 0.7s ease both":"none",
+      }}>
+        {/* Kenya flag stripe across top */}
+        <div style={{display:"flex",height:"8px"}}>
+          {["#006600","#FFFFFF","#CC0000","#000000","#CC0000","#FFFFFF","#006600"].map((c,i)=>(
+            <div key={i} style={{flex:1,background:c}}/>
+          ))}
+        </div>
+        {/* Scan line effect */}
+        <div style={{position:"absolute",top:`${scanPos}%`,left:0,right:0,height:"2px",background:"linear-gradient(90deg,transparent,rgba(0,102,0,0.4),transparent)",pointerEvents:"none",zIndex:2,transition:"top 0.03s linear"}}/>
+        <div style={{position:"relative",zIndex:1,padding:"2rem 2rem 1.8rem",textAlign:"center"}}>
+          {/* Maasai shield emoji big */}
+          <div style={{fontSize:"4rem",marginBottom:"0.3rem",filter:"drop-shadow(0 0 20px rgba(204,0,0,0.6))",animation:isMashujaa?"swing 2s ease infinite":"none"}}>
+            {isMashujaa?"🛡️":"🇰🇪"}
+          </div>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"2rem",color:"#FFFFFF",fontWeight:600,marginBottom:"0.2rem",letterSpacing:"0.02em"}}>
+            {holiday.name}
+          </div>
+          <div style={{fontSize:"0.68rem",letterSpacing:"0.4em",textTransform:"uppercase",color:"#006600",marginBottom:"0.3rem"}}>
+            Kenya Public Holiday
+          </div>
+          {/* Harambee divider */}
+          <div style={{display:"flex",alignItems:"center",gap:"0.8rem",margin:"1rem 0"}}>
+            <div style={{flex:1,height:"1px",background:"linear-gradient(90deg,transparent,#CC0000)"}}/>
+            <span style={{fontSize:"0.65rem",letterSpacing:"0.25em",color:"#CC0000",textTransform:"uppercase"}}>Harambee</span>
+            <div style={{flex:1,height:"1px",background:"linear-gradient(90deg,#006600,transparent)"}}/>
+          </div>
+          {holiday.customMsg
+            ? <p style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.8)",lineHeight:1.7,marginBottom:"1.4rem"}}>{holiday.customMsg}</p>
+            : <p style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.8)",lineHeight:1.7,marginBottom:"1.4rem"}}>
+                Celebrate Kenya in the heart of Nairobi. Book a premium Shikaz Homes stay this holiday weekend and enjoy a <strong style={{color:"#FFD700"}}>{holiday.discount}% patriot discount</strong>.
+              </p>
+          }
+          {/* Discount block */}
+          <div style={{background:"rgba(0,102,0,0.2)",border:"1px solid rgba(0,102,0,0.5)",borderRadius:"10px",padding:"1.2rem",marginBottom:"1.4rem",position:"relative",overflow:"hidden"}}>
+            <div style={{position:"absolute",top:0,left:0,bottom:0,width:"4px",background:"linear-gradient(180deg,#006600,#CC0000,#000)"}}/>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"3rem",color:"#FFD700",fontWeight:700,lineHeight:1}}>{holiday.discount}%</div>
+            <div style={{fontSize:"0.65rem",letterSpacing:"0.25em",color:"rgba(255,255,255,0.6)",textTransform:"uppercase"}}>Holiday Discount</div>
+          </div>
+          <div style={{display:"flex",gap:"0.7rem"}}>
+            <button onClick={onBook} style={{flex:1,padding:"1rem",background:"linear-gradient(135deg,#006600,#004400)",color:"#fff",border:"none",borderRadius:"8px",fontSize:"0.82rem",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",cursor:"pointer",boxShadow:"0 8px 20px rgba(0,102,0,0.5)"}}>
+              {holiday.emoji} Claim Offer
+            </button>
+            <button onClick={onClose} style={{padding:"1rem 1.4rem",background:"transparent",border:"1px solid rgba(255,255,255,0.2)",borderRadius:"8px",fontSize:"0.82rem",color:"rgba(255,255,255,0.5)",cursor:"pointer"}}>✕</button>
+          </div>
+        </div>
+        {/* Flag stripe across bottom */}
+        <div style={{display:"flex",height:"8px"}}>
+          {["#000000","#FFFFFF","#CC0000","#006600","#CC0000","#FFFFFF","#000000"].map((c,i)=>(
+            <div key={i} style={{flex:1,background:c}}/>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── EID POPUP ─────────────────────────────────────────────────────
+function EidPopup({ holiday, onClose, onBook }) {
+  const t = holiday.theme;
+  const [visible, setVisible] = useState(false);
+  const [rotation, setRotation] = useState(0);
+  useEffect(()=>{
+    setTimeout(()=>setVisible(true),80);
+    const iv = setInterval(()=>setRotation(r=>r+0.5),30);
+    return ()=>clearInterval(iv);
+  },[]);
+  const stars = Array.from({length:12},(_,i)=>({ id:i, angle: (i/12)*360, dist:120+Math.random()*30 }));
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:9000,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,10,5,0.94)",backdropFilter:"blur(12px)"}} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        position:"relative",width:"min(460px,92vw)",borderRadius:"20px",overflow:"hidden",
+        background:"linear-gradient(160deg,#001a0d 0%,#00260f 50%,#0a1500 100%)",
+        border:`1px solid ${t.accent}55`,
+        boxShadow:`0 0 100px ${t.accent}22, 0 40px 120px rgba(0,0,0,0.9)`,
+        animation:visible?"popIn 0.65s cubic-bezier(0.34,1.56,0.64,1) both":"none",
+      }}>
+        {/* Rotating star field */}
+        <div style={{position:"absolute",width:"300px",height:"300px",top:"50%",left:"50%",transform:`translate(-50%,-50%) rotate(${rotation}deg)`,pointerEvents:"none",opacity:0.15}}>
+          {stars.map(s=>{
+            const rad = (s.angle*Math.PI)/180;
+            return <div key={s.id} style={{position:"absolute",left:`${50+Math.cos(rad)*s.dist/3}%`,top:`${50+Math.sin(rad)*s.dist/3}%`,fontSize:"0.6rem",animation:`starTwinkle ${1+Math.random()}s ease infinite ${Math.random()}s`}}>⭐</div>;
+          })}
+        </div>
+        <div style={{position:"relative",zIndex:1,padding:"2.5rem 2rem 2rem",textAlign:"center"}}>
+          <div style={{fontSize:"3.5rem",marginBottom:"0.2rem"}}>🌙</div>
+          <div style={{fontSize:"0.65rem",letterSpacing:"0.5em",textTransform:"uppercase",color:t.accent2,marginBottom:"0.4rem"}}>Eid Mubarak</div>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"2.2rem",color:t.accent,fontWeight:600,marginBottom:"0.3rem"}}>
+            Blessed Holiday Offer
+          </div>
+          <div style={{display:"flex",justifyContent:"center",gap:"0.5rem",marginBottom:"1.2rem"}}>
+            {"⭐🌟✨⭐🌟".split("").filter(c=>c.trim()).map((e,i)=>(
+              <span key={i} style={{animation:`starTwinkle ${1+i*0.2}s ease infinite ${i*0.1}s`,display:"inline-block"}}>{e}</span>
+            ))}
+          </div>
+          {holiday.customMsg
+            ? <p style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.75)",lineHeight:1.7,marginBottom:"1.4rem"}}>{holiday.customMsg}</p>
+            : <p style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.75)",lineHeight:1.7,marginBottom:"1.4rem"}}>
+                Celebrate Eid with loved ones in a beautiful Nairobi home. Space, comfort, and warmth — ideal for family gatherings. Enjoy <strong style={{color:t.accent}}>{holiday.discount}% off</strong> this Eid season.
+              </p>
+          }
+          <div style={{
+            position:"relative",borderRadius:"12px",padding:"1.2rem 1.5rem",marginBottom:"1.4rem",
+            background:`linear-gradient(135deg,${t.accent}22,transparent)`,
+            border:`1px solid ${t.accent}44`,
+          }}>
+            <div style={{position:"absolute",top:"-1px",left:"50%",transform:"translateX(-50%)",padding:"0.15rem 1rem",background:`linear-gradient(135deg,${t.accent},${t.accent2})`,borderRadius:"0 0 8px 8px",fontSize:"0.6rem",fontWeight:700,color:"#000",letterSpacing:"0.15em",textTransform:"uppercase"}}>Eid Special</div>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"3rem",color:t.accent,fontWeight:700,lineHeight:1,marginTop:"0.5rem"}}>{holiday.discount}%</div>
+            <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.5)",letterSpacing:"0.2em",textTransform:"uppercase"}}>Off your stay</div>
+          </div>
+          <button onClick={onBook} style={{width:"100%",padding:"1rem",background:`linear-gradient(135deg,${t.accent},#8b7022)`,color:"#000",border:"none",borderRadius:"10px",fontSize:"0.85rem",fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",marginBottom:"0.7rem"}}>
+            🌙 Book Eid Stay
+          </button>
+          <button onClick={onClose} style={{background:"none",border:"none",color:"rgba(255,255,255,0.3)",fontSize:"0.75rem",cursor:"pointer"}}>Close</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── CHRISTMAS POPUP ────────────────────────────────────────────────
+function ChristmasPopup({ holiday, onClose, onBook }) {
+  const t = holiday.theme;
+  const [visible, setVisible] = useState(false);
+  const snowflakes = Array.from({length:16},(_,i)=>({ id:i, x:Math.random()*100, delay:Math.random()*3, size:0.8+Math.random()*0.8, dur:3+Math.random()*3 }));
+  useEffect(()=>{ setTimeout(()=>setVisible(true),80); },[]);
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:9000,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,20,0,0.93)",backdropFilter:"blur(10px)"}} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        position:"relative",width:"min(460px,92vw)",borderRadius:"20px",overflow:"hidden",
+        background:"linear-gradient(160deg,#001400 0%,#002800 60%,#001400 100%)",
+        border:`1px solid ${t.accent}44`,
+        boxShadow:`0 0 60px rgba(255,51,51,0.2), 0 0 120px rgba(0,100,0,0.2), 0 40px 100px rgba(0,0,0,0.9)`,
+        animation:visible?"slideInLeft 0.5s cubic-bezier(0.22,1,0.36,1) both":"none",
+      }}>
+        {/* Snowflakes */}
+        <div style={{position:"absolute",inset:0,overflow:"hidden",pointerEvents:"none"}}>
+          {snowflakes.map(s=>(
+            <div key={s.id} style={{position:"absolute",left:`${s.x}%`,top:"-10px",fontSize:`${s.size}rem`,color:"#fff",opacity:0.4,animation:`confettiFall ${s.dur}s linear ${s.delay}s infinite`}}>❄️</div>
+          ))}
+        </div>
+        <div style={{position:"relative",zIndex:1,padding:"2.5rem 2rem 2rem",textAlign:"center"}}>
+          <div style={{fontSize:"3.5rem",marginBottom:"0.2rem",filter:"drop-shadow(0 0 15px rgba(255,215,0,0.6))"}}>🎄</div>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"2.3rem",color:"#FFFFFF",fontWeight:600,marginBottom:"0.2rem"}}>
+            Season&apos;s Greetings
+          </div>
+          <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem",marginBottom:"1.2rem"}}>
+            <div style={{flex:1,height:"1px",background:"linear-gradient(90deg,transparent,#FF3333)"}}/>
+            <span style={{fontSize:"0.65rem",letterSpacing:"0.3em",color:t.accent2,textTransform:"uppercase"}}>Christmas Special</span>
+            <div style={{flex:1,height:"1px",background:"linear-gradient(90deg,#006600,transparent)"}}/>
+          </div>
+          {holiday.customMsg
+            ? <p style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.8)",lineHeight:1.7,marginBottom:"1.4rem"}}>{holiday.customMsg}</p>
+            : <p style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.8)",lineHeight:1.7,marginBottom:"1.4rem"}}>
+                Spend Christmas in a beautiful Nairobi home. Fireplace evenings, family dinners, and festive memories — all at <strong style={{color:t.accent2}}>{holiday.discount}% off</strong>.
+              </p>
+          }
+          {/* Ornament discount display */}
+          <div style={{display:"flex",justifyContent:"center",alignItems:"center",gap:"1.5rem",marginBottom:"1.5rem"}}>
+            <div style={{fontSize:"1.5rem",animation:"swing 1.5s ease infinite"}}>🎁</div>
+            <div style={{
+              width:"110px",height:"110px",borderRadius:"50%",
+              background:"radial-gradient(circle at 35% 35%,#FF6666,#CC0000)",
+              display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",
+              boxShadow:"0 0 0 3px #FFD700, 0 0 30px rgba(204,0,0,0.5)",
+              border:"4px solid #FFD700",
+            }}>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"2.2rem",color:"#fff",lineHeight:1,fontWeight:700}}>{holiday.discount}%</div>
+              <div style={{fontSize:"0.55rem",color:"rgba(255,255,255,0.7)",letterSpacing:"0.2em",textTransform:"uppercase"}}>off</div>
+            </div>
+            <div style={{fontSize:"1.5rem",animation:"swing 1.5s ease 0.5s infinite"}}>🎄</div>
+          </div>
+          <button onClick={onBook} style={{width:"100%",padding:"1rem",background:"linear-gradient(135deg,#CC0000,#880000)",color:"#fff",border:"2px solid #FFD700",borderRadius:"10px",fontSize:"0.85rem",fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",marginBottom:"0.7rem",boxShadow:"0 8px 24px rgba(204,0,0,0.4)"}}>
+            🎅 Book Christmas Stay
+          </button>
+          <button onClick={onClose} style={{background:"none",border:"none",color:"rgba(255,255,255,0.3)",fontSize:"0.75rem",cursor:"pointer"}}>No thanks</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── GENERIC / EASTER / LABOUR POPUP ───────────────────────────────
+function GenericHolidayPopup({ holiday, onClose, onBook }) {
+  const t = holiday.theme;
+  const [visible, setVisible] = useState(false);
+  const particles = t.particles ? t.particles.split("").filter(c=>c.trim()) : ["🎊","✨"];
+  useEffect(()=>{ setTimeout(()=>setVisible(true),80); },[]);
+  return (
+    <div style={{position:"fixed",inset:0,zIndex:9000,display:"flex",alignItems:"center",justifyContent:"center",background:"rgba(0,0,0,0.88)",backdropFilter:"blur(8px)"}} onClick={onClose}>
+      <div onClick={e=>e.stopPropagation()} style={{
+        position:"relative",width:"min(460px,92vw)",borderRadius:"16px",overflow:"hidden",
+        background:`linear-gradient(160deg,${t.bg} 0%,${t.bg}dd 100%)`,
+        border:`1px solid ${t.accent}44`,
+        boxShadow:`0 0 60px ${t.accent}22, 0 40px 100px rgba(0,0,0,0.8)`,
+        animation:visible?"popIn 0.6s cubic-bezier(0.34,1.56,0.64,1) both":"none",
+      }}>
+        <Confetti count={16} colors={[t.accent,t.accent2,"#fff"]}/>
+        {/* Diagonal accent bar */}
+        <div style={{position:"absolute",top:0,left:0,right:0,height:"4px",background:`linear-gradient(90deg,${t.accent},${t.accent2},${t.accent})`}}/>
+        <div style={{position:"relative",zIndex:1,padding:"2.5rem 2rem 2rem",textAlign:"center"}}>
+          <div style={{fontSize:"3.5rem",marginBottom:"0.3rem",filter:`drop-shadow(0 0 20px ${t.accent}88)`}}>{holiday.emoji}</div>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"2rem",color:t.accent,fontWeight:600,marginBottom:"0.3rem"}}>
+            {holiday.name}
+          </div>
+          <div style={{fontSize:"0.65rem",letterSpacing:"0.35em",textTransform:"uppercase",color:t.accent2,marginBottom:"1.2rem"}}>
+            Holiday Special Offer
+          </div>
+          {holiday.customMsg
+            ? <p style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.75)",lineHeight:1.7,marginBottom:"1.4rem"}}>{holiday.customMsg}</p>
+            : <p style={{fontSize:"0.88rem",color:"rgba(255,255,255,0.75)",lineHeight:1.7,marginBottom:"1.4rem"}}>
+                Celebrate {holiday.name} with a premium Nairobi stay. Enjoy <strong style={{color:t.accent}}>{holiday.discount}% off</strong> all listings this holiday season.
+              </p>
+          }
+          <div style={{
+            background:`${t.accent}18`,border:`1px solid ${t.accent}44`,borderRadius:"12px",
+            padding:"1.2rem 1.5rem",marginBottom:"1.4rem",
+          }}>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"3rem",color:t.accent,fontWeight:700,lineHeight:1}}>{holiday.discount}%</div>
+            <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.5)",letterSpacing:"0.2em",textTransform:"uppercase",marginTop:"0.2rem"}}>Off your booking</div>
+          </div>
+          <button onClick={onBook} style={{width:"100%",padding:"1rem",background:`linear-gradient(135deg,${t.accent},${t.accent2})`,color:"#000",border:"none",borderRadius:"8px",fontSize:"0.85rem",fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",marginBottom:"0.7rem"}}>
+            {holiday.emoji} Claim Holiday Deal
+          </button>
+          <button onClick={onClose} style={{background:"none",border:"none",color:"rgba(255,255,255,0.35)",fontSize:"0.75rem",cursor:"pointer"}}>Dismiss</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── POPUP DISPATCHER ───────────────────────────────────────────────
+function HolidayPopup({ holiday, onClose, onBook }) {
+  if (!holiday) return null;
+  const props = { holiday, onClose, onBook };
+  switch(holiday.theme?.bg) {
+    case HOLIDAY_THEMES.new_year.bg:    return <NewYearPopup {...props}/>;
+    case HOLIDAY_THEMES.valentines.bg:  return <ValentinesPopup {...props}/>;
+    case HOLIDAY_THEMES.christmas.bg:   return <ChristmasPopup {...props}/>;
+    case HOLIDAY_THEMES.kenya.bg:
+    case HOLIDAY_THEMES.mashujaa.bg:    return <KenyaDayPopup {...props}/>;
+    case HOLIDAY_THEMES.eid.bg:         return <EidPopup {...props}/>;
+    default:                            return <GenericHolidayPopup {...props}/>;
+  }
+}
+
+// ── PROMO BANNER (slim persistent strip) ──────────────────────────
+function PromoBanner({ holiday, onOpen }) {
+  const [visible, setVisible] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(()=>{ setTimeout(()=>setVisible(true),2000); },[]);
+  if (!holiday || dismissed) return null;
+  const t = holiday.theme;
+  return (
+    <div style={{
+      position:"fixed",bottom:0,left:0,right:0,zIndex:8000,
+      background:`linear-gradient(90deg,${t.bg},${t.accent}33,${t.bg})`,
+      borderTop:`2px solid ${t.accent}88`,
+      padding:"0.7rem 1.5rem",
+      display:"flex",alignItems:"center",justifyContent:"space-between",gap:"1rem",
+      transform:visible?"translateY(0)":"translateY(100%)",
+      transition:"transform 0.5s cubic-bezier(0.22,1,0.36,1)",
+      backdropFilter:"blur(10px)",
+    }}>
+      <div style={{display:"flex",alignItems:"center",gap:"0.8rem",flexShrink:0}}>
+        <span style={{fontSize:"1.2rem",animation:"heartBeat 2s ease infinite"}}>{holiday.emoji}</span>
+        <div>
+          <span style={{fontSize:"0.78rem",fontWeight:700,color:t.accent,letterSpacing:"0.05em"}}>{holiday.name}: </span>
+          <span style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.8)"}}>
+            {holiday.discount}% off all stays
+          </span>
+        </div>
+      </div>
+      <div style={{display:"flex",gap:"0.6rem",alignItems:"center",flexShrink:0}}>
+        <button onClick={onOpen} style={{padding:"0.4rem 1rem",background:t.accent,color:"#000",border:"none",borderRadius:"4px",fontSize:"0.72rem",fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer"}}>
+          View Deal
+        </button>
+        <button onClick={()=>setDismissed(true)} style={{background:"none",border:"none",color:"rgba(255,255,255,0.4)",cursor:"pointer",fontSize:"1rem",lineHeight:1}}>✕</button>
+      </div>
+    </div>
+  );
+}
+
+// ── ADMIN: PROMOS MANAGER ──────────────────────────────────────────
+function PromosManager({ promoConfig, onSave }) {
+  const [local, setLocal] = useState(()=>{
+    const base = {};
+    KENYA_HOLIDAYS.forEach(h=>{ base[h.id] = { discount: h.defaultDiscount, disabled:false, message:"", ...(promoConfig[h.id]||{}) }; });
+    return base;
+  });
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const update = (id, field, val) => setLocal(prev=>({ ...prev, [id]:{ ...prev[id], [field]:val }}));
+
+  const handleSave = async () => {
+    setSaving(true);
+    await onSave(local);
+    setSaving(false); setSaved(true);
+    setTimeout(()=>setSaved(false),2500);
+  };
+
+  return (
+    <div>
+      <div style={{marginBottom:"2rem"}}>
+        <div style={{fontSize:"0.65rem",letterSpacing:"0.3em",textTransform:"uppercase",color:C.gold,marginBottom:"0.4rem"}}>Promotions</div>
+        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"1.8rem",color:"#0E2B1F",fontWeight:400}}>Holiday & Promo Manager</h2>
+        <p style={{fontSize:"0.85rem",color:C.muted,marginTop:"0.5rem",lineHeight:1.6}}>Configure discounts and messages for Kenya public holidays. Popups auto-appear on your site in the days leading up to each holiday.</p>
+      </div>
+
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,380px),1fr))",gap:"1rem"}}>
+        {KENYA_HOLIDAYS.map(h=>{
+          const cfg = local[h.id] || {};
+          const theme = HOLIDAY_THEMES[h.theme] || HOLIDAY_THEMES.kenya;
+          const isActive = (()=>{
+            const now = new Date(); const hDate = new Date(now.getFullYear(),h.month-1,h.day);
+            const diff = Math.ceil((hDate-now)/(1000*60*60*24));
+            return diff>=0 && diff<=h.daysAhead;
+          })();
+          return (
+            <div key={h.id} style={{
+              background:"#fff",border:`1px solid ${isActive?theme.accent+"66":C.border}`,
+              borderRadius:"10px",overflow:"hidden",
+              boxShadow:isActive?`0 4px 20px ${theme.accent}22`:"0 2px 8px rgba(14,43,31,0.05)",
+              transition:"all 0.2s",
+            }}>
+              {/* Holiday header bar */}
+              <div style={{
+                padding:"0.9rem 1.2rem",
+                background:isActive?`linear-gradient(135deg,${theme.bg},${theme.accent}22)`:"#F7F2EA",
+                borderBottom:`1px solid ${C.border}`,
+                display:"flex",alignItems:"center",justifyContent:"space-between",
+              }}>
+                <div style={{display:"flex",alignItems:"center",gap:"0.7rem"}}>
+                  <span style={{fontSize:"1.4rem"}}>{h.emoji}</span>
+                  <div>
+                    <div style={{fontWeight:600,color:isActive?theme.accent:"#0E2B1F",fontSize:"0.9rem"}}>{h.name}</div>
+                    <div style={{fontSize:"0.65rem",color:C.muted}}>
+                      {["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][h.month-1]} {h.day} · {h.daysAhead}d window
+                    </div>
+                  </div>
+                </div>
+                <div style={{display:"flex",alignItems:"center",gap:"0.6rem"}}>
+                  {isActive&&<span style={{fontSize:"0.6rem",fontWeight:700,letterSpacing:"0.1em",padding:"0.15rem 0.5rem",background:theme.accent+"33",color:theme.accent,border:`1px solid ${theme.accent}55`,borderRadius:"3px",textTransform:"uppercase"}}>Active Now</span>}
+                  {/* Toggle */}
+                  <button onClick={()=>update(h.id,"disabled",!cfg.disabled)}
+                    style={{width:"38px",height:"20px",borderRadius:"10px",border:"none",cursor:"pointer",
+                      background:cfg.disabled?"#ddd":"#16A34A",position:"relative",transition:"background 0.2s",flexShrink:0}}>
+                    <div style={{position:"absolute",top:"2px",left:cfg.disabled?"2px":"20px",width:"16px",height:"16px",borderRadius:"50%",background:"#fff",transition:"left 0.2s",boxShadow:"0 1px 4px rgba(0,0,0,0.25)"}}/>
+                  </button>
+                </div>
+              </div>
+
+              {!cfg.disabled && (
+                <div style={{padding:"1rem 1.2rem",display:"flex",flexDirection:"column",gap:"0.8rem"}}>
+                  {/* Discount */}
+                  <div>
+                    <label style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.4rem"}}>
+                      <span style={{fontSize:"0.7rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted}}>Discount %</span>
+                      <span style={{fontFamily:"'Playfair Display',serif",fontSize:"1.1rem",color:C.gold,fontWeight:600}}>{cfg.discount}%</span>
+                    </label>
+                    <input type="range" min="5" max="50" value={cfg.discount||h.defaultDiscount}
+                      onChange={e=>update(h.id,"discount",Number(e.target.value))}
+                      style={{width:"100%",accentColor:C.gold}}/>
+                    <div style={{display:"flex",justifyContent:"space-between",fontSize:"0.62rem",color:C.muted,marginTop:"0.2rem"}}>
+                      <span>5%</span><span>50%</span>
+                    </div>
+                  </div>
+                  {/* Custom message */}
+                  <div>
+                    <label style={{fontSize:"0.7rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,display:"block",marginBottom:"0.4rem"}}>Custom Message (optional)</label>
+                    <textarea value={cfg.message||""} onChange={e=>update(h.id,"message",e.target.value)}
+                      placeholder={`Leave blank to use default ${h.name} message…`}
+                      rows={2}
+                      style={{width:"100%",padding:"0.6rem 0.8rem",border:`1px solid ${C.border}`,borderRadius:"5px",fontSize:"0.8rem",resize:"vertical",fontFamily:"inherit",outline:"none",background:"#FDFAF5",color:"#1C1C1C"}}
+                      onFocus={e=>e.target.style.borderColor=C.gold}
+                      onBlur={e=>e.target.style.borderColor=C.border}/>
+                  </div>
+                </div>
+              )}
+              {cfg.disabled && (
+                <div style={{padding:"0.8rem 1.2rem",fontSize:"0.78rem",color:C.muted,fontStyle:"italic"}}>Popup disabled for this holiday</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{position:"sticky",bottom:"1rem",marginTop:"2rem",textAlign:"right"}}>
+        <button onClick={handleSave} disabled={saving}
+          style={{padding:"0.9rem 2.5rem",background:saved?"#16A34A":C.gold,color:saved?"#fff":"#0E2B1F",border:"none",borderRadius:"6px",fontWeight:700,fontSize:"0.82rem",letterSpacing:"0.12em",textTransform:"uppercase",cursor:saving?"not-allowed":"pointer",transition:"all 0.3s",boxShadow:"0 4px 16px rgba(197,151,58,0.3)"}}>
+          {saving?"Saving…":saved?"✓ Saved!":"Save All Changes"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+// ─── UPCOMING HOLIDAYS PROMO SECTION ─────────────────────────────
+// Research-backed windows: urgency peaks 14-21 days out, early birds
+// book 30-60 days out for major holidays (Jamhuri, Christmas, NYE).
+// Impulse bookings cluster 3-7 days before short holidays (Labour, Huduma).
+function getUpcomingHolidays(promoConfig, count=6) {
+  const now = new Date();
+  const results = [];
+
+  // Check both this year and next year to handle year-wrap
+  for (const h of KENYA_HOLIDAYS) {
+    for (const yearOffset of [0, 1]) {
+      const hDate = new Date(now.getFullYear() + yearOffset, h.month - 1, h.day);
+      const daysUntil = Math.ceil((hDate - now) / (1000*60*60*24));
+
+      // Show holidays 3 to 90 days away (sweet spot per booking research)
+      if (daysUntil < 3 || daysUntil > 90) continue;
+
+      const cfg = promoConfig?.[h.id] || {};
+      if (cfg.disabled) continue;
+
+      const discount = cfg.discount ?? h.defaultDiscount;
+      const theme = HOLIDAY_THEMES[h.theme] || HOLIDAY_THEMES.kenya;
+
+      // Urgency tiers (drives copy + visual treatment)
+      let urgency = "plan";        // 30-90 days
+      if (daysUntil <= 7)  urgency = "urgent";  // last week
+      else if (daysUntil <= 14) urgency = "soon";    // 1-2 weeks
+      else if (daysUntil <= 21) urgency = "coming";  // 3 weeks
+
+      results.push({ ...h, discount, theme, daysUntil, urgency, hDate, customMsg: cfg.message || "" });
+    }
+  }
+
+  // Sort by proximity, deduplicate by id
+  const seen = new Set();
+  return results
+    .sort((a,b) => a.daysUntil - b.daysUntil)
+    .filter(h => { if(seen.has(h.id)) return false; seen.add(h.id); return true; })
+    .slice(0, count);
+}
+
+const URGENCY = {
+  urgent: { label:"This Week",   color:"#EF4444", bg:"rgba(239,68,68,0.12)",  border:"rgba(239,68,68,0.3)"  },
+  soon:   { label:"Coming Soon", color:"#F59E0B", bg:"rgba(245,158,11,0.12)", border:"rgba(245,158,11,0.3)" },
+  coming: { label:"Mark It",     color:C.gold,    bg:"rgba(197,151,58,0.12)", border:"rgba(197,151,58,0.3)" },
+  plan:   { label:"Plan Ahead",  color:C.sage,    bg:"rgba(76,175,125,0.1)",  border:"rgba(76,175,125,0.25)"},
+};
+
+function CountdownPips({ days }) {
+  // Visual dot-bar countdown — max 30 dots
+  const MAX = Math.min(days, 30);
+  const filled = Math.max(1, MAX);
+  return (
+    <div style={{display:"flex",gap:"2px",flexWrap:"wrap",marginTop:"0.5rem"}}>
+      {Array.from({length:30}).map((_,i) => (
+        <div key={i} style={{
+          width:"5px", height:"5px", borderRadius:"50%",
+          background: i < filled ? C.gold : "rgba(197,151,58,0.15)",
+          transition:"background 0.3s",
+        }}/>
+      ))}
+    </div>
+  );
+}
+
+// Individual promo card — style varies by position in grid
+function UpcomingHolidayCard({ holiday, index, onBook, isHero }) {
+  const t = holiday.theme;
+  const urg = URGENCY[holiday.urgency];
+  const [hovered, setHovered] = useState(false);
+
+  const daysLabel = holiday.daysUntil === 1 ? "Tomorrow!" :
+                    holiday.daysUntil <= 7  ? `In ${holiday.daysUntil} days` :
+                    holiday.daysUntil <= 14 ? `${holiday.daysUntil} days away` :
+                    holiday.daysUntil <= 30 ? `${holiday.daysUntil} days away` :
+                    `${Math.round(holiday.daysUntil/7)} weeks away`;
+
+  const urgencyCopy = {
+    urgent: ["Last chance rates", "Book before prices rise", "Filling up fast"],
+    soon:   ["Early access deal", "Secure your dates now", "Best rooms going"],
+    coming: ["Lock in this discount", "Smart early booking", "Best deal window"],
+    plan:   ["Plan & save big", "Early bird price", "Most availability"],
+  }[holiday.urgency];
+  const tagline = urgencyCopy[index % urgencyCopy.length];
+
+  if (isHero) {
+    // Large hero card (first item)
+    return (
+      <div
+        onMouseEnter={()=>setHovered(true)}
+        onMouseLeave={()=>setHovered(false)}
+        style={{
+          position:"relative", borderRadius:"14px", overflow:"hidden",
+          background:`linear-gradient(145deg, ${t.bg} 0%, #0a1a0a 100%)`,
+          border:`1px solid ${t.accent}44`,
+          boxShadow: hovered ? `0 24px 80px ${t.accent}33, 0 0 0 1px ${t.accent}55` : `0 8px 32px rgba(0,0,0,0.3)`,
+          transform: hovered ? "translateY(-4px)" : "translateY(0)",
+          transition:"all 0.35s cubic-bezier(0.22,1,0.36,1)",
+          cursor:"pointer", gridColumn:"1 / -1",
+        }}
+        onClick={onBook}
+      >
+        {/* Animated gradient shimmer */}
+        <div style={{
+          position:"absolute", inset:0, opacity: hovered ? 0.18 : 0.08,
+          background:`radial-gradient(ellipse at 20% 50%, ${t.accent} 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, ${t.accent2} 0%, transparent 50%)`,
+          transition:"opacity 0.35s",
+          pointerEvents:"none",
+        }}/>
+
+        {/* Diagonal stripe accent */}
+        <div style={{position:"absolute",top:0,right:0,width:"200px",height:"200px",overflow:"hidden",pointerEvents:"none"}}>
+          <div style={{position:"absolute",top:"30px",right:"-50px",width:"200px",background:`linear-gradient(135deg,${t.accent},${t.accent2})`,padding:"0.5rem 3rem",fontSize:"0.6rem",fontWeight:700,letterSpacing:"0.25em",textTransform:"uppercase",color:"#000",transform:"rotate(35deg)",whiteSpace:"nowrap"}}>
+            {holiday.discount}% OFF
+          </div>
+        </div>
+
+        <div style={{position:"relative",zIndex:1,padding:"2.5rem 2.5rem 2rem",display:"grid",gridTemplateColumns:"1fr auto",gap:"2rem",alignItems:"center"}}>
+          <div>
+            {/* Urgency badge */}
+            <div style={{display:"inline-flex",alignItems:"center",gap:"0.4rem",padding:"0.25rem 0.75rem",background:urg.bg,border:`1px solid ${urg.border}`,borderRadius:"20px",marginBottom:"1rem"}}>
+              <div style={{width:"6px",height:"6px",borderRadius:"50%",background:urg.color,animation:"glowPulse 1.5s ease infinite"}}/>
+              <span style={{fontSize:"0.6rem",fontWeight:700,letterSpacing:"0.2em",textTransform:"uppercase",color:urg.color}}>{urg.label} · {daysLabel}</span>
+            </div>
+
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(1.6rem,3vw,2.4rem)",color:"#fff",fontWeight:600,lineHeight:1.1,marginBottom:"0.6rem"}}>
+              {holiday.emoji} {holiday.name}
+            </div>
+            <div style={{fontSize:"0.85rem",color:"rgba(255,255,255,0.6)",marginBottom:"1.2rem",lineHeight:1.6}}>
+              {holiday.customMsg || `${tagline} — enjoy ${holiday.discount}% off all Shikaz Homes listings for ${holiday.name}.`}
+            </div>
+            <div style={{display:"flex",gap:"0.7rem",alignItems:"center",flexWrap:"wrap"}}>
+              <button onClick={e=>{e.stopPropagation();onBook();}} style={{
+                padding:"0.8rem 1.8rem",background:`linear-gradient(135deg,${t.accent},${t.accent2})`,
+                color:"#000",border:"none",borderRadius:"6px",fontSize:"0.8rem",fontWeight:700,
+                letterSpacing:"0.15em",textTransform:"uppercase",cursor:"pointer",
+                boxShadow:`0 8px 24px ${t.accent}44`,transition:"transform 0.15s",
+              }}
+              onMouseEnter={e=>e.currentTarget.style.transform="scale(1.04)"}
+              onMouseLeave={e=>e.currentTarget.style.transform="scale(1)"}>
+                Book with {holiday.discount}% Off →
+              </button>
+              <div style={{fontSize:"0.75rem",color:"rgba(255,255,255,0.4)"}}>
+                {holiday.hDate.toLocaleDateString("en-KE",{day:"numeric",month:"long",year:"numeric"})}
+              </div>
+            </div>
+          </div>
+
+          {/* Big discount number */}
+          <div style={{textAlign:"center",flexShrink:0}}>
+            <div style={{
+              fontFamily:"'Playfair Display',serif",
+              fontSize:"clamp(4rem,8vw,6rem)",
+              color:t.accent,fontWeight:700,lineHeight:0.9,
+              textShadow:`0 0 60px ${t.accent}66`,
+              transform: hovered ? "scale(1.06)" : "scale(1)",
+              transition:"transform 0.35s",
+            }}>{holiday.discount}%</div>
+            <div style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.4)",letterSpacing:"0.2em",textTransform:"uppercase",marginTop:"0.3rem"}}>discount</div>
+            <CountdownPips days={holiday.daysUntil}/>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Regular grid card
+  return (
+    <div
+      onMouseEnter={()=>setHovered(true)}
+      onMouseLeave={()=>setHovered(false)}
+      onClick={onBook}
+      style={{
+        position:"relative",borderRadius:"12px",overflow:"hidden",cursor:"pointer",
+        background:"#fff",
+        border:`1px solid ${hovered ? t.accent+"88" : C.border}`,
+        boxShadow: hovered ? `0 12px 40px ${t.accent}22, 0 0 0 1px ${t.accent}44` : "0 2px 12px rgba(14,43,31,0.06)",
+        transform: hovered ? "translateY(-3px)" : "translateY(0)",
+        transition:"all 0.3s cubic-bezier(0.22,1,0.36,1)",
+      }}
+    >
+      {/* Coloured top bar with gradient */}
+      <div style={{height:"5px",background:`linear-gradient(90deg,${t.accent},${t.accent2},${t.accent})`}}/>
+
+      {/* Dark header with emoji */}
+      <div style={{
+        background:`linear-gradient(135deg,${t.bg} 0%,${t.bg}cc 100%)`,
+        padding:"1.4rem 1.2rem 1.2rem",
+        position:"relative",overflow:"hidden",
+        minHeight:"90px",display:"flex",alignItems:"center",gap:"1rem",
+      }}>
+        <div style={{position:"absolute",right:"-10px",bottom:"-10px",fontSize:"4rem",opacity:0.12,transform:"rotate(-10deg)",userSelect:"none"}}>{holiday.emoji}</div>
+        <div style={{fontSize:"2.2rem",filter:`drop-shadow(0 0 12px ${t.accent}88)`,flexShrink:0}}>{holiday.emoji}</div>
+        <div style={{position:"relative",zIndex:1}}>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.1rem",color:"#fff",fontWeight:500,lineHeight:1.2}}>{holiday.name}</div>
+          <div style={{fontSize:"0.68rem",color:"rgba(255,255,255,0.5)",marginTop:"0.2rem"}}>
+            {holiday.hDate.toLocaleDateString("en-KE",{day:"numeric",month:"long"})}
+          </div>
+        </div>
+        {/* Discount badge top-right */}
+        <div style={{
+          position:"absolute",top:"0.8rem",right:"0.8rem",
+          background:`linear-gradient(135deg,${t.accent},${t.accent2})`,
+          borderRadius:"20px",padding:"0.2rem 0.65rem",
+          fontSize:"0.72rem",fontWeight:700,color:"#000",
+          boxShadow:`0 4px 12px ${t.accent}44`,
+        }}>{holiday.discount}% off</div>
+      </div>
+
+      <div style={{padding:"1rem 1.2rem 1.2rem"}}>
+        {/* Urgency row */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"0.7rem"}}>
+          <span style={{fontSize:"0.62rem",fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",color:urg.color,padding:"0.15rem 0.5rem",background:urg.bg,border:`1px solid ${urg.border}`,borderRadius:"3px"}}>
+            {urg.label}
+          </span>
+          <span style={{fontSize:"0.75rem",color:C.muted,fontWeight:500}}>{daysLabel}</span>
+        </div>
+
+        <div style={{fontSize:"0.8rem",color:C.muted,lineHeight:1.6,marginBottom:"0.9rem"}}>
+          {holiday.customMsg || tagline}
+        </div>
+
+        <CountdownPips days={holiday.daysUntil}/>
+
+        <button
+          onClick={e=>{e.stopPropagation();onBook();}}
+          style={{
+            width:"100%",marginTop:"0.9rem",padding:"0.7rem",
+            background: hovered ? `linear-gradient(135deg,${t.accent},${t.accent2})` : "transparent",
+            color: hovered ? "#000" : t.accent,
+            border:`1px solid ${t.accent}66`,borderRadius:"5px",
+            fontSize:"0.75rem",fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",
+            cursor:"pointer",transition:"all 0.25s",
+          }}
+        >
+          {hovered ? `Book Now →` : `View Deal →`}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Marquee ticker strip — for quick-glance awareness
+function PromoTicker({ holidays }) {
+  if (!holidays.length) return null;
+  const items = [...holidays, ...holidays]; // duplicate for seamless loop
+  return (
+    <div style={{
+      background:"linear-gradient(90deg,#0E2B1F,#1a3d2b,#0E2B1F)",
+      borderTop:`1px solid rgba(197,151,58,0.2)`,
+      borderBottom:`1px solid rgba(197,151,58,0.2)`,
+      overflow:"hidden",padding:"0.55rem 0",
+    }}>
+      <div style={{display:"flex",gap:"0",animation:"tickerScroll 30s linear infinite",width:"max-content"}}>
+        {items.map((h,i) => (
+          <div key={i} style={{display:"inline-flex",alignItems:"center",gap:"0.5rem",padding:"0 2.5rem",borderRight:"1px solid rgba(197,151,58,0.15)",flexShrink:0}}>
+            <span style={{fontSize:"0.9rem"}}>{h.emoji}</span>
+            <span style={{fontSize:"0.7rem",fontWeight:600,color:h.theme.accent,letterSpacing:"0.05em"}}>{h.name}</span>
+            <span style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.5)"}}>·</span>
+            <span style={{fontSize:"0.7rem",color:"rgba(255,255,255,0.7)"}}>{h.discount}% off</span>
+            <span style={{fontSize:"0.65rem",color:"rgba(255,255,255,0.35)"}}>·</span>
+            <span style={{fontSize:"0.67rem",color:"rgba(255,255,255,0.45)"}}>
+              {h.daysUntil <= 7 ? `${h.daysUntil}d left` : h.daysUntil <= 30 ? `${h.daysUntil} days` : `${Math.round(h.daysUntil/7)}w away`}
+            </span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Full upcoming promos section — injected into HomePage
+function UpcomingPromosSection({ promoConfig, onNavigate }) {
+  const upcoming = getUpcomingHolidays(promoConfig, 6);
+  if (!upcoming.length) return null;
+
+  const hero = upcoming[0];
+  const rest = upcoming.slice(1);
+
+  return (
+    <section style={{padding:"5rem 1.5rem",background:"linear-gradient(180deg,#F7F2EA 0%,#FDFAF5 100%)",position:"relative",overflow:"hidden"}}>
+      {/* Subtle background pattern */}
+      <div style={{position:"absolute",inset:0,backgroundImage:"radial-gradient(circle at 1px 1px, rgba(197,151,58,0.08) 1px, transparent 0)",backgroundSize:"32px 32px",pointerEvents:"none"}}/>
+
+      <div style={{maxWidth:"1200px",margin:"0 auto",position:"relative"}}>
+        {/* Section header */}
+        <div style={{textAlign:"center",marginBottom:"3.5rem"}}>
+          <div style={{display:"inline-flex",alignItems:"center",gap:"0.7rem",marginBottom:"0.9rem"}}>
+            <div style={{width:"32px",height:"1px",background:C.gold}}/>
+            <div style={{fontSize:"0.65rem",letterSpacing:"0.4em",textTransform:"uppercase",color:C.gold}}>Holiday Deals</div>
+            <div style={{width:"32px",height:"1px",background:C.gold}}/>
+          </div>
+          <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(1.9rem,4vw,3rem)",color:"#0E2B1F",fontWeight:400,marginBottom:"0.7rem"}}>
+            Upcoming <em style={{color:C.gold,fontStyle:"italic"}}>Offers</em> & Holidays
+          </h2>
+          <p style={{fontSize:"0.9rem",color:C.muted,maxWidth:"480px",margin:"0 auto",lineHeight:1.8}}>
+            Kenya's public holidays are the best time to book — lock in exclusive rates before they fill up.
+          </p>
+        </div>
+
+        {/* Hero card full-width */}
+        <div style={{marginBottom:"1.2rem"}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr"}}>
+            <UpcomingHolidayCard holiday={hero} index={0} isHero={true} onBook={()=>onNavigate("listings")}/>
+          </div>
+        </div>
+
+        {/* Rest in responsive grid */}
+        {rest.length > 0 && (
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,300px),1fr))",gap:"1rem",marginBottom:"2.5rem"}}>
+            {rest.map((h,i) => (
+              <UpcomingHolidayCard key={h.id} holiday={h} index={i} isHero={false} onBook={()=>onNavigate("listings")}/>
+            ))}
+          </div>
+        )}
+
+        {/* Bottom CTA */}
+        <div style={{textAlign:"center",marginTop:"2rem"}}>
+          <button onClick={()=>onNavigate("listings")}
+            style={{background:"transparent",color:C.gold,border:`1px solid rgba(197,151,58,0.4)`,padding:"0.9rem 2.5rem",fontSize:"0.78rem",fontWeight:600,letterSpacing:"0.2em",textTransform:"uppercase",borderRadius:"4px",cursor:"pointer",transition:"all 0.2s"}}
+            onMouseEnter={e=>{e.currentTarget.style.background=C.goldDim;e.currentTarget.style.borderColor=C.gold;}}
+            onMouseLeave={e=>{e.currentTarget.style.background="transparent";e.currentTarget.style.borderColor="rgba(197,151,58,0.4)";}}>
+            Browse All Listings →
+          </button>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── ADMIN SYSTEM (Stage 3) ───────────────────────────────────────
 const HOST_PIN = "1234"; // default PIN — editable in settings
 
@@ -1288,7 +2377,26 @@ function AdminLogin({ onLogin }) {
         </div>
 
         <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:"14px",padding:"2.2rem",boxShadow:"0 32px 80px rgba(14,43,31,0.18)",animation:shaking?"shake 0.5s ease":"none"}}>
-          <style>{`@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}`}</style>
+          <style>{`@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@keyframes popIn{0%{opacity:0;transform:scale(0.7) translateY(60px)}70%{transform:scale(1.04) translateY(-6px)}100%{opacity:1;transform:scale(1) translateY(0)}}
+@keyframes popOut{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(0.8) translateY(40px)}}
+@keyframes floatUp{0%{opacity:0;transform:translateY(0)}10%{opacity:1}80%{opacity:1}100%{opacity:0;transform:translateY(-80px)}}
+@keyframes swing{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+@keyframes confettiFall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(120px) rotate(720deg);opacity:0}}
+@keyframes firework{0%{transform:scale(0);opacity:1}100%{transform:scale(1.5);opacity:0}}
+@keyframes ribbonSlide{0%{transform:translateX(-110%)}100%{transform:translateX(0)}}
+@keyframes heartBeat{0%,100%{transform:scale(1)}14%{transform:scale(1.3)}28%{transform:scale(1)}42%{transform:scale(1.2)}70%{transform:scale(1)}}
+@keyframes starTwinkle{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.3;transform:scale(0.6)}}
+@keyframes rotateSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes bounceIn{0%{transform:scale(0.3);opacity:0}50%{transform:scale(1.05)}70%{transform:scale(0.95)}100%{transform:scale(1);opacity:1}}
+@keyframes glowPulse{0%,100%{box-shadow:0 0 20px rgba(197,151,58,0.4)}50%{box-shadow:0 0 60px rgba(197,151,58,0.9),0 0 100px rgba(197,151,58,0.4)}}
+@keyframes slideInLeft{from{transform:translateX(-100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slideInRight{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes flagWave{0%,100%{transform:skewX(0deg)}25%{transform:skewX(-3deg)}75%{transform:skewX(3deg)}}
+@keyframes drip{0%{transform:scaleY(0);transform-origin:top}100%{transform:scaleY(1);transform-origin:top}}
+@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes scanline{0%{top:0%}100%{top:100%}}
+@keyframes disco{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}`}</style>
 
           <div style={{textAlign:"center",marginBottom:"1.8rem"}}>
             <div style={{width:"52px",height:"52px",borderRadius:"50%",background:C.goldDim,border:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.4rem",margin:"0 auto 1rem"}}>🔐</div>
@@ -1511,11 +2619,7 @@ function BookingsManager({ bookings, listings }) {
               </div>
               <div style={{textAlign:"right",flexShrink:0}}>
                 <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.1rem",color:C.gold}}>KES {fmt(b.total)}</div>
-                {b.isDeposit
-                  ? <><div style={{fontSize:"0.65rem",color:C.gold,marginTop:"0.1rem",fontWeight:600}}>🔒 Deposit</div>
-                      <div style={{fontSize:"0.63rem",color:C.muted}}>Balance: KES {fmt(b.balanceDue)}</div></>
-                  : <div style={{fontSize:"0.65rem",color:C.success,marginTop:"0.1rem"}}>✓ Confirmed</div>
-                }
+                <div style={{fontSize:"0.65rem",color:C.success,marginTop:"0.1rem"}}>✓ Confirmed</div>
               </div>
             </div>
           ))}
@@ -1664,38 +2768,13 @@ function PhotoManager({ photos, onChange }) {
   const [newUrl,setNewUrl]=useState("");
   const [preview,setPreview]=useState(null);
   const [err,setErr]=useState("");
-  const [uploading,setUploading]=useState(false);
-  const [tab,setTab]=useState("upload"); // "upload" | "url"
-  const fileInputRef = useState(null);
+  const [dragging,setDragging]=useState(null);
 
   const addUrl=()=>{
     if(!newUrl.trim()){setErr("Enter a URL.");return;}
     if(photos.includes(newUrl.trim())){setErr("Already added.");return;}
     onChange([...photos,newUrl.trim()]);
     setNewUrl(""); setErr(""); setPreview(null);
-  };
-
-  const handleFileChange=(e)=>{
-    const files=Array.from(e.target.files);
-    if(!files.length) return;
-    setUploading(true);
-    setErr("");
-    const readers=files.map(file=>new Promise((resolve,reject)=>{
-      if(!file.type.startsWith("image/")){reject(new Error(`${file.name} is not an image.`));return;}
-      if(file.size>10*1024*1024){reject(new Error(`${file.name} exceeds 10MB limit.`));return;}
-      const reader=new FileReader();
-      reader.onload=ev=>resolve(ev.target.result);
-      reader.onerror=()=>reject(new Error(`Failed to read ${file.name}`));
-      reader.readAsDataURL(file);
-    }));
-    Promise.allSettled(readers).then(results=>{
-      const succeeded=results.filter(r=>r.status==="fulfilled").map(r=>r.value);
-      const failed=results.filter(r=>r.status==="rejected").map(r=>r.reason.message);
-      if(succeeded.length) onChange([...photos,...succeeded]);
-      if(failed.length) setErr(failed.join(" "));
-      setUploading(false);
-      e.target.value="";
-    });
   };
 
   const remove=(i)=>onChange(photos.filter((_,idx)=>idx!==i));
@@ -1710,6 +2789,7 @@ function PhotoManager({ photos, onChange }) {
           <div key={i} style={{position:"relative",borderRadius:"6px",overflow:"hidden",border:`2px solid ${i===0?C.gold:C.border}`,background:C.ink}}>
             <img src={url} alt="" style={{width:"100%",height:"100px",objectFit:"cover",display:"block"}} onError={e=>e.target.style.display="none"}/>
             {i===0&&<div style={{position:"absolute",top:"0.3rem",left:"0.3rem",background:C.gold,color:C.obsidian,fontSize:"0.55rem",fontWeight:700,letterSpacing:"0.1em",padding:"0.15rem 0.4rem",borderRadius:"2px"}}>COVER</div>}
+            {/* Controls */}
             <div style={{position:"absolute",bottom:0,left:0,right:0,display:"flex",background:"rgba(14,43,31,0.85)"}}>
               <button onClick={()=>moveUp(i)} disabled={i===0} style={{flex:1,background:"none",border:"none",color:i===0?C.muted:C.mutedLight,cursor:i===0?"default":"pointer",padding:"0.3rem",fontSize:"0.9rem",transition:"color 0.15s"}} onMouseEnter={e=>{if(i>0)e.target.style.color=C.gold;}} onMouseLeave={e=>e.target.style.color=i===0?C.muted:C.mutedLight} title="Move left">←</button>
               <button onClick={()=>moveDown(i)} disabled={i===photos.length-1} style={{flex:1,background:"none",border:"none",color:i===photos.length-1?C.muted:C.mutedLight,cursor:i===photos.length-1?"default":"pointer",padding:"0.3rem",fontSize:"0.9rem",transition:"color 0.15s"}} onMouseEnter={e=>{if(i<photos.length-1)e.target.style.color=C.gold;}} onMouseLeave={e=>e.target.style.color=i===photos.length-1?C.muted:C.mutedLight} title="Move right">→</button>
@@ -1717,54 +2797,23 @@ function PhotoManager({ photos, onChange }) {
             </div>
           </div>
         ))}
-        {photos.length===0&&<div style={{gridColumn:"1/-1",textAlign:"center",padding:"2rem",color:C.muted,fontSize:"0.82rem",border:`1px dashed ${C.border}`,borderRadius:"6px"}}>No photos yet. Upload photos or add an image URL below.</div>}
+        {photos.length===0&&<div style={{gridColumn:"1/-1",textAlign:"center",padding:"2rem",color:C.muted,fontSize:"0.82rem",border:`1px dashed ${C.border}`,borderRadius:"6px"}}>No photos yet. Add image URLs below.</div>}
       </div>
-
-      {/* Tab switcher */}
-      <div style={{display:"flex",gap:"0",marginBottom:"0.8rem",border:`1px solid ${C.border}`,borderRadius:"6px",overflow:"hidden"}}>
-        {[{id:"upload",label:"📁 Upload Photos"},{id:"url",label:"🔗 Add by URL"}].map(t=>(
-          <button key={t.id} onClick={()=>{setTab(t.id);setErr("");}} style={{flex:1,padding:"0.6rem 0.8rem",background:tab===t.id?C.gold:"transparent",color:tab===t.id?C.obsidian:C.muted,border:"none",cursor:"pointer",fontSize:"0.75rem",fontWeight:tab===t.id?700:400,letterSpacing:"0.08em",transition:"all 0.2s"}}>{t.label}</button>
-        ))}
+      {/* Add URL */}
+      <div style={{display:"flex",gap:"0.6rem",marginBottom:"0.5rem"}}>
+        <input value={newUrl} onChange={e=>{setNewUrl(e.target.value);setErr("");setPreview(e.target.value.trim()||null);}}
+          placeholder="https://images.unsplash.com/…" style={{...field,flex:1}}
+          onFocus={fieldFocus} onBlur={fieldBlur}
+          onKeyDown={e=>e.key==="Enter"&&addUrl()}/>
+        <button onClick={addUrl} style={{padding:"0.75rem 1.2rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"5px",fontWeight:600,cursor:"pointer",fontSize:"0.82rem",flexShrink:0,transition:"background 0.2s"}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>Add</button>
       </div>
-
-      {/* Upload tab */}
-      {tab==="upload"&&(
-        <div>
-          <label style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"0.6rem",padding:"2rem 1.5rem",border:`2px dashed ${C.gold}`,borderRadius:"8px",background:"rgba(197,151,58,0.04)",cursor:uploading?"not-allowed":"pointer",transition:"background 0.2s"}}
-            onMouseEnter={e=>{if(!uploading)e.currentTarget.style.background="rgba(197,151,58,0.09)";}}
-            onMouseLeave={e=>e.currentTarget.style.background="rgba(197,151,58,0.04)"}>
-            <input type="file" accept="image/*" multiple onChange={handleFileChange} disabled={uploading} style={{display:"none"}}/>
-            {uploading
-              ? <><div style={{fontSize:"1.5rem",animation:"spin 1s linear infinite"}}>⏳</div><div style={{fontSize:"0.82rem",color:C.muted}}>Processing photos…</div></>
-              : <><div style={{fontSize:"2rem"}}>📷</div>
-                  <div style={{fontSize:"0.9rem",fontWeight:600,color:C.sage}}>Click to choose photos</div>
-                  <div style={{fontSize:"0.75rem",color:C.muted,textAlign:"center"}}>JPG, PNG, WEBP · Up to 10MB each · Multiple allowed</div></>
-            }
-          </label>
+      {err&&<div style={{fontSize:"0.75rem",color:C.error,marginBottom:"0.4rem"}}>{err}</div>}
+      {preview&&(
+        <div style={{marginTop:"0.6rem",borderRadius:"6px",overflow:"hidden",height:"80px",border:`1px solid ${C.border}`}}>
+          <img src={preview} alt="preview" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={e=>e.target.parentElement.style.display="none"}/>
         </div>
       )}
-
-      {/* URL tab */}
-      {tab==="url"&&(
-        <div>
-          <div style={{display:"flex",gap:"0.6rem",marginBottom:"0.5rem"}}>
-            <input value={newUrl} onChange={e=>{setNewUrl(e.target.value);setErr("");setPreview(e.target.value.trim()||null);}}
-              placeholder="https://images.unsplash.com/…" style={{...field,flex:1}}
-              onFocus={fieldFocus} onBlur={fieldBlur}
-              onKeyDown={e=>e.key==="Enter"&&addUrl()}/>
-            <button onClick={addUrl} style={{padding:"0.75rem 1.2rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"5px",fontWeight:600,cursor:"pointer",fontSize:"0.82rem",flexShrink:0,transition:"background 0.2s"}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>Add</button>
-          </div>
-          {preview&&(
-            <div style={{marginTop:"0.6rem",borderRadius:"6px",overflow:"hidden",height:"80px",border:`1px solid ${C.border}`}}>
-              <img src={preview} alt="preview" style={{width:"100%",height:"100%",objectFit:"cover"}} onError={e=>e.target.parentElement.style.display="none"}/>
-            </div>
-          )}
-          <div style={{fontSize:"0.7rem",color:C.muted,marginTop:"0.5rem"}}>Tip: Use Unsplash URLs (…unsplash.com/photo-…?w=1200&q=85) for best quality.</div>
-        </div>
-      )}
-
-      {err&&<div style={{fontSize:"0.75rem",color:C.error,marginTop:"0.5rem",padding:"0.4rem 0.7rem",background:"rgba(220,38,38,0.07)",borderRadius:"4px",border:"1px solid rgba(220,38,38,0.18)"}}>{err}</div>}
-      <div style={{fontSize:"0.7rem",color:C.muted,marginTop:"0.6rem"}}>First photo is used as the cover image on listing cards.</div>
+      <div style={{fontSize:"0.7rem",color:C.muted,marginTop:"0.5rem"}}>Tip: Use Unsplash URLs (…unsplash.com/photo-…?w=1200&q=85) for best quality. First photo is the cover image.</div>
     </div>
   );
 }
@@ -2066,6 +3115,42 @@ function ListingEditor({ listing, onSave, onCancel }) {
         <BookedDateManager bookedDates={draft.bookedDates} onChange={v=>set("bookedDates",v)}/>
       </EditorSection>
 
+      {/* ── SECTION: Location ── */}
+      <EditorSection title="Location & Map Pin" icon="📍">
+        <div style={{marginBottom:"1rem"}}>
+          <p style={{fontSize:"0.83rem",color:C.muted,lineHeight:1.7,marginBottom:"1rem"}}>
+            Click on the map or drag the pin to set the exact location guests will see. This appears on the listing page with Google Maps, Apple Maps, and Waze links.
+          </p>
+          <LocationPicker
+            lat={draft.lat || -1.2921}
+            lng={draft.lng || 36.8219}
+            onChange={({lat,lng})=>{ set("lat",lat); set("lng",lng); }}
+          />
+        </div>
+        <div style={{marginTop:"0.8rem"}}>
+          <Field label="Access Note for Guests (shown below the map)">
+            <textarea
+              value={draft.locationNote || ""}
+              onChange={e=>set("locationNote",e.target.value)}
+              placeholder="e.g. Green gate on Argwings Kodhek Road, ring the bell and mention Shikaz Homes. Parking inside compound."
+              rows={3}
+              style={{width:"100%",padding:"0.75rem 0.9rem",border:`1px solid ${C.border}`,borderRadius:"5px",fontSize:"0.85rem",resize:"vertical",fontFamily:"inherit",outline:"none",background:"#fff",color:"#1C1C1C",lineHeight:1.6}}
+              onFocus={e=>e.target.style.borderColor=C.gold}
+              onBlur={e=>e.target.style.borderColor=C.border}
+            />
+          </Field>
+          <div style={{fontSize:"0.71rem",color:C.muted,marginTop:"0.4rem"}}>
+            Tip: mention landmarks, gate colour, floor number, or parking instructions — anything that helps guests find you quickly.
+          </div>
+        </div>
+        {draft.lat && draft.lng && (
+          <div style={{marginTop:"1rem",padding:"0.6rem 0.9rem",background:"rgba(76,175,125,0.08)",border:"1px solid rgba(76,175,125,0.25)",borderRadius:"5px",fontSize:"0.76rem",color:"#4CAF7D",display:"flex",gap:"0.6rem",alignItems:"center"}}>
+            <span>✓</span>
+            <span>Pin set — <strong>{draft.lat.toFixed(6)}, {draft.lng.toFixed(6)}</strong> · Will show on listing page</span>
+          </div>
+        )}
+      </EditorSection>
+
       {/* Save bar */}
       {unsaved&&(
         <div style={{position:"sticky",bottom:"1.5rem",background:"rgba(14,43,31,0.97)",backdropFilter:"blur(12px)",border:`1px solid ${C.border}`,borderRadius:"8px",padding:"1rem 1.4rem",display:"flex",justifyContent:"space-between",alignItems:"center",animation:"slideUp 0.25s ease",boxShadow:"0 8px 32px rgba(0,0,0,0.5)"}}>
@@ -2108,6 +3193,9 @@ const BLANK_LISTING = () => ({
   description: "",
   houseRules: ["No smoking","Check-in 2PM","Checkout 11AM"],
   bookedDates: [],
+  lat: null,
+  lng: null,
+  locationNote: "",
 });
 
 // ── New Listing Wizard ────────────────────────────────────────────
@@ -3073,7 +4161,7 @@ function ICalSyncManager({ listings, bookings, onListingUpdate }) {
 }
 
 // ── Admin Shell ───────────────────────────────────────────────────
-function AdminDashboard({ listings, bookings, onNavigate, onListingUpdate, onListingCreate, onListingDelete }) {
+function AdminDashboard({ listings, bookings, onNavigate, onListingUpdate, onListingCreate, onListingDelete, promoConfig, onPromoSave }) {
   const [tab,setTab]=useState("dashboard");
   const [sideOpen,setSideOpen]=useState(true);
 
@@ -3081,6 +4169,7 @@ function AdminDashboard({ listings, bookings, onNavigate, onListingUpdate, onLis
     {id:"dashboard",icon:"▦",label:"Dashboard"},
     {id:"bookings",icon:"📅",label:"Bookings"},
     {id:"listings",icon:"🏠",label:"Listings"},
+    {id:"promos",icon:"🎉",label:"Promotions"},
     {id:"ical",icon:"🔄",label:"iCal Sync"},
     {id:"settings",icon:"⚙",label:"Settings"},
   ];
@@ -3121,6 +4210,7 @@ function AdminDashboard({ listings, bookings, onNavigate, onListingUpdate, onLis
         {tab==="dashboard"&&<DashboardHome listings={listings} bookings={bookings}/>}
         {tab==="bookings" &&<BookingsManager listings={listings} bookings={bookings}/>}
         {tab==="listings" &&<AdminListings listings={listings} bookings={bookings} onUpdate={onListingUpdate} onCreate={onListingCreate} onDelete={onListingDelete}/>}
+        {tab==="promos"   &&<PromosManager promoConfig={promoConfig||{}} onSave={onPromoSave}/>}
         {tab==="ical"     &&<ICalSyncManager listings={listings} bookings={bookings} onListingUpdate={onListingUpdate}/>}
         {tab==="settings"&&<SettingsPanel onLogout={handleLogout}/>}
       </div>
@@ -3129,10 +4219,10 @@ function AdminDashboard({ listings, bookings, onNavigate, onListingUpdate, onLis
 }
 
 // ── Admin Root (login gate) ───────────────────────────────────────
-function AdminRoot({ listings, bookings, onNavigate, onListingUpdate, onListingCreate, onListingDelete }) {
+function AdminRoot({ listings, bookings, onNavigate, onListingUpdate, onListingCreate, onListingDelete, promoConfig, onPromoSave }) {
   const [authed,setAuthed]=useState(false);
   if(!authed) return <AdminLogin onLogin={()=>setAuthed(true)}/>;
-  return <AdminDashboard listings={listings} bookings={bookings} onNavigate={onNavigate} onListingUpdate={onListingUpdate} onListingCreate={onListingCreate} onListingDelete={onListingDelete}/>;
+  return <AdminDashboard listings={listings} bookings={bookings} onNavigate={onNavigate} onListingUpdate={onListingUpdate} onListingCreate={onListingCreate} onListingDelete={onListingDelete} promoConfig={promoConfig} onPromoSave={onPromoSave}/>;
 }
 
 // ─── FOOTER ───────────────────────────────────────────────────────
@@ -3157,10 +4247,12 @@ function Footer({ onNavigate, onMyBookings }) {
 }
 
 // ─── HOME PAGE ─────────────────────────────────────────────────────
-function HomePage({ listings, onSelect, onNavigate }) {
+function HomePage({ listings, onSelect, onNavigate, promoConfig }) {
+  const upcoming = getUpcomingHolidays(promoConfig || {}, 6);
   return (
     <>
       <Hero listings={listings} onNavigate={onNavigate}/>
+      {upcoming.length > 0 && <PromoTicker holidays={upcoming}/>}
       <section style={{padding:"4rem 1.5rem",background:"#FDFAF5"}}>
         <div style={{maxWidth:"1200px",margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:"3.5rem"}}>
@@ -3177,6 +4269,7 @@ function HomePage({ listings, onSelect, onNavigate }) {
           </div>
         </div>
       </section>
+      <UpcomingPromosSection promoConfig={promoConfig || {}} onNavigate={onNavigate}/>
       <section style={{padding:"4rem 1.5rem",background:"#F7F2EA"}}>
         <div style={{maxWidth:"1200px",margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:"3.5rem"}}>
@@ -3206,12 +4299,30 @@ export default function App() {
   const [selectedListing,setSelectedListing]=useState(null);
   const [loading,setLoading]=useState(true);
   const [showMyBookings,setShowMyBookings]=useState(false);
+  const [promoConfig,setPromoConfig]=useState({});
+  const [activeHoliday,setActiveHoliday]=useState(null);
+  const [showHolidayPopup,setShowHolidayPopup]=useState(false);
 
   useEffect(()=>{
-    Promise.all([loadListings(),loadBookings()]).then(([ls,bs])=>{
-      setListings(ls); setBookings(bs); setLoading(false);
+    Promise.all([loadListings(),loadBookings(),loadPromos()]).then(([ls,bs,pc])=>{
+      setListings(ls); setBookings(bs); setPromoConfig(pc); setLoading(false);
+      const holiday = getActiveHoliday(pc);
+      if(holiday){
+        setActiveHoliday(holiday);
+        // Show popup after 2.5s — not immediately jarring
+        const seen = sessionStorage.getItem("shikaz_promo_seen_"+holiday.id);
+        if(!seen){ setTimeout(()=>setShowHolidayPopup(true),2500); }
+      }
     });
   },[]);
+
+  const handlePromoSave = async(cfg) => {
+    setPromoConfig(cfg);
+    await savePromos(cfg);
+    // Recompute active holiday with new config
+    const holiday = getActiveHoliday(cfg);
+    setActiveHoliday(holiday);
+  };
 
   const navigate=(p)=>{ setPage(p); window.scrollTo(0,0); };
   const selectListing=(l)=>{ setSelectedListing(l); setPage("listing"); window.scrollTo(0,0); };
@@ -3268,19 +4379,36 @@ export default function App() {
     </div>
   );
 
+  const handleHolidayClose = () => {
+    setShowHolidayPopup(false);
+    if(activeHoliday) sessionStorage.setItem("shikaz_promo_seen_"+activeHoliday.id,"1");
+  };
+  const handleHolidayBook = () => {
+    setShowHolidayPopup(false);
+    if(activeHoliday) sessionStorage.setItem("shikaz_promo_seen_"+activeHoliday.id,"1");
+    navigate("listings");
+  };
+
   return (
     <>
       <style>{GS}</style>
       <Nav onNavigate={navigate}/>
-      {page==="home"    &&<HomePage listings={listings} onSelect={selectListing} onNavigate={navigate}/>}
-      {page==="listings"&&<ListingsPage listings={listings} onSelect={selectListing}/>}
+      {page==="home"    &&<HomePage listings={listings} onSelect={selectListing} onNavigate={navigate} promoConfig={promoConfig}/>}
+      {page==="listings"&&<ListingsPage listings={listings} onSelect={selectListing} promoConfig={promoConfig}/>}
       {page==="listing" &&selectedListing&&<ListingPage listing={selectedListing} onBack={()=>navigate("listings")} onNavigate={navigate} onBookingMade={handleBookingMade}/>}
       {page==="about"   &&<AboutPage/>}
       {page==="contact" &&<ContactPage/>}
-      {page==="admin"   &&<AdminRoot listings={listings} bookings={bookings} onNavigate={navigate} onListingUpdate={handleListingUpdate} onListingCreate={handleListingCreate} onListingDelete={handleListingDelete}/>}
+      {page==="mybooking"&&<MyBookingPage bookings={bookings}/>}
+      {page==="admin"   &&<AdminRoot listings={listings} bookings={bookings} onNavigate={navigate} onListingUpdate={handleListingUpdate} onListingCreate={handleListingCreate} onListingDelete={handleListingDelete} promoConfig={promoConfig} onPromoSave={handlePromoSave}/>}
       {page!=="home"&&page!=="admin"&&<Footer onNavigate={navigate} onMyBookings={()=>setShowMyBookings(true)}/>}
       {page==="home"    &&<Footer onNavigate={navigate} onMyBookings={()=>setShowMyBookings(true)}/>}
       {showMyBookings&&<MyBookingsPanel bookings={bookings} onClose={()=>setShowMyBookings(false)}/>}
+      {showHolidayPopup&&activeHoliday&&page!=="admin"&&(
+        <HolidayPopup holiday={activeHoliday} onClose={handleHolidayClose} onBook={handleHolidayBook}/>
+      )}
+      {!showHolidayPopup&&activeHoliday&&page!=="admin"&&(
+        <PromoBanner holiday={activeHoliday} onOpen={()=>setShowHolidayPopup(true)}/>
+      )}
     </>
   );
 }
