@@ -358,14 +358,23 @@ function PriceBreakdown({ listing, checkIn, checkOut, guests }) {
 }
 
 // ─── MPESA PAYMENT MODAL ──────────────────────────────────────────
-function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess }) {
+function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess, customAmount, isDeposit, holidayDiscount }) {
   const nights  = nightsBetween(checkIn,checkOut);
-  const total   = nights*listing.pricePerNight + listing.cleaningFee;
-  const [step,setStep]=useState("form"); // form | sending | confirm | success | failed
+  const baseTotal = nights*listing.pricePerNight + listing.cleaningFee;
+  // Apply holiday discount to base total (not to deposit — discount is on the full stay)
+  const discountedTotal = holidayDiscount
+    ? Math.round(baseTotal * (1 - holidayDiscount/100))
+    : baseTotal;
+  const discountSaving  = baseTotal - discountedTotal;
+  // If paying deposit, amount is customAmount; otherwise discounted total
+  const total   = (isDeposit && customAmount) ? customAmount : discountedTotal;
+  const balanceDue = isDeposit ? discountedTotal - total : 0;
+
+  const [step,setStep]=useState("form");
   const [name,setName]=useState("");
   const [phone,setPhone]=useState("");
   const [err,setErr]=useState("");
-  const ref = genRef();
+  const bookingRef = useState(()=>genRef())[0];
 
   const validatePhone=p=>/^(?:254|0)[17]\d{8}$/.test(p.replace(/\s/g,""));
   const normalisePhone=p=>{ const c=p.replace(/\s/g,""); return c.startsWith("0")?"254"+c.slice(1):c; };
@@ -379,19 +388,22 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess }
 
   const confirmPay=()=>{
     setStep("sending");
-    setTimeout(()=>{
-      // 90% success rate simulation
-      setStep(Math.random()>0.1?"success":"failed");
-    },3500);
+    setTimeout(()=>setStep(Math.random()>0.1?"success":"failed"),3500);
   };
 
   const handleSuccess=()=>{
-    onSuccess({ ref, name, phone:normalisePhone(phone), checkIn, checkOut, guests, listing, total, nights });
+    onSuccess({
+      ref:bookingRef, name, phone:normalisePhone(phone),
+      checkIn, checkOut, guests, listing,
+      total, nights,
+      isDeposit, depositAmount:isDeposit?total:null,
+      balanceDue, holidayDiscount,
+    });
     onClose();
   };
 
   const overlay={position:"fixed",inset:0,background:"rgba(14,43,31,0.75)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:"1rem",backdropFilter:"blur(8px)"};
-  const box={background:"#fff",border:`1px solid ${C.border}`,borderRadius:"12px",width:"100%",maxWidth:"480px",padding:"2.2rem",animation:"slideUp 0.35s ease",position:"relative",boxShadow:"0 32px 80px rgba(0,0,0,0.6)"};
+  const box={background:"#fff",border:`1px solid ${C.border}`,borderRadius:"12px",width:"100%",maxWidth:"480px",padding:"2.2rem",animation:"slideUp 0.35s ease",position:"relative",boxShadow:"0 32px 80px rgba(0,0,0,0.6)",maxHeight:"92vh",overflowY:"auto"};
 
   return (
     <div style={overlay} onClick={e=>e.target===e.currentTarget&&onClose()}>
@@ -400,20 +412,42 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess }
 
         {/* Header */}
         <div style={{marginBottom:"1.5rem"}}>
-          <div style={{fontSize:"0.65rem",letterSpacing:"0.25em",textTransform:"uppercase",color:"rgba(197,151,58,0.9)",marginBottom:"0.4rem"}}>
-            {step==="success"?"Booking Confirmed":step==="failed"?"Payment Failed":"Secure Checkout"}
+          <div style={{display:"flex",alignItems:"center",gap:"0.5rem",flexWrap:"wrap",marginBottom:"0.4rem"}}>
+            <div style={{fontSize:"0.65rem",letterSpacing:"0.25em",textTransform:"uppercase",color:"rgba(197,151,58,0.9)"}}>
+              {step==="success"?(isDeposit?"Deposit Confirmed":"Booking Confirmed"):step==="failed"?"Payment Failed":(isDeposit?"Hold Dates — Deposit":"Secure Checkout")}
+            </div>
+            {isDeposit&&<span style={{fontSize:"0.58rem",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",padding:"0.12rem 0.45rem",background:"rgba(197,151,58,0.12)",color:C.gold,border:`1px solid rgba(197,151,58,0.3)`,borderRadius:"3px"}}>Deposit</span>}
+            {holidayDiscount>0&&<span style={{fontSize:"0.58rem",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",padding:"0.12rem 0.45rem",background:"rgba(76,175,125,0.1)",color:C.success,border:`1px solid rgba(76,175,125,0.3)`,borderRadius:"3px"}}>🎉 {holidayDiscount}% Off</span>}
           </div>
           <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.35rem",color:"#0E2B1F"}}>{listing.name}</div>
           <div style={{fontSize:"0.8rem",color:C.muted,marginTop:"0.2rem"}}>
             {fmtDate(checkIn)} → {fmtDate(checkOut)} · {nights} night{nights>1?"s":""} · {guests} guest{guests>1?"s":""}
           </div>
+          {isDeposit&&step==="form"&&(
+            <div style={{marginTop:"0.6rem",padding:"0.5rem 0.8rem",background:"rgba(197,151,58,0.07)",border:`1px solid rgba(197,151,58,0.22)`,borderRadius:"4px",fontSize:"0.74rem",color:C.mutedLight,lineHeight:1.6}}>
+              Paying <strong style={{color:C.gold}}>KES {fmt(total)}</strong> deposit now · Balance of <strong style={{color:C.gold}}>KES {fmt(balanceDue)}</strong> due at check-in
+            </div>
+          )}
         </div>
 
         {/* ── FORM ── */}
         {step==="form"&&(
           <div style={{animation:"fadeIn 0.3s ease"}}>
-            <PriceBreakdown listing={listing} checkIn={checkIn} checkOut={checkOut} guests={guests}/>
-            <div style={{marginTop:"1.2rem"}}>
+            {/* Price breakdown with discount */}
+            <div style={{background:"#F7F2EA",border:`1px solid ${C.border}`,borderRadius:"6px",padding:"0.9rem 1.1rem",marginBottom:"1.2rem"}}>
+              {[
+                ["Nightly rate",`KES ${fmt(listing.pricePerNight)} × ${nights}`],
+                ["Cleaning fee",`KES ${fmt(listing.cleaningFee)}`],
+                ...(holidayDiscount>0?[["Holiday discount",`− KES ${fmt(discountSaving)}`]]:[]),
+                ...(isDeposit?[["Deposit now",`KES ${fmt(total)}`],[`Balance at check-in`,`KES ${fmt(balanceDue)}`]]:[["Total",`KES ${fmt(discountedTotal)}`]]),
+              ].map(([l,r],i,arr)=>(
+                <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:"0.8rem",padding:"0.3rem 0",borderBottom:i<arr.length-1?`1px solid ${C.border}`:"none",fontWeight:i===arr.length-1?700:400}}>
+                  <span style={{color:l==="Holiday discount"?C.success:C.muted}}>{l}</span>
+                  <span style={{color:l==="Holiday discount"?C.success:l.includes("Total")||l.includes("Deposit")||l.includes("Balance")?C.gold:C.cream}}>{r}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{marginTop:"0.2rem"}}>
               {[{lbl:"Full Name",ph:"Jane Mwangi",val:name,set:setName,type:"text"},{lbl:"M-Pesa Phone",ph:"0712 345 678",val:phone,set:setPhone,type:"tel"}].map(f=>(
                 <div key={f.lbl} style={{marginBottom:"0.9rem"}}>
                   <label style={{display:"block",fontSize:"0.65rem",letterSpacing:"0.18em",textTransform:"uppercase",color:C.muted,marginBottom:"0.4rem"}}>{f.lbl}</label>
@@ -424,7 +458,7 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess }
               ))}
               {err&&<div style={{fontSize:"0.78rem",color:C.error,marginBottom:"0.8rem",padding:"0.5rem 0.8rem",background:"rgba(224,82,82,0.08)",borderRadius:"4px",border:"1px solid rgba(224,82,82,0.2)"}}>{err}</div>}
               <button onClick={submit} style={{width:"100%",padding:"1rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontSize:"0.85rem",fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.2s",marginTop:"0.3rem"}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>
-                Continue to M-Pesa →
+                Pay KES {fmt(total)} via M-Pesa →
               </button>
               <p style={{textAlign:"center",fontSize:"0.7rem",color:C.muted,marginTop:"0.7rem"}}>🔒 Secured via PayHero · Lipa Na M-Pesa</p>
             </div>
@@ -439,8 +473,7 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess }
               {name?`Processing, ${name.split(" ")[0]}…`:"Processing…"}
             </div>
             <div style={{fontSize:"0.82rem",color:C.muted,lineHeight:1.7}}>
-              Sending STK push to <strong style={{color:C.gold}}>+{normalisePhone(phone)}</strong>
-              <br/>Please wait…
+              Sending STK push to <strong style={{color:C.gold}}>+{normalisePhone(phone)}</strong><br/>Please wait…
             </div>
           </div>
         )}
@@ -457,9 +490,17 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess }
               </div>
             </div>
             <div style={{background:C.goldDim,border:`1px solid ${C.border}`,borderRadius:"6px",padding:"1rem 1.2rem",marginBottom:"1.2rem"}}>
-              {[["Listing",listing.name],["Dates",`${fmtDate(checkIn)} – ${fmtDate(checkOut)}`],["Nights",`${nights} night${nights>1?"s":""}`],["Amount",`KES ${fmt(total)}`],["Reference",ref]].map(([l,r])=>(
+              {[
+                ["Listing",listing.name],
+                ["Dates",`${fmtDate(checkIn)} – ${fmtDate(checkOut)}`],
+                ["Nights",`${nights} night${nights>1?"s":""}`],
+                ...(holidayDiscount>0?[["Holiday discount",`${holidayDiscount}% off (−KES ${fmt(discountSaving)})`]]:[]),
+                [isDeposit?"Deposit":"Amount",`KES ${fmt(total)}`],
+                ["Reference",bookingRef],
+              ].map(([l,r])=>(
                 <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:"0.8rem",padding:"0.3rem 0",borderBottom:`1px solid ${C.border}`}}>
-                  <span style={{color:C.muted}}>{l}</span><span style={{color:l==="Amount"||l==="Reference"?C.gold:C.cream,fontWeight:l==="Amount"?600:400}}>{r}</span>
+                  <span style={{color:l==="Holiday discount"?C.success:C.muted}}>{l}</span>
+                  <span style={{color:l==="Amount"||l==="Deposit"||l==="Reference"?C.gold:l==="Holiday discount"?C.success:C.cream,fontWeight:l==="Amount"||l==="Deposit"?600:400}}>{r}</span>
                 </div>
               ))}
             </div>
@@ -475,17 +516,27 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess }
           <div style={{animation:"fadeIn 0.4s ease"}}>
             <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
               <div style={{width:"56px",height:"56px",background:C.successDim,border:`2px solid ${C.success}`,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.5rem",margin:"0 auto 1rem"}}>✓</div>
-              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.3rem",color:"#0E2B1F",marginBottom:"0.4rem"}}>Booking Confirmed!</div>
-              <div style={{fontSize:"0.83rem",color:C.muted}}>Payment received · Confirmation sent to {normalisePhone(phone)}</div>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.3rem",color:"#0E2B1F",marginBottom:"0.4rem"}}>{isDeposit?"Dates Held!":"Booking Confirmed!"}</div>
+              <div style={{fontSize:"0.83rem",color:C.muted}}>{isDeposit?"Deposit received · Dates are reserved":"Payment received · M-Pesa confirmation sent"}</div>
             </div>
-            <div style={{background:C.successDim,border:`1px solid rgba(76,175,125,0.25)`,borderRadius:"8px",padding:"1.2rem",marginBottom:"1.2rem"}}>
-              {[["Guest",name],["Property",listing.name],["Check-in",fmtDate(checkIn)],["Check-out",fmtDate(checkOut)],["Nights",`${nights}`],["Guests",`${guests}`],["Total Paid",`KES ${fmt(total)}`],["Booking Ref",ref]].map(([l,r])=>(
+            <div style={{background:C.successDim,border:`1px solid rgba(76,175,125,0.25)`,borderRadius:"8px",padding:"1.2rem",marginBottom:isDeposit||holidayDiscount?"0.6rem":"1.2rem"}}>
+              {[
+                ["Guest",name],["Property",listing.name],
+                ["Check-in",fmtDate(checkIn)],["Check-out",fmtDate(checkOut)],
+                ["Nights",`${nights}`],["Guests",`${guests}`],
+                ...(holidayDiscount>0?[["Holiday Saving",`KES ${fmt(discountSaving)} (${holidayDiscount}% off)`]]:[]),
+                [isDeposit?"Deposit Paid":"Total Paid",`KES ${fmt(total)}`],
+                ["Booking Ref",bookingRef],
+              ].map(([l,r])=>(
                 <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:"0.8rem",padding:"0.3rem 0",borderBottom:`1px solid rgba(76,175,125,0.15)`}}>
                   <span style={{color:C.muted}}>{l}</span>
-                  <span style={{color:l==="Total Paid"||l==="Booking Ref"?C.success:C.cream,fontWeight:["Total Paid","Booking Ref"].includes(l)?600:400}}>{r}</span>
+                  <span style={{color:l.includes("Paid")||l==="Booking Ref"?C.success:l==="Holiday Saving"?"#4CAF7D":C.cream,fontWeight:l.includes("Paid")||l==="Booking Ref"?600:400}}>{r}</span>
                 </div>
               ))}
             </div>
+            {isDeposit&&<div style={{padding:"0.7rem 1rem",background:"rgba(197,151,58,0.07)",border:`1px solid rgba(197,151,58,0.22)`,borderRadius:"6px",marginBottom:"1rem",fontSize:"0.75rem",color:C.mutedLight}}>
+              💰 Balance due at check-in: <strong style={{color:C.gold}}>KES {fmt(balanceDue)}</strong>
+            </div>}
             <button onClick={handleSuccess} style={{width:"100%",padding:"0.9rem",background:C.success,color:"#fff",border:"none",borderRadius:"6px",fontSize:"0.82rem",fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer"}}>
               Done — View My Booking
             </button>
@@ -499,7 +550,7 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess }
             <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.2rem",color:"#0E2B1F",marginBottom:"0.5rem"}}>Payment Unsuccessful</div>
             <div style={{fontSize:"0.83rem",color:C.muted,lineHeight:1.7,marginBottom:"1.5rem"}}>The transaction was not completed. Please check your M-Pesa balance and try again, or contact us on WhatsApp.</div>
             <div style={{display:"flex",gap:"0.8rem"}}>
-              <button onClick={()=>setStep("confirm")} style={{flex:1,padding:"0.9rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontSize:"0.8rem",fontWeight:600,cursor:"pointer"}}>Try Again</button>
+              <button onClick={()=>setStep("form")} style={{flex:1,padding:"0.9rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontSize:"0.8rem",fontWeight:600,cursor:"pointer"}}>Try Again</button>
               <a href="https://wa.me/254745802200" target="_blank" rel="noreferrer" style={{flex:1,padding:"0.9rem",background:"transparent",color:C.success,border:`1px solid ${C.success}`,borderRadius:"6px",fontSize:"0.8rem",fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.3rem"}}>WhatsApp</a>
             </div>
           </div>
@@ -510,35 +561,75 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess }
 }
 
 // ─── BOOKING WIDGET ───────────────────────────────────────────────
-function BookingWidget({ listing, onBookingMade }) {
+function BookingWidget({ listing, onBookingMade, activeHoliday }) {
   const [checkIn,setCheckIn]=useState(null);
   const [checkOut,setCheckOut]=useState(null);
   const [guests,setGuests]=useState(1);
   const [showCal,setShowCal]=useState(false);
   const [showModal,setShowModal]=useState(false);
+  // Deposit state
+  const [showDeposit,setShowDeposit]=useState(false);
+  const [depositAmt,setDepositAmt]=useState("");
+  const [depositErr,setDepositErr]=useState("");
+  const [showDepositModal,setShowDepositModal]=useState(false);
+
   const nights=nightsBetween(checkIn,checkOut);
-
   const handleSelect=({checkIn:ci,checkOut:co})=>{ setCheckIn(ci); setCheckOut(co); };
+  const handleBookingSuccess=(booking)=>onBookingMade(booking);
+  const canBook=checkIn&&checkOut&&nights>0;
 
-  const handleBookingSuccess=(booking)=>{
-    onBookingMade(booking);
+  const baseTotal = canBook ? nights*listing.pricePerNight+listing.cleaningFee : 0;
+  const holidayDiscount = activeHoliday?.discount || 0;
+  const discountedTotal = holidayDiscount ? Math.round(baseTotal*(1-holidayDiscount/100)) : baseTotal;
+  const discountSaving  = baseTotal - discountedTotal;
+
+  const openDeposit=()=>{
+    if(!canBook){ setShowCal(true); return; }
+    setShowDeposit(s=>!s); setDepositErr("");
   };
 
-  const canBook=checkIn&&checkOut&&nights>0;
+  const submitDeposit=()=>{
+    const v=parseInt(depositAmt.replace(/,/g,""),10);
+    if(!depositAmt||isNaN(v)||v<500){ setDepositErr("Minimum deposit is KES 500."); return; }
+    if(v>=discountedTotal){ setDepositErr(`Enter an amount less than KES ${fmt(discountedTotal)} (the full total). Use "Reserve" above to pay in full.`); return; }
+    setDepositErr(""); setShowDepositModal(true);
+  };
 
   return (
     <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:"10px",padding:"1.8rem",boxShadow:"0 16px 60px rgba(14,43,31,0.12)",position:"sticky",top:"92px"}}>
+
+      {/* Holiday discount banner */}
+      {activeHoliday&&(
+        <div style={{marginBottom:"1rem",padding:"0.65rem 0.9rem",background:`linear-gradient(135deg,${activeHoliday.theme?.bg||"#0E2B1F"},rgba(14,43,31,0.95))`,borderRadius:"6px",border:`1px solid ${activeHoliday.theme?.accent||C.gold}44`,display:"flex",alignItems:"center",gap:"0.7rem"}}>
+          <span style={{fontSize:"1.2rem"}}>{activeHoliday.emoji}</span>
+          <div style={{flex:1,minWidth:0}}>
+            <div style={{fontSize:"0.68rem",fontWeight:700,color:activeHoliday.theme?.accent||C.gold,letterSpacing:"0.05em"}}>{activeHoliday.name} — {holidayDiscount}% Off</div>
+            {canBook&&discountSaving>0&&<div style={{fontSize:"0.62rem",color:"rgba(255,255,255,0.6)",marginTop:"0.1rem"}}>You save KES {fmt(discountSaving)} on this booking</div>}
+          </div>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.3rem",color:activeHoliday.theme?.accent||C.gold,fontWeight:700,flexShrink:0}}>{holidayDiscount}%</div>
+        </div>
+      )}
+
       {/* Price */}
-      <div style={{marginBottom:"1.2rem",display:"flex",alignItems:"baseline",gap:"0.4rem"}}>
-        <span style={{fontFamily:"'Playfair Display',serif",fontSize:"2rem",color:C.gold}}>KES {fmt(listing.pricePerNight)}</span>
-        <span style={{fontSize:"0.8rem",color:C.muted}}>/night</span>
+      <div style={{marginBottom:"1.2rem",display:"flex",alignItems:"baseline",gap:"0.4rem",flexWrap:"wrap"}}>
+        {holidayDiscount>0&&canBook
+          ? <>
+              <span style={{fontFamily:"'Playfair Display',serif",fontSize:"1.3rem",color:C.muted,textDecoration:"line-through"}}>KES {fmt(listing.pricePerNight)}</span>
+              <span style={{fontFamily:"'Playfair Display',serif",fontSize:"2rem",color:C.gold}}>KES {fmt(Math.round(listing.pricePerNight*(1-holidayDiscount/100)))}</span>
+              <span style={{fontSize:"0.8rem",color:C.muted}}>/night</span>
+            </>
+          : <>
+              <span style={{fontFamily:"'Playfair Display',serif",fontSize:"2rem",color:C.gold}}>KES {fmt(listing.pricePerNight)}</span>
+              <span style={{fontSize:"0.8rem",color:C.muted}}>/night</span>
+            </>
+        }
         <span style={{marginLeft:"auto",fontSize:"0.8rem",color:C.mutedLight}}>★ {listing.rating} ({listing.reviewCount})</span>
       </div>
 
       {/* Date display pills */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.5rem",marginBottom:"0.8rem"}}>
         {[{label:"Check-in",val:checkIn},{label:"Check-out",val:checkOut}].map(f=>(
-          <button key={f.label} onClick={()=>setShowCal(true)} style={{padding:"0.7rem 0.8rem",background:"#F7F2EA",border:`1px solid ${checkIn||checkOut?C.border:C.border}`,borderRadius:"5px",textAlign:"left",cursor:"pointer",transition:"border-color 0.2s"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.gold} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
+          <button key={f.label} onClick={()=>setShowCal(true)} style={{padding:"0.7rem 0.8rem",background:"#F7F2EA",border:`1px solid ${C.border}`,borderRadius:"5px",textAlign:"left",cursor:"pointer",transition:"border-color 0.2s"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.gold} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
             <div style={{fontSize:"0.6rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,marginBottom:"0.2rem"}}>{f.label}</div>
             <div style={{fontSize:"0.85rem",color:f.val?C.cream:C.muted}}>{f.val?fmtDate(f.val):"Add date"}</div>
           </button>
@@ -559,7 +650,7 @@ function BookingWidget({ listing, onBookingMade }) {
       </div>
 
       {/* Calendar toggle */}
-      <button onClick={()=>setShowCal(s=>!s)} style={{width:"100%",padding:"0.6rem",background:"transparent",border:`1px dashed ${C.border}`,borderRadius:"5px",color:C.muted,fontSize:"0.75rem",fontSize:"0.75rem",cursor:"pointer",marginBottom:"0.8rem",letterSpacing:"0.1em",transition:"all 0.2s"}} onMouseEnter={e=>{e.target.style.borderColor=C.gold;e.target.style.color=C.gold;}} onMouseLeave={e=>{e.target.style.borderColor=C.border;e.target.style.color=C.muted;}}>
+      <button onClick={()=>setShowCal(s=>!s)} style={{width:"100%",padding:"0.6rem",background:"transparent",border:`1px dashed ${C.border}`,borderRadius:"5px",color:C.muted,fontSize:"0.75rem",cursor:"pointer",marginBottom:"0.8rem",letterSpacing:"0.1em",transition:"all 0.2s"}} onMouseEnter={e=>{e.target.style.borderColor=C.gold;e.target.style.color=C.gold;}} onMouseLeave={e=>{e.target.style.borderColor=C.border;e.target.style.color=C.muted;}}>
         {showCal?"▲ Hide Calendar":"▦ Open Availability Calendar"}
       </button>
 
@@ -574,23 +665,123 @@ function BookingWidget({ listing, onBookingMade }) {
       )}
 
       {/* Price breakdown */}
-      {canBook&&<div style={{marginBottom:"0.8rem"}}><PriceBreakdown listing={listing} checkIn={checkIn} checkOut={checkOut} guests={guests}/></div>}
+      {canBook&&(
+        <div style={{marginBottom:"0.8rem",background:"#F7F2EA",border:`1px solid ${C.border}`,borderRadius:"6px",padding:"0.8rem 1rem"}}>
+          {[
+            [`${nights} night${nights>1?"s":""} × KES ${fmt(listing.pricePerNight)}`,`KES ${fmt(nights*listing.pricePerNight)}`],
+            ["Cleaning fee",`KES ${fmt(listing.cleaningFee)}`],
+            ...(holidayDiscount>0?[[`${activeHoliday.name} discount (${holidayDiscount}%)`,`− KES ${fmt(discountSaving)}`]]:[]),
+          ].map(([l,r])=>(
+            <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:"0.79rem",padding:"0.25rem 0",borderBottom:`1px solid ${C.border}`}}>
+              <span style={{color:l.includes("discount")?C.success:C.muted}}>{l}</span>
+              <span style={{color:l.includes("discount")?C.success:C.cream}}>{r}</span>
+            </div>
+          ))}
+          <div style={{display:"flex",justifyContent:"space-between",fontSize:"0.85rem",paddingTop:"0.5rem",fontWeight:700}}>
+            <span style={{color:"#0E2B1F"}}>Total</span>
+            <span style={{color:C.gold}}>KES {fmt(discountedTotal)}</span>
+          </div>
+        </div>
+      )}
 
-      {/* CTA */}
-      <button onClick={()=>{ if(canBook) setShowModal(true); else setShowCal(true); }} style={{width:"100%",padding:"1.1rem",background:canBook?C.gold:"rgba(212,175,95,0.3)",color:canBook?C.obsidian:"rgba(212,175,95,0.6)",border:"none",borderRadius:"6px",fontSize:"0.82rem",fontWeight:700,letterSpacing:"0.18em",textTransform:"uppercase",cursor:canBook?"pointer":"default",transition:"all 0.2s"}} onMouseEnter={e=>{ if(canBook) e.target.style.background=C.goldLight; }} onMouseLeave={e=>{ if(canBook) e.target.style.background=C.gold; }}>
-        {canBook?`Reserve · KES ${fmt(nights*listing.pricePerNight+listing.cleaningFee)}`:"Select Dates to Reserve"}
+      {/* ── MAIN CTA ── */}
+      <button onClick={()=>{ if(canBook) setShowModal(true); else setShowCal(true); }}
+        style={{width:"100%",padding:"1.1rem",background:canBook?C.gold:"rgba(212,175,95,0.3)",color:canBook?C.obsidian:"rgba(212,175,95,0.6)",border:"none",borderRadius:"6px",fontSize:"0.82rem",fontWeight:700,letterSpacing:"0.18em",textTransform:"uppercase",cursor:canBook?"pointer":"default",transition:"all 0.2s"}}
+        onMouseEnter={e=>{ if(canBook) e.target.style.background=C.goldLight; }}
+        onMouseLeave={e=>{ if(canBook) e.target.style.background=C.gold; }}>
+        {canBook?`Reserve · KES ${fmt(discountedTotal)}`:"Select Dates to Reserve"}
       </button>
       <p style={{textAlign:"center",fontSize:"0.7rem",color:C.muted,marginTop:"0.6rem"}}>
         {canBook?"You won't be charged until payment is confirmed":"Free cancellation · No hidden fees"}
       </p>
 
+      {/* ── OR DIVIDER ── */}
+      <div style={{display:"flex",alignItems:"center",gap:"0.7rem",margin:"1rem 0"}}>
+        <div style={{flex:1,height:"1px",background:C.border}}/>
+        <span style={{fontSize:"0.65rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,flexShrink:0}}>or</span>
+        <div style={{flex:1,height:"1px",background:C.border}}/>
+      </div>
+
+      {/* ── DEPOSIT CTA ── */}
+      <button onClick={openDeposit}
+        style={{width:"100%",padding:"0.95rem",background:"transparent",border:`1.5px solid ${canBook?C.gold:C.border}`,borderRadius:"6px",fontSize:"0.8rem",fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",color:canBook?C.gold:C.muted,cursor:"pointer",transition:"all 0.2s",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem"}}
+        onMouseEnter={e=>{ if(canBook) e.currentTarget.style.background=C.goldDim; }}
+        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+        🔒 Pay a Deposit to Hold Dates
+      </button>
+      <p style={{textAlign:"center",fontSize:"0.68rem",color:C.muted,marginTop:"0.4rem",lineHeight:1.5}}>
+        {canBook?"Pay any amount now to secure your dates — balance due at check-in":"Select dates first to pay a deposit"}
+      </p>
+
+      {/* ── DEPOSIT INPUT PANEL ── */}
+      {showDeposit&&canBook&&(
+        <div style={{marginTop:"0.9rem",padding:"1rem 1.1rem",background:"rgba(197,151,58,0.05)",border:`1px solid ${C.border}`,borderRadius:"8px",animation:"fadeIn 0.2s ease"}}>
+          <div style={{fontSize:"0.65rem",letterSpacing:"0.18em",textTransform:"uppercase",color:C.gold,marginBottom:"0.7rem",fontWeight:600}}>Custom Deposit Amount</div>
+          <div style={{fontSize:"0.78rem",color:C.muted,marginBottom:"0.7rem",lineHeight:1.6}}>
+            Full total is <strong style={{color:C.gold}}>KES {fmt(discountedTotal)}</strong>{holidayDiscount>0&&<span style={{color:C.success}}> (after {holidayDiscount}% holiday discount)</span>}. Enter how much you'd like to pay now — minimum KES 500.
+          </div>
+          <div style={{display:"flex",gap:"0.5rem",alignItems:"stretch"}}>
+            <div style={{flex:1,position:"relative"}}>
+              <span style={{position:"absolute",left:"0.8rem",top:"50%",transform:"translateY(-50%)",fontSize:"0.75rem",color:C.muted,fontWeight:500,pointerEvents:"none"}}>KES</span>
+              <input type="number" min="500" max={discountedTotal-1} value={depositAmt}
+                onChange={e=>{ setDepositAmt(e.target.value); setDepositErr(""); }}
+                placeholder="e.g. 5000"
+                style={{width:"100%",padding:"0.75rem 0.8rem 0.75rem 2.8rem",background:"#fff",border:`1px solid ${depositErr?C.error:C.border}`,borderRadius:"5px",fontSize:"0.9rem",color:"#1C1C1C",outline:"none"}}
+                onFocus={e=>e.target.style.borderColor=C.gold}
+                onBlur={e=>e.target.style.borderColor=depositErr?C.error:C.border}/>
+            </div>
+            <button onClick={submitDeposit}
+              style={{padding:"0 1.1rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"5px",fontWeight:700,fontSize:"0.78rem",cursor:"pointer",flexShrink:0}}
+              onMouseEnter={e=>e.target.style.background=C.goldLight}
+              onMouseLeave={e=>e.target.style.background=C.gold}>Pay</button>
+          </div>
+          {/* Quick picks */}
+          {discountedTotal>0&&(
+            <div style={{display:"flex",gap:"0.4rem",marginTop:"0.6rem",flexWrap:"wrap"}}>
+              {[0.25,0.5].map(pct=>{
+                const suggested=Math.round(discountedTotal*pct/100)*100;
+                if(suggested<500||suggested>=discountedTotal) return null;
+                return (
+                  <button key={pct} onClick={()=>{ setDepositAmt(String(suggested)); setDepositErr(""); }}
+                    style={{padding:"0.3rem 0.7rem",background:"transparent",border:`1px solid ${C.border}`,borderRadius:"3px",fontSize:"0.68rem",color:C.muted,cursor:"pointer",transition:"all 0.15s"}}
+                    onMouseEnter={e=>{e.target.style.borderColor=C.gold;e.target.style.color=C.gold;}}
+                    onMouseLeave={e=>{e.target.style.borderColor=C.border;e.target.style.color=C.muted;}}>
+                    {Math.round(pct*100)}% · KES {fmt(suggested)}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          {depositErr&&<div style={{fontSize:"0.73rem",color:C.error,marginTop:"0.5rem",lineHeight:1.5}}>{depositErr}</div>}
+        </div>
+      )}
+
       {/* WhatsApp alternative */}
-      <a href={`https://wa.me/254745802200?text=${encodeURIComponent(`Hi! I'd like to book ${listing.name} from ${checkIn||"TBD"} to ${checkOut||"TBD"} for ${guests} guest(s). Please confirm availability.`)}`} target="_blank" rel="noreferrer"
-        style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem",marginTop:"0.8rem",padding:"0.7rem",border:`1px solid rgba(76,175,125,0.3)`,borderRadius:"5px",color:"#4CAF7D",fontSize:"0.75rem",fontWeight:500,textDecoration:"none",transition:"all 0.2s"}} onMouseEnter={e=>e.currentTarget.style.background="rgba(76,175,125,0.08)"} onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+      <a href={`https://wa.me/254745802200?text=${encodeURIComponent(`Hi! I'd like to book ${listing.name} from ${checkIn||"TBD"} to ${checkOut||"TBD"} for ${guests} guest(s). Please confirm availability.`)}`}
+        target="_blank" rel="noreferrer"
+        style={{display:"flex",alignItems:"center",justifyContent:"center",gap:"0.5rem",marginTop:"0.8rem",padding:"0.7rem",border:`1px solid rgba(76,175,125,0.3)`,borderRadius:"5px",color:"#4CAF7D",fontSize:"0.75rem",fontWeight:500,textDecoration:"none",transition:"all 0.2s"}}
+        onMouseEnter={e=>e.currentTarget.style.background="rgba(76,175,125,0.08)"}
+        onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
         <span>📱</span> Book via WhatsApp instead
       </a>
 
-      {showModal&&<PaymentModal listing={listing} checkIn={checkIn} checkOut={checkOut} guests={guests} onClose={()=>setShowModal(false)} onSuccess={handleBookingSuccess}/>}
+      {/* Full payment modal */}
+      {showModal&&(
+        <PaymentModal listing={listing} checkIn={checkIn} checkOut={checkOut} guests={guests}
+          holidayDiscount={holidayDiscount}
+          onClose={()=>setShowModal(false)} onSuccess={handleBookingSuccess}/>
+      )}
+
+      {/* Deposit payment modal */}
+      {showDepositModal&&(
+        <PaymentModal listing={listing} checkIn={checkIn} checkOut={checkOut} guests={guests}
+          customAmount={parseInt(depositAmt.replace(/,/g,""),10)||0}
+          isDeposit={true}
+          holidayDiscount={holidayDiscount}
+          onClose={()=>setShowDepositModal(false)}
+          onSuccess={(booking)=>handleBookingSuccess({...booking,isDeposit:true,depositAmount:parseInt(depositAmt.replace(/,/g,""),10),balanceDue:discountedTotal-parseInt(depositAmt.replace(/,/g,""),10)})}
+        />
+      )}
     </div>
   );
 }
@@ -887,7 +1078,7 @@ function LocationPicker({ lat, lng, onChange }) {
   );
 }
 
-function ListingPage({ listing, onBack, onNavigate, onBookingMade }) {
+function ListingPage({ listing, onBack, onNavigate, onBookingMade, activeHoliday }) {
   const [activePhoto,setActivePhoto]=useState(0);
   const [lightbox,setLightbox]=useState(false);
   const bs=BADGE_STYLE[listing.badge]||BADGE_STYLE["Popular"];
@@ -976,7 +1167,7 @@ function ListingPage({ listing, onBack, onNavigate, onBookingMade }) {
             </div>
           </div>
           {/* Booking widget */}
-          <BookingWidget listing={listing} onBookingMade={onBookingMade}/>
+          <BookingWidget listing={listing} onBookingMade={onBookingMade} activeHoliday={activeHoliday}/>
         </div>
       </div>
 
@@ -4422,7 +4613,7 @@ export default function App() {
       <Nav onNavigate={navigate}/>
       {page==="home"    &&<HomePage listings={listings} onSelect={selectListing} onNavigate={navigate} promoConfig={promoConfig}/>}
       {page==="listings"&&<ListingsPage listings={listings} onSelect={selectListing} promoConfig={promoConfig}/>}
-      {page==="listing" &&selectedListing&&<ListingPage listing={selectedListing} onBack={()=>navigate("listings")} onNavigate={navigate} onBookingMade={handleBookingMade}/>}
+      {page==="listing" &&selectedListing&&<ListingPage listing={selectedListing} onBack={()=>navigate("listings")} onNavigate={navigate} onBookingMade={handleBookingMade} activeHoliday={activeHoliday}/>}
       {page==="about"   &&<AboutPage/>}
       {page==="contact" &&<ContactPage/>}
       {page==="mybooking"&&<MyBookingPage bookings={bookings}/>}
