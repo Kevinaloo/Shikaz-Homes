@@ -361,15 +361,48 @@ function PriceBreakdown({ listing, checkIn, checkOut, guests }) {
 }
 
 // ─── MPESA PAYMENT MODAL ──────────────────────────────────────────
+// PayHero credentials — set these in your .env file
+// VITE_PAYHERO_USERNAME, VITE_PAYHERO_PASSWORD, VITE_PAYHERO_CHANNEL_ID
+const PH_USER    = import.meta.env.VITE_PAYHERO_USERNAME ?? "";
+const PH_PASS    = import.meta.env.VITE_PAYHERO_PASSWORD ?? "";
+const PH_CHANNEL = import.meta.env.VITE_PAYHERO_CHANNEL_ID ?? "";
+const phAuth     = () => btoa(`${PH_USER}:${PH_PASS}`);
+
+async function phStkPush({ phone, amount, ref }) {
+  const res = await fetch("https://backend.payhero.co.ke/api/v2/payments", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json", "Authorization":`Basic ${phAuth()}` },
+    body: JSON.stringify({
+      amount,
+      phone_number: phone,
+      channel_id: Number(PH_CHANNEL),
+      provider: "m-pesa",
+      external_reference: ref,
+      callback_url: window.location.origin + "/",
+    }),
+  });
+  const data = await res.json().catch(()=>({}));
+  if (!res.ok) throw new Error(data?.message || `PayHero ${res.status}`);
+  return data;
+}
+
+async function phCheckStatus(reference) {
+  const res = await fetch(
+    `https://backend.payhero.co.ke/api/v2/transaction-status?reference=${encodeURIComponent(reference)}`,
+    { headers:{ "Authorization":`Basic ${phAuth()}` } }
+  );
+  const data = await res.json().catch(()=>({}));
+  if (!res.ok) throw new Error(`Status check failed (${res.status})`);
+  return data;
+}
+
 function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess, customAmount, isDeposit, holidayDiscount }) {
   const nights  = nightsBetween(checkIn,checkOut);
   const baseTotal = nights*listing.pricePerNight + listing.cleaningFee;
-  // Apply holiday discount to base total (not to deposit — discount is on the full stay)
   const discountedTotal = holidayDiscount
     ? Math.round(baseTotal * (1 - holidayDiscount/100))
     : baseTotal;
   const discountSaving  = baseTotal - discountedTotal;
-  // If paying deposit, amount is customAmount; otherwise discounted total
   const total   = (isDeposit && customAmount) ? customAmount : discountedTotal;
   const balanceDue = isDeposit ? discountedTotal - total : 0;
 
@@ -377,22 +410,75 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess, 
   const [name,setName]=useState("");
   const [phone,setPhone]=useState("");
   const [err,setErr]=useState("");
+  const [statusMsg,setStatusMsg]=useState("");
+  const [phRef,setPhRef]=useState(null);
   const bookingRef = useState(()=>genRef())[0];
+  const pollRef    = useRef(null);
+
+  // Clean up poll on unmount
+  useEffect(()=>()=>{ if(pollRef.current) clearInterval(pollRef.current); },[]);
 
   const validatePhone=p=>/^(?:254|0)[17]\d{8}$/.test(p.replace(/\s/g,""));
   const normalisePhone=p=>{ const c=p.replace(/\s/g,""); return c.startsWith("0")?"254"+c.slice(1):c; };
 
-  const submit=()=>{
+  const submit=async()=>{
     if(!name.trim()){ setErr("Please enter your full name."); return; }
     if(!validatePhone(phone)){ setErr("Enter a valid Safaricom number (07xx or 254xx)."); return; }
+    // Check env vars are configured
+    if(!PH_USER || !PH_PASS || !PH_CHANNEL){
+      setErr("Payment not configured — please set VITE_PAYHERO_USERNAME, VITE_PAYHERO_PASSWORD, and VITE_PAYHERO_CHANNEL_ID in your .env file.");
+      return;
+    }
     setErr(""); setStep("sending");
-    setTimeout(()=>setStep("confirm"),2200);
+    try {
+      const data = await phStkPush({
+        phone: normalisePhone(phone),
+        amount: total,
+        ref: bookingRef,
+      });
+      // PayHero returns reference or CheckoutRequestID
+      const extRef = data?.reference || data?.CheckoutRequestID || data?.checkout_request_id || bookingRef;
+      setPhRef(extRef);
+      setStep("waitPin");
+      // Start polling after 6 s — give user time to see the prompt and enter PIN
+      setTimeout(()=>startPolling(extRef), 6000);
+    } catch(e) {
+      setErr(`STK push failed: ${e.message}. Check your PayHero credentials and try again.`);
+      setStep("form");
+    }
   };
 
-  const confirmPay=()=>{
-    setStep("sending");
-    setTimeout(()=>setStep(Math.random()>0.1?"success":"failed"),3500);
+  const startPolling=(ref)=>{
+    setStep("polling");
+    setStatusMsg("Verifying payment…");
+    let attempts = 0;
+    const MAX = 20; // ~100 s total
+    pollRef.current = setInterval(async()=>{
+      attempts++;
+      try {
+        const data = await phCheckStatus(ref);
+        const st = (data?.status || "").toUpperCase();
+        if(["SUCCESS","COMPLETE","COMPLETED"].includes(st)){
+          clearInterval(pollRef.current);
+          setStep("success");
+        } else if(["FAILED","CANCELLED","CANCELED","REJECTED"].includes(st)){
+          clearInterval(pollRef.current);
+          setErr(data?.message || "Payment was cancelled or failed. Please try again.");
+          setStep("failed");
+        } else if(attempts >= MAX){
+          clearInterval(pollRef.current);
+          setErr(`Verification timed out. If you entered your PIN, contact us with ref: ${bookingRef}`);
+          setStep("failed");
+        } else {
+          setStatusMsg(`Waiting for M-Pesa confirmation… (${attempts}/${MAX})`);
+        }
+      } catch {
+        // network blip — keep polling
+      }
+    }, 5000);
   };
+
+  const confirmPay=()=>{}; // kept for compat but no longer used
 
   const handleSuccess=()=>{
     onSuccess({
@@ -473,26 +559,26 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess, 
           <div style={{textAlign:"center",padding:"2rem 0",animation:"fadeIn 0.3s ease"}}>
             <div style={{width:"50px",height:"50px",border:`3px solid ${C.goldDim}`,borderTop:`3px solid ${C.gold}`,borderRadius:"50%",animation:"spin 0.9s linear infinite",margin:"0 auto 1.5rem"}}/>
             <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.15rem",color:"#0E2B1F",marginBottom:"0.5rem"}}>
-              {name?`Processing, ${name.split(" ")[0]}…`:"Processing…"}
+              {name?`Sending to ${name.split(" ")[0]}…`:"Sending STK push…"}
             </div>
             <div style={{fontSize:"0.82rem",color:C.muted,lineHeight:1.7}}>
-              Sending STK push to <strong style={{color:C.gold}}>+{normalisePhone(phone)}</strong><br/>Please wait…
+              Connecting to M-Pesa for <strong style={{color:C.gold}}>+{normalisePhone(phone)}</strong><br/>Please wait…
             </div>
           </div>
         )}
 
-        {/* ── CONFIRM PIN ── */}
-        {step==="confirm"&&(
+        {/* ── WAITING FOR PIN ── */}
+        {step==="waitPin"&&(
           <div style={{animation:"fadeIn 0.3s ease"}}>
             <div style={{textAlign:"center",marginBottom:"1.5rem"}}>
-              <div style={{fontSize:"2.5rem",marginBottom:"0.7rem"}}>📱</div>
-              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.2rem",color:"#0E2B1F",marginBottom:"0.5rem"}}>Check Your Phone</div>
+              <div style={{fontSize:"3rem",marginBottom:"0.6rem",animation:"heartBeat 1.8s ease infinite"}}>📱</div>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.2rem",color:"#0E2B1F",marginBottom:"0.5rem"}}>Check Your Phone Now</div>
               <div style={{fontSize:"0.85rem",color:C.muted,lineHeight:1.7}}>
-                An M-Pesa STK push has been sent to<br/>
-                <strong style={{color:C.gold}}>+{normalisePhone(phone)}</strong>
+                M-Pesa STK push sent to<br/>
+                <strong style={{color:C.gold,fontSize:"1rem"}}>+{normalisePhone(phone)}</strong>
               </div>
             </div>
-            <div style={{background:C.goldDim,border:`1px solid ${C.border}`,borderRadius:"6px",padding:"1rem 1.2rem",marginBottom:"1.2rem"}}>
+            <div style={{background:"#F7F2EA",border:`1px solid ${C.border}`,borderRadius:"8px",padding:"1rem 1.2rem",marginBottom:"1.2rem"}}>
               {[
                 ["Listing",listing.name],
                 ["Dates",`${fmtDate(checkIn)} – ${fmtDate(checkOut)}`],
@@ -503,14 +589,29 @@ function PaymentModal({ listing, checkIn, checkOut, guests, onClose, onSuccess, 
               ].map(([l,r])=>(
                 <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:"0.8rem",padding:"0.3rem 0",borderBottom:`1px solid ${C.border}`}}>
                   <span style={{color:l==="Holiday discount"?C.success:C.muted}}>{l}</span>
-                  <span style={{color:l==="Amount"||l==="Deposit"||l==="Reference"?C.gold:l==="Holiday discount"?C.success:C.cream,fontWeight:l==="Amount"||l==="Deposit"?600:400}}>{r}</span>
+                  <span style={{color:l==="Amount"||l==="Deposit"||l==="Reference"?C.gold:l==="Holiday discount"?C.success:"#1C1C1C",fontWeight:l==="Amount"||l==="Deposit"?600:400}}>{r}</span>
                 </div>
               ))}
             </div>
-            <button onClick={confirmPay} style={{width:"100%",padding:"1rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontSize:"0.85rem",fontWeight:700,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.2s"}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>
-              ✓ I've Entered My PIN
-            </button>
-            <p style={{textAlign:"center",fontSize:"0.7rem",color:C.muted,marginTop:"0.6rem"}}>Enter your M-Pesa PIN on your phone to complete payment</p>
+            <div style={{display:"flex",alignItems:"center",gap:"0.8rem",padding:"0.9rem 1rem",background:"rgba(197,151,58,0.07)",border:`1px solid rgba(197,151,58,0.25)`,borderRadius:"6px",marginBottom:"1rem"}}>
+              <div style={{width:"12px",height:"12px",borderRadius:"50%",border:`2px solid ${C.goldDim}`,borderTop:`2px solid ${C.gold}`,animation:"spin 0.9s linear infinite",flexShrink:0}}/>
+              <div style={{fontSize:"0.78rem",color:C.mutedLight,lineHeight:1.5}}>
+                <strong style={{color:C.gold}}>Enter your M-Pesa PIN</strong> on your phone to confirm the payment. This will verify automatically.
+              </div>
+            </div>
+            <p style={{textAlign:"center",fontSize:"0.68rem",color:C.muted}}>
+              Didn't get the prompt? <button onClick={()=>{setStep("form");setErr("");}} style={{background:"none",border:"none",color:C.gold,cursor:"pointer",fontSize:"0.68rem",textDecoration:"underline"}}>Try again</button>
+            </p>
+          </div>
+        )}
+
+        {/* ── POLLING / VERIFYING ── */}
+        {step==="polling"&&(
+          <div style={{textAlign:"center",padding:"2.5rem 1rem",animation:"fadeIn 0.3s ease"}}>
+            <div style={{width:"56px",height:"56px",border:`3px solid ${C.goldDim}`,borderTop:`3px solid ${C.gold}`,borderRadius:"50%",animation:"spin 0.9s linear infinite",margin:"0 auto 1.5rem"}}/>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.15rem",color:"#0E2B1F",marginBottom:"0.5rem"}}>Verifying Payment…</div>
+            <div style={{fontSize:"0.82rem",color:C.muted,marginBottom:"0.3rem"}}>{statusMsg}</div>
+            <div style={{fontSize:"0.7rem",color:C.muted,opacity:0.7}}>Ref: {bookingRef}</div>
           </div>
         )}
 
