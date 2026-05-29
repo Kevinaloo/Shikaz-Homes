@@ -182,6 +182,9 @@ body{font-family:'DM Sans',sans-serif;background:#FDFAF5;color:#1C1C1C;overflow-
 @keyframes flagWave{0%,100%{transform:skewX(0deg)}25%{transform:skewX(-3deg)}75%{transform:skewX(3deg)}}
 @keyframes drip{0%{transform:scaleY(0);transform-origin:top}100%{transform:scaleY(1);transform-origin:top}}
 @keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:0.5}30%{transform:translateY(-6px);opacity:1}}
+@keyframes conciergeRing{0%{transform:scale(1);opacity:0.6}100%{transform:scale(1.9);opacity:0}}
+@keyframes conciergeOpen{0%{opacity:0;transform:scale(0.85) translateY(20px);transform-origin:bottom right}100%{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes scanline{0%{top:0%}100%{top:100%}}
 @keyframes disco{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}
 .fade-up{animation:fadeUp 0.7s ease both}
@@ -787,13 +790,16 @@ function BookingWidget({ listing, onBookingMade, activeHoliday }) {
 }
 
 // ─── LISTING CARD ─────────────────────────────────────────────────
-function ListingCard({ listing, onClick }) {
+function ListingCard({ listing, onClick, activeHoliday }) {
   const [imgIdx,setImgIdx]=useState(0);
   const [hov,setHov]=useState(false);
   const bs=BADGE_STYLE[listing.badge]||BADGE_STYLE["Popular"];
+  const disc = activeHoliday?.discount || 0;
+  const discPrice = disc ? Math.round(listing.pricePerNight*(1-disc/100)) : listing.pricePerNight;
+  const t = activeHoliday?.theme;
   return (
     <div onClick={onClick} onMouseEnter={()=>setHov(true)} onMouseLeave={()=>{setHov(false);setImgIdx(0);}}
-      style={{background:C.card,border:`1px solid ${hov?C.borderHover:C.border}`,borderRadius:"8px",overflow:"hidden",cursor:"pointer",transition:"all 0.3s ease",transform:hov?"translateY(-5px)":"translateY(0)",boxShadow:hov?"0 24px 60px rgba(14,43,31,0.18)":"0 4px 20px rgba(14,43,31,0.08)"}}>
+      style={{background:C.card,border:`1px solid ${hov?(disc?t?.accent+"88":C.borderHover):C.border}`,borderRadius:"8px",overflow:"hidden",cursor:"pointer",transition:"all 0.3s ease",transform:hov?"translateY(-5px)":"translateY(0)",boxShadow:hov?"0 24px 60px rgba(14,43,31,0.18)":"0 4px 20px rgba(14,43,31,0.08)"}}>
       <div style={{position:"relative",height:"220px",overflow:"hidden"}}>
         <img src={listing.photos[imgIdx]} alt={listing.name} style={{width:"100%",height:"100%",objectFit:"cover",transition:"transform 0.6s ease",transform:hov?"scale(1.06)":"scale(1)"}}/>
         {listing.photos.length>1&&(
@@ -804,12 +810,28 @@ function ListingCard({ listing, onClick }) {
           </div>
         )}
         <div style={{position:"absolute",top:"0.9rem",left:"0.9rem",...bs,padding:"0.25rem 0.7rem",borderRadius:"3px",fontSize:"0.65rem",fontWeight:600}}>{listing.badge}</div>
+        {/* Holiday discount flash badge */}
+        {disc>0&&(
+          <div style={{position:"absolute",bottom:"0.9rem",left:"0.9rem",background:`linear-gradient(135deg,${t?.accent||C.gold},${t?.accent2||C.goldLight})`,color:"#000",padding:"0.28rem 0.65rem",borderRadius:"3px",fontSize:"0.68rem",fontWeight:800,letterSpacing:"0.05em",animation:"glowPulse 2s ease infinite",boxShadow:`0 2px 12px ${t?.accent||C.gold}66`}}>
+            {activeHoliday.emoji} {disc}% OFF
+          </div>
+        )}
         <div style={{position:"absolute",top:"0.9rem",right:"0.9rem",background:"rgba(14,43,31,0.72)",backdropFilter:"blur(8px)",borderRadius:"3px",padding:"0.25rem 0.6rem",fontSize:"0.62rem",color:listing.available?"#5EB578":C.error,fontWeight:600,display:"flex",alignItems:"center",gap:"0.3rem"}}>
           <span style={{width:"5px",height:"5px",borderRadius:"50%",background:listing.available?"#5EB578":C.error,display:"inline-block"}}/>
           {listing.available?"Available":"Booked"}
         </div>
       </div>
       <div style={{padding:"1.3rem"}}>
+        {/* Holiday banner inside card */}
+        {disc>0&&(
+          <div style={{marginBottom:"0.8rem",padding:"0.5rem 0.7rem",background:`linear-gradient(135deg,${t?.bg||"#0E2B1F"},rgba(14,43,31,0.9))`,borderRadius:"5px",border:`1px solid ${t?.accent||C.gold}33`,display:"flex",alignItems:"center",gap:"0.6rem"}}>
+            <span style={{fontSize:"0.9rem"}}>{activeHoliday.emoji}</span>
+            <div style={{flex:1}}>
+              <div style={{fontSize:"0.65rem",fontWeight:700,color:t?.accent||C.gold,letterSpacing:"0.05em"}}>{activeHoliday.name} Deal — {disc}% Off</div>
+              <div style={{fontSize:"0.6rem",color:"rgba(255,255,255,0.5)",marginTop:"0.05rem"}}>Discount applied automatically at checkout</div>
+            </div>
+          </div>
+        )}
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"0.4rem"}}>
           <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.1rem",color:"#0E2B1F",fontWeight:500,lineHeight:1.2,flex:1}}>{listing.name}</div>
           <div style={{display:"flex",alignItems:"center",gap:"0.25rem",flexShrink:0,marginLeft:"0.8rem"}}>
@@ -827,9 +849,12 @@ function ListingCard({ listing, onClick }) {
           ))}
         </div>
         <div style={{borderTop:`1px solid ${C.border}`,paddingTop:"1rem",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-          <div>
-            <span style={{fontFamily:"'Playfair Display',serif",fontSize:"1.25rem",color:C.gold,fontWeight:500}}>KES {fmt(listing.pricePerNight)}</span>
-            <span style={{fontSize:"0.73rem",color:C.muted}}> /night</span>
+          <div style={{display:"flex",flexDirection:"column",gap:"0.1rem"}}>
+            {disc>0&&<span style={{fontSize:"0.72rem",color:C.muted,textDecoration:"line-through"}}>KES {fmt(listing.pricePerNight)}</span>}
+            <div>
+              <span style={{fontFamily:"'Playfair Display',serif",fontSize:"1.25rem",color:disc>0?(t?.accent||C.gold):C.gold,fontWeight:500}}>KES {fmt(discPrice)}</span>
+              <span style={{fontSize:"0.73rem",color:C.muted}}> /night</span>
+            </div>
           </div>
           <div style={{fontSize:"0.72rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.gold}}>View →</div>
         </div>
@@ -1240,7 +1265,7 @@ function ListingPage({ listing, onBack, onNavigate, onBookingMade, activeHoliday
 }
 
 // ─── LISTINGS PAGE ────────────────────────────────────────────────
-function ListingsPage({ listings, onSelect, promoConfig }) {
+function ListingsPage({ listings, onSelect, promoConfig, activeHoliday, onSelectWithHoliday }) {
   const [filter,setFilter]=useState("All");
   const types=["All","Studio","1-Bedroom","2+ Bedrooms","Villa"];
   const filtered=filter==="All"?listings:listings.filter(l=>
@@ -1270,7 +1295,7 @@ function ListingsPage({ listings, onSelect, promoConfig }) {
       <div style={{maxWidth:"1200px",margin:"0 auto",padding:"2rem 1.5rem 4rem",background:"#FDFAF5"}}>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,320px),1fr))",gap:"1.2rem"}}>
           {filtered.map(l=>(
-            <div key={l.id} style={{animation:"fadeUp 0.6s ease both"}}><ListingCard listing={l} onClick={()=>onSelect(l)}/></div>
+            <div key={l.id} style={{animation:"fadeUp 0.6s ease both"}}><ListingCard listing={l} onClick={()=>activeHoliday&&onSelectWithHoliday?onSelectWithHoliday(l,activeHoliday):onSelect(l)} activeHoliday={activeHoliday}/></div>
           ))}
         </div>
         {filtered.length===0&&<div style={{textAlign:"center",padding:"6rem 0",color:C.muted,background:"#FDFAF5"}}>No listings match this filter.</div>}
@@ -1476,22 +1501,29 @@ function MyBookingsPanel({ bookings, onClose }) {
 }
 
 // ─── SIMPLE PAGES ─────────────────────────────────────────────────
-function AboutPage() {
+function AboutPage({ siteContent }) {
+  const sc = siteContent || DEFAULT_SITE_CONTENT;
+  const paragraphs = Array.isArray(sc.aboutParagraphs) ? sc.aboutParagraphs : DEFAULT_SITE_CONTENT.aboutParagraphs;
+  const [titleWord1, ...titleRest] = sc.aboutHeroTitle.split(" ");
   return (
     <div style={{minHeight:"100vh",paddingTop:"72px",background:C.obsidian}}>
-      <div style={{backgroundImage:"url(https://images.unsplash.com/photo-1580139861541-0f79bb4e9b30?w=1600&q=80)",backgroundSize:"cover",backgroundPosition:"center",height:"50vh",position:"relative"}}>
+      <div style={{backgroundImage:`url(${sc.aboutHeroImage})`,backgroundSize:"cover",backgroundPosition:"center",height:"50vh",position:"relative"}}>
         <div style={{position:"absolute",inset:0,background:"rgba(14,43,31,0.6)"}}/>
         <div style={{position:"relative",zIndex:1,height:"100%",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"3rem 4rem"}}>
-          <div style={{fontSize:"0.68rem",letterSpacing:"0.35em",textTransform:"uppercase",color:C.gold,marginBottom:"0.8rem"}}>Our Story</div>
-          <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(2.5rem,5vw,4rem)",color:"#F7F2EA",fontWeight:400}}>Redefining the<br/><em style={{color:C.gold}}>Nairobi stay</em></h1>
+          <div style={{fontSize:"0.68rem",letterSpacing:"0.35em",textTransform:"uppercase",color:C.gold,marginBottom:"0.8rem"}}>{sc.aboutHeroSubtitle}</div>
+          <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(2.5rem,5vw,4rem)",color:"#F7F2EA",fontWeight:400}}>
+            {sc.aboutHeroTitle.split("\n").map((line,i)=>(
+              <span key={i}>{i>0&&<br/>}{line}</span>
+            ))}
+          </h1>
         </div>
       </div>
       <div style={{maxWidth:"800px",margin:"0 auto",padding:"3rem 1.5rem"}}>
-        {["Shikaz Homes was born from a simple belief: visitors to Nairobi deserve more than a generic hotel room. They deserve a home — one with character, comfort, and a genuine sense of place.","We curate each property personally, inspecting for quality of furniture, internet reliability, security, and that indefinable sense of 'this just feels right'.","Whether you're a solo professional on a two-week contract, a family relocating between schools, or a couple celebrating an anniversary — we have a space that will feel like yours from the moment you walk in.","Nairobi is extraordinary. We think your stay should be too."].map((p,i)=>(
+        {paragraphs.map((p,i)=>(
           <p key={i} style={{fontSize:"1rem",color:C.mutedLight,lineHeight:1.9,marginBottom:"1.6rem",fontWeight:300}}>{p}</p>
         ))}
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(140px,1fr))",gap:"1rem",marginTop:"2rem"}}>
-          {[{n:"2020",l:"Founded"},{n:"440+",l:"Guests hosted"},{n:"4.95",l:"Avg rating"}].map(s=>(
+          {[{n:sc.statFounded,l:"Founded"},{n:sc.statGuests,l:"Guests hosted"},{n:sc.statRating,l:"Avg rating"}].map(s=>(
             <div key={s.l} style={{textAlign:"center",padding:"2rem",background:"#fff",border:`1px solid ${C.border}`,borderRadius:"6px",boxShadow:"0 2px 12px rgba(14,43,31,0.06)"}}>
               <div style={{fontFamily:"'Playfair Display',serif",fontSize:"2.2rem",color:C.gold,marginBottom:"0.4rem"}}>{s.n}</div>
               <div style={{fontSize:"0.72rem",letterSpacing:"0.2em",textTransform:"uppercase",color:C.muted}}>{s.l}</div>
@@ -1503,7 +1535,15 @@ function AboutPage() {
   );
 }
 
-function ContactPage() {
+function ContactPage({ siteContent }) {
+  const sc = siteContent || DEFAULT_SITE_CONTENT;
+  const items = [
+    {icon:"📱",label:"WhatsApp",val:sc.whatsappDisplay||sc.whatsapp,link:`https://wa.me/${sc.whatsapp}`},
+    {icon:"✉️",label:"Email",val:sc.email,link:`mailto:${sc.email}`},
+    {icon:"📞",label:"Phone",val:sc.phone,link:`tel:${sc.phone}`},
+    {icon:"◎",label:"Location",val:sc.location},
+    {icon:"⏰",label:"Response",val:sc.responseTime},
+  ].filter(i=>i.val&&i.val.trim());
   return (
     <div style={{minHeight:"100vh",paddingTop:"72px",background:C.obsidian}}>
       <div style={{maxWidth:"900px",margin:"0 auto",padding:"3rem 1.5rem",background:"#FDFAF5"}}>
@@ -1511,13 +1551,30 @@ function ContactPage() {
         <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(2.5rem,5vw,4rem)",color:"#0E2B1F",fontWeight:400,marginBottom:"1rem"}}>Ready to <em style={{color:C.gold}}>book?</em></h1>
         <p style={{fontSize:"0.95rem",color:C.muted,marginBottom:"3rem",lineHeight:1.8}}>Reach us on WhatsApp for the fastest response, or fill in the form below.</p>
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,260px),1fr))",gap:"1.2rem"}}>
-          {[{icon:"📱",label:"WhatsApp",val:"+254 745 802 200",link:"https://wa.me/254745802200"},{icon:"✉️",label:"Email",val:"hello@shikazhomes.co.ke",link:"mailto:hello@shikazhomes.co.ke"},{icon:"◎",label:"Location",val:"Nairobi, Kenya"},{icon:"⏰",label:"Response",val:"Within 1 hour"}].map(c=>(
+          {items.map(c=>(
             <div key={c.label} style={{padding:"1.8rem",background:"#fff",border:`1px solid ${C.border}`,borderRadius:"6px",boxShadow:"0 2px 12px rgba(14,43,31,0.06)"}}>
               <div style={{fontSize:"1.6rem",marginBottom:"0.8rem"}}>{c.icon}</div>
               <div style={{fontSize:"0.68rem",letterSpacing:"0.2em",textTransform:"uppercase",color:C.muted,marginBottom:"0.3rem"}}>{c.label}</div>
-              {c.link?<a href={c.link} target="_blank" rel="noreferrer" style={{color:C.gold,fontSize:"0.95rem",fontWeight:500}}>{c.val}</a>:<div style={{color:"#F7F2EA",fontSize:"0.95rem"}}>{c.val}</div>}
+              {c.link
+                ? <a href={c.link} target="_blank" rel="noreferrer" style={{color:C.gold,fontSize:"0.95rem",fontWeight:500,wordBreak:"break-all"}}>{c.val}</a>
+                : <div style={{color:"#1C1C1C",fontSize:"0.95rem"}}>{c.val}</div>
+              }
             </div>
           ))}
+        </div>
+        {/* WhatsApp CTA */}
+        <div style={{marginTop:"3rem",padding:"2rem",background:"linear-gradient(135deg,#0E2B1F,#1a3d2b)",borderRadius:"10px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:"1rem"}}>
+          <div>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.4rem",color:"#F7F2EA",marginBottom:"0.3rem"}}>Chat with us directly</div>
+            <div style={{fontSize:"0.85rem",color:"rgba(247,242,234,0.6)"}}>Average response time: {sc.responseTime}</div>
+          </div>
+          <a href={`https://wa.me/${sc.whatsapp}?text=${encodeURIComponent("Hi! I'd like to inquire about a Shikaz Homes booking.")}`}
+            target="_blank" rel="noreferrer"
+            style={{display:"inline-flex",alignItems:"center",gap:"0.6rem",padding:"0.9rem 1.8rem",background:"#25D366",color:"#fff",borderRadius:"6px",fontWeight:700,fontSize:"0.82rem",letterSpacing:"0.12em",textTransform:"uppercase",textDecoration:"none",transition:"all 0.2s"}}
+            onMouseEnter={e=>e.currentTarget.style.background="#1ebe59"}
+            onMouseLeave={e=>e.currentTarget.style.background="#25D366"}>
+            📱 WhatsApp Us
+          </a>
         </div>
       </div>
     </div>
@@ -2471,12 +2528,22 @@ function PromoTicker({ holidays }) {
 }
 
 // Full upcoming promos section — injected into HomePage
-function UpcomingPromosSection({ promoConfig, onNavigate }) {
+function UpcomingPromosSection({ promoConfig, onNavigate, listings, onSelectWithHoliday }) {
   const upcoming = getUpcomingHolidays(promoConfig, 6);
   if (!upcoming.length) return null;
 
   const hero = upcoming[0];
   const rest = upcoming.slice(1);
+
+  // Pick first available listing to send user to, carrying the holiday discount
+  const goBook = (holiday) => {
+    const target = listings && listings.find(l=>l.available);
+    if(target && onSelectWithHoliday) {
+      onSelectWithHoliday(target, holiday);
+    } else {
+      onNavigate("listings");
+    }
+  };
 
   return (
     <section style={{padding:"5rem 1.5rem",background:"linear-gradient(180deg,#F7F2EA 0%,#FDFAF5 100%)",position:"relative",overflow:"hidden"}}>
@@ -2502,7 +2569,7 @@ function UpcomingPromosSection({ promoConfig, onNavigate }) {
         {/* Hero card full-width */}
         <div style={{marginBottom:"1.2rem"}}>
           <div style={{display:"grid",gridTemplateColumns:"1fr"}}>
-            <UpcomingHolidayCard holiday={hero} index={0} isHero={true} onBook={()=>onNavigate("listings")}/>
+            <UpcomingHolidayCard holiday={hero} index={0} isHero={true} onBook={()=>goBook(hero)}/>
           </div>
         </div>
 
@@ -2510,7 +2577,7 @@ function UpcomingPromosSection({ promoConfig, onNavigate }) {
         {rest.length > 0 && (
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,300px),1fr))",gap:"1rem",marginBottom:"2.5rem"}}>
             {rest.map((h,i) => (
-              <UpcomingHolidayCard key={h.id} holiday={h} index={i} isHero={false} onBook={()=>onNavigate("listings")}/>
+              <UpcomingHolidayCard key={h.id} holiday={h} index={i} isHero={false} onBook={()=>goBook(h)}/>
             ))}
           </div>
         )}
@@ -2526,6 +2593,707 @@ function UpcomingPromosSection({ promoConfig, onNavigate }) {
         </div>
       </div>
     </section>
+  );
+}
+
+
+// ─── SITE CONTENT (About & Contact) ──────────────────────────────
+const DEFAULT_SITE_CONTENT = {
+  // Contact
+  whatsapp: "254745802200",
+  whatsappDisplay: "+254 745 802 200",
+  email: "hello@shikazhomes.co.ke",
+  phone: "+254 745 802 200",
+  location: "Nairobi, Kenya",
+  responseTime: "Within 1 hour",
+  // About
+  aboutHeroTitle: "Redefining the Nairobi stay",
+  aboutHeroSubtitle: "Our Story",
+  aboutHeroImage: "https://images.unsplash.com/photo-1580139861541-0f79bb4e9b30?w=1600&q=80",
+  aboutParagraphs: [
+    "Shikaz Homes was born from a simple belief: visitors to Nairobi deserve more than a generic hotel room. They deserve a home — one with character, comfort, and a genuine sense of place.",
+    "We curate each property personally, inspecting for quality of furniture, internet reliability, security, and that indefinable sense of \"this just feels right\".",
+    "Whether you\'re a solo professional on a two-week contract, a family relocating between schools, or a couple celebrating an anniversary — we have a space that will feel like yours from the moment you walk in.",
+    "Nairobi is extraordinary. We think your stay should be too.",
+  ],
+  statFounded: "2020",
+  statGuests: "440+",
+  statRating: "4.95",
+};
+
+async function loadSiteContent() {
+  try {
+    const { data, error } = await supabase
+      .from("kv_store").select("value").eq("key","shikaz:site_content").single();
+    if (error || !data) return DEFAULT_SITE_CONTENT;
+    return { ...DEFAULT_SITE_CONTENT, ...JSON.parse(data.value) };
+  } catch { return DEFAULT_SITE_CONTENT; }
+}
+
+async function saveSiteContent(d) {
+  try {
+    await supabase.from("kv_store").upsert(
+      { key:"shikaz:site_content", value:JSON.stringify(d) }, { onConflict:"key" }
+    );
+  } catch {}
+}
+
+
+// ─── ADMIN: SITE CONTENT MANAGER ─────────────────────────────────
+function SiteContentManager({ siteContent, onSave }) {
+  const [draft, setDraft] = useState(() => ({
+    ...DEFAULT_SITE_CONTENT, ...(siteContent || {})
+  }));
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved]   = useState(false);
+  const [tab, setTab]       = useState("contact"); // "contact" | "about"
+
+  // Sync if parent siteContent changes (e.g. loaded async)
+  useEffect(() => {
+    if (siteContent) setDraft(d => ({ ...d, ...siteContent }));
+  }, [siteContent]);
+
+  const set = (k, v) => setDraft(d => ({ ...d, [k]: v }));
+
+  const setParagraph = (i, val) => {
+    const paras = [...(draft.aboutParagraphs || DEFAULT_SITE_CONTENT.aboutParagraphs)];
+    paras[i] = val;
+    set("aboutParagraphs", paras);
+  };
+  const addParagraph    = () => set("aboutParagraphs", [...(draft.aboutParagraphs||[]), ""]);
+  const removeParagraph = (i) => set("aboutParagraphs", (draft.aboutParagraphs||[]).filter((_,idx)=>idx!==i));
+
+  const handleSave = async () => {
+    setSaving(true);
+    await onSave(draft);
+    setSaving(false); setSaved(true);
+    setTimeout(() => setSaved(false), 2500);
+  };
+
+  const F = ({ label, children, hint }) => (
+    <div style={{marginBottom:"1.1rem"}}>
+      <label style={{display:"block",fontSize:"0.62rem",letterSpacing:"0.18em",textTransform:"uppercase",color:C.muted,marginBottom:"0.4rem"}}>{label}</label>
+      {children}
+      {hint && <div style={{fontSize:"0.68rem",color:C.muted,marginTop:"0.3rem"}}>{hint}</div>}
+    </div>
+  );
+
+  const inp = {
+    width:"100%",padding:"0.75rem 0.9rem",border:`1px solid ${C.border}`,borderRadius:"5px",
+    fontSize:"0.88rem",background:"#fff",color:"#1C1C1C",outline:"none",transition:"border-color 0.2s",
+  };
+
+  return (
+    <div>
+      <div style={{marginBottom:"2rem"}}>
+        <div style={{fontSize:"0.65rem",letterSpacing:"0.3em",textTransform:"uppercase",color:C.gold,marginBottom:"0.4rem"}}>Site Content</div>
+        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"1.8rem",color:"#0E2B1F",fontWeight:400}}>About & Contact</h2>
+        <p style={{fontSize:"0.85rem",color:C.muted,marginTop:"0.4rem"}}>Changes are saved to the database and appear live on the site immediately.</p>
+      </div>
+
+      {/* Tab switcher */}
+      <div style={{display:"flex",gap:"0",marginBottom:"2rem",border:`1px solid ${C.border}`,borderRadius:"6px",overflow:"hidden",maxWidth:"360px"}}>
+        {[{id:"contact",icon:"📞",label:"Contact Info"},{id:"about",icon:"📖",label:"About Us"}].map(t=>(
+          <button key={t.id} onClick={()=>setTab(t.id)}
+            style={{flex:1,padding:"0.75rem 1rem",background:tab===t.id?C.gold:"transparent",color:tab===t.id?C.obsidian:C.muted,border:"none",cursor:"pointer",fontSize:"0.78rem",fontWeight:tab===t.id?700:400,letterSpacing:"0.08em",transition:"all 0.2s",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.4rem"}}>
+            {t.icon} {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── CONTACT TAB ── */}
+      {tab==="contact"&&(
+        <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(min(100%,420px),1fr))",gap:"1.5rem"}}>
+
+          {/* WhatsApp */}
+          <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:"10px",padding:"1.8rem",boxShadow:"0 2px 8px rgba(14,43,31,0.05)"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"0.6rem",marginBottom:"1.2rem"}}>
+              <span style={{fontSize:"1.4rem"}}>📱</span>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.05rem",color:"#0E2B1F",fontWeight:500}}>WhatsApp</div>
+            </div>
+            <F label="Number (digits only, with country code)" hint="e.g. 254745802200 — used for wa.me links">
+              <input value={draft.whatsapp||""} onChange={e=>set("whatsapp",e.target.value.replace(/\D/g,""))}
+                placeholder="254745802200" style={inp}
+                onFocus={e=>e.target.style.borderColor=C.gold} onBlur={e=>e.target.style.borderColor=C.border}/>
+            </F>
+            <F label="Display format" hint="Shown to visitors">
+              <input value={draft.whatsappDisplay||""} onChange={e=>set("whatsappDisplay",e.target.value)}
+                placeholder="+254 745 802 200" style={inp}
+                onFocus={e=>e.target.style.borderColor=C.gold} onBlur={e=>e.target.style.borderColor=C.border}/>
+            </F>
+          </div>
+
+          {/* Email & Phone */}
+          <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:"10px",padding:"1.8rem",boxShadow:"0 2px 8px rgba(14,43,31,0.05)"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"0.6rem",marginBottom:"1.2rem"}}>
+              <span style={{fontSize:"1.4rem"}}>✉️</span>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.05rem",color:"#0E2B1F",fontWeight:500}}>Email & Phone</div>
+            </div>
+            <F label="Email address">
+              <input value={draft.email||""} onChange={e=>set("email",e.target.value)}
+                placeholder="hello@shikazhomes.co.ke" type="email" style={inp}
+                onFocus={e=>e.target.style.borderColor=C.gold} onBlur={e=>e.target.style.borderColor=C.border}/>
+            </F>
+            <F label="Phone number (displayed + tel: link)">
+              <input value={draft.phone||""} onChange={e=>set("phone",e.target.value)}
+                placeholder="+254 745 802 200" style={inp}
+                onFocus={e=>e.target.style.borderColor=C.gold} onBlur={e=>e.target.style.borderColor=C.border}/>
+            </F>
+          </div>
+
+          {/* Location & Response */}
+          <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:"10px",padding:"1.8rem",boxShadow:"0 2px 8px rgba(14,43,31,0.05)"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"0.6rem",marginBottom:"1.2rem"}}>
+              <span style={{fontSize:"1.4rem"}}>◎</span>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.05rem",color:"#0E2B1F",fontWeight:500}}>Location & Response</div>
+            </div>
+            <F label="Location (shown on contact page)">
+              <input value={draft.location||""} onChange={e=>set("location",e.target.value)}
+                placeholder="Nairobi, Kenya" style={inp}
+                onFocus={e=>e.target.style.borderColor=C.gold} onBlur={e=>e.target.style.borderColor=C.border}/>
+            </F>
+            <F label="Response time">
+              <input value={draft.responseTime||""} onChange={e=>set("responseTime",e.target.value)}
+                placeholder="Within 1 hour" style={inp}
+                onFocus={e=>e.target.style.borderColor=C.gold} onBlur={e=>e.target.style.borderColor=C.border}/>
+            </F>
+          </div>
+
+          {/* Live preview */}
+          <div style={{background:"#F7F2EA",border:`1px solid ${C.border}`,borderRadius:"10px",padding:"1.8rem",boxShadow:"0 2px 8px rgba(14,43,31,0.05)"}}>
+            <div style={{fontSize:"0.65rem",letterSpacing:"0.2em",textTransform:"uppercase",color:C.gold,marginBottom:"1rem",fontWeight:600}}>Live Preview</div>
+            {[
+              {icon:"📱",label:"WhatsApp",val:draft.whatsappDisplay||draft.whatsapp,link:`https://wa.me/${draft.whatsapp}`},
+              {icon:"✉️",label:"Email",val:draft.email,link:`mailto:${draft.email}`},
+              {icon:"📞",label:"Phone",val:draft.phone},
+              {icon:"◎",label:"Location",val:draft.location},
+              {icon:"⏰",label:"Response",val:draft.responseTime},
+            ].filter(i=>i.val).map(i=>(
+              <div key={i.label} style={{display:"flex",gap:"0.7rem",alignItems:"flex-start",padding:"0.55rem 0",borderBottom:`1px solid ${C.border}`}}>
+                <span style={{fontSize:"0.9rem",flexShrink:0,marginTop:"0.05rem"}}>{i.icon}</span>
+                <div>
+                  <div style={{fontSize:"0.6rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted}}>{i.label}</div>
+                  <div style={{fontSize:"0.83rem",color:i.link?C.gold:"#1C1C1C",fontWeight:i.link?500:400,wordBreak:"break-all"}}>{i.val}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ── ABOUT TAB ── */}
+      {tab==="about"&&(
+        <div style={{display:"grid",gap:"1.5rem"}}>
+
+          {/* Hero */}
+          <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:"10px",padding:"1.8rem",boxShadow:"0 2px 8px rgba(14,43,31,0.05)"}}>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.05rem",color:"#0E2B1F",marginBottom:"1.2rem",fontWeight:500}}>Hero Section</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"1rem"}}>
+              <F label="Subtitle / eyebrow text">
+                <input value={draft.aboutHeroSubtitle||""} onChange={e=>set("aboutHeroSubtitle",e.target.value)}
+                  placeholder="Our Story" style={inp}
+                  onFocus={e=>e.target.style.borderColor=C.gold} onBlur={e=>e.target.style.borderColor=C.border}/>
+              </F>
+              <F label="Hero title">
+                <input value={draft.aboutHeroTitle||""} onChange={e=>set("aboutHeroTitle",e.target.value)}
+                  placeholder="Redefining the Nairobi stay" style={inp}
+                  onFocus={e=>e.target.style.borderColor=C.gold} onBlur={e=>e.target.style.borderColor=C.border}/>
+              </F>
+            </div>
+            <F label="Hero background image URL" hint="Paste a full image URL — recommended 1600px wide">
+              <div style={{display:"flex",gap:"0.6rem"}}>
+                <input value={draft.aboutHeroImage||""} onChange={e=>set("aboutHeroImage",e.target.value)}
+                  placeholder="https://images.unsplash.com/…" style={{...inp,flex:1}}
+                  onFocus={e=>e.target.style.borderColor=C.gold} onBlur={e=>e.target.style.borderColor=C.border}/>
+                {draft.aboutHeroImage&&(
+                  <div style={{width:"80px",height:"44px",borderRadius:"4px",overflow:"hidden",flexShrink:0,border:`1px solid ${C.border}`}}>
+                    <img src={draft.aboutHeroImage} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}}
+                      onError={e=>e.target.style.display="none"}/>
+                  </div>
+                )}
+              </div>
+            </F>
+          </div>
+
+          {/* Stats */}
+          <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:"10px",padding:"1.8rem",boxShadow:"0 2px 8px rgba(14,43,31,0.05)"}}>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.05rem",color:"#0E2B1F",marginBottom:"1.2rem",fontWeight:500}}>Statistics</div>
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:"1rem"}}>
+              {[{k:"statFounded",label:"Founded (year)"},{k:"statGuests",label:"Guests hosted"},{k:"statRating",label:"Avg rating"}].map(s=>(
+                <F key={s.k} label={s.label}>
+                  <input value={draft[s.k]||""} onChange={e=>set(s.k,e.target.value)} style={inp}
+                    onFocus={e=>e.target.style.borderColor=C.gold} onBlur={e=>e.target.style.borderColor=C.border}/>
+                </F>
+              ))}
+            </div>
+          </div>
+
+          {/* Paragraphs */}
+          <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:"10px",padding:"1.8rem",boxShadow:"0 2px 8px rgba(14,43,31,0.05)"}}>
+            <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:"1.2rem"}}>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.05rem",color:"#0E2B1F",fontWeight:500}}>About Text</div>
+              <button onClick={addParagraph}
+                style={{padding:"0.4rem 0.9rem",background:C.goldDim,border:`1px solid ${C.border}`,borderRadius:"4px",fontSize:"0.72rem",color:C.gold,cursor:"pointer",fontWeight:600,letterSpacing:"0.08em",transition:"all 0.15s"}}
+                onMouseEnter={e=>e.currentTarget.style.borderColor=C.gold}
+                onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>
+                + Add Paragraph
+              </button>
+            </div>
+            {(draft.aboutParagraphs||DEFAULT_SITE_CONTENT.aboutParagraphs).map((p,i)=>(
+              <div key={i} style={{marginBottom:"0.9rem",position:"relative"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"0.3rem"}}>
+                  <label style={{fontSize:"0.62rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted}}>Paragraph {i+1}</label>
+                  <button onClick={()=>removeParagraph(i)}
+                    style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:"0.8rem",padding:"0.1rem 0.3rem",transition:"color 0.15s"}}
+                    onMouseEnter={e=>e.target.style.color=C.error}
+                    onMouseLeave={e=>e.target.style.color=C.muted}>✕</button>
+                </div>
+                <textarea value={p} onChange={e=>setParagraph(i,e.target.value)} rows={3}
+                  style={{...inp,resize:"vertical",lineHeight:1.6,fontFamily:"inherit"}}
+                  onFocus={e=>e.target.style.borderColor=C.gold}
+                  onBlur={e=>e.target.style.borderColor=C.border}/>
+              </div>
+            ))}
+          </div>
+
+          {/* Live hero preview */}
+          <div style={{borderRadius:"10px",overflow:"hidden",border:`1px solid ${C.border}`,height:"200px",position:"relative"}}>
+            <img src={draft.aboutHeroImage} alt="" style={{width:"100%",height:"100%",objectFit:"cover",display:"block"}} onError={e=>e.target.style.display="none"}/>
+            <div style={{position:"absolute",inset:0,background:"rgba(14,43,31,0.6)",display:"flex",flexDirection:"column",justifyContent:"flex-end",padding:"1.5rem 2rem"}}>
+              <div style={{fontSize:"0.62rem",letterSpacing:"0.35em",textTransform:"uppercase",color:C.gold,marginBottom:"0.5rem"}}>{draft.aboutHeroSubtitle}</div>
+              <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.6rem",color:"#F7F2EA",fontWeight:400}}>{draft.aboutHeroTitle}</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save bar */}
+      <div style={{position:"sticky",bottom:"1rem",marginTop:"2rem",textAlign:"right"}}>
+        <button onClick={handleSave} disabled={saving}
+          style={{padding:"0.9rem 2.5rem",background:saved?"#16A34A":C.gold,color:saved?"#fff":"#0E2B1F",border:"none",borderRadius:"6px",fontWeight:700,fontSize:"0.82rem",letterSpacing:"0.12em",textTransform:"uppercase",cursor:saving?"not-allowed":"pointer",transition:"all 0.3s",boxShadow:"0 4px 16px rgba(197,151,58,0.3)"}}>
+          {saving?"Saving…":saved?"✓ Saved!":"Save Changes"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// ─── SHIKAZ AI CONCIERGE ──────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════
+
+const GROQ_API_KEY = "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";
+const GROQ_MODEL   = "llama-3.3-70b-versatile";
+
+const CONCIERGE_SYSTEM = `You are Amara, the exclusive AI concierge for Shikaz Homes — a premium short-stay property company based in Nairobi, Kenya.
+
+Your personality: warm, knowledgeable, sophisticated but never stuffy. You speak like a well-connected Nairobi local who knows every corner of the city. You use occasional Swahili words naturally (karibu, asante, sawa, pole pole, hakuna matata). You are helpful, proactive, and always steer people toward wonderful experiences.
+
+Your capabilities:
+1. RIDES — Help guests book Bolt or Uber rides. Give them the deep-link URLs to open the app with destination pre-filled. Always quote typical Nairobi fare ranges.
+2. FOOD DELIVERY — Help with Bolt Food or Uber Eats orders. Suggest popular Nairobi restaurants/cuisines for delivery. Give app deep-link URLs.
+3. TOURS & ACTIVITIES — Suggest tours, day trips, safaris, cultural experiences near Nairobi. Include: Nairobi National Park, Karen Blixen Museum, Giraffe Centre, Bomas of Kenya, Maasai Mara day trips, Hell's Gate, Lake Naivasha, Karura Forest walks, cycling tours, cooking classes, matatu art tours.
+4. NIGHTLIFE — Suggest top Nairobi clubs, bars, rooftop spots: Alchemist Bar (Westlands), B-Club, Galileo Lounge, The Terrace at Sankara, Mercury Lounge, Black Diamond, Havana Bar, Trademark Hotel, K1 Klub House.
+5. RESTAURANTS — Suggest great Nairobi dining: Carnivore, Tamarind, The Talisman (Karen), Java House, Artcaffe, Cultiva, About Thyme, Furusato Japanese, Mediterraneo, Mediteraneo Gigiri, Sarova Stanley restaurants, Tribe Hotel restaurant.
+6. SHOPPING — Village Market, Westgate, Two Rivers Mall, Sarit Centre, The Junction, Yaya Centre, Maasai Market (Tuesdays at Village Market).
+7. WELLNESS — Karura Forest, Ngong Hills hikes, Uhuru Gardens, Nairobi Arboretum.
+
+Deep-link formats to use:
+- Bolt ride: https://bolt.eu/en/cities/nairobi/?destination=[DESTINATION]
+- Uber ride: https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=[DESTINATION]+Nairobi
+- Bolt Food: https://food.bolt.eu/ (then suggest searching restaurant name)
+- Uber Eats: https://www.ubereats.com/ke/
+- Google Maps directions: https://www.google.com/maps/dir/?api=1&destination=[LAT],[LNG]
+
+When suggesting rides always mention both Bolt and Uber options. When mentioning food delivery mention both Bolt Food and Uber Eats.
+
+Formatting rules:
+- Use short paragraphs, never walls of text
+- Use emojis naturally but not excessively  
+- When providing links, format them clearly
+- For ride bookings, always ask for or confirm the destination first
+- Always be aware the guest is staying in Nairobi at a Shikaz Homes property
+- If asked about booking a Shikaz Homes property, refer them to the listings on the site
+- Keep responses concise — 3-5 sentences max unless listing multiple options
+- End responses with a helpful follow-up question when natural`;
+
+// Quick-action suggestion chips
+const QUICK_ACTIONS = [
+  { icon:"🚗", label:"Book a Bolt/Uber" },
+  { icon:"🍔", label:"Order food delivery" },
+  { icon:"🦁", label:"Nearby tours & safaris" },
+  { icon:"🌃", label:"Best nightlife spots" },
+  { icon:"🍽️", label:"Restaurant suggestions" },
+  { icon:"🛍️", label:"Shopping malls nearby" },
+];
+
+async function callGroq(messages) {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${GROQ_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: GROQ_MODEL,
+      messages: [{ role:"system", content:CONCIERGE_SYSTEM }, ...messages],
+      max_tokens: 600,
+      temperature: 0.75,
+      stream: false,
+    }),
+  });
+  if (!res.ok) throw new Error(`Groq error ${res.status}`);
+  const data = await res.json();
+  return data.choices[0].message.content;
+}
+
+// Render message text — convert markdown-ish links and bold to JSX
+function MessageContent({ text }) {
+  // Split by newlines first
+  const lines = text.split("\n").filter((l, i, arr) => !(l.trim() === "" && arr[i-1]?.trim() === ""));
+  return (
+    <div>
+      {lines.map((line, li) => {
+        if (!line.trim()) return <br key={li}/>;
+        // Parse inline: **bold**, [text](url), bare https URLs
+        const parts = [];
+        let remaining = line;
+        let ki = 0;
+        const linkRe = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)|(https?:\/\/[^\s]+)/g;
+        const boldRe = /\*\*(.+?)\*\*/g;
+        // First pass: links
+        let lastIdx = 0;
+        let m;
+        linkRe.lastIndex = 0;
+        const segments = [];
+        while ((m = linkRe.exec(remaining)) !== null) {
+          if (m.index > lastIdx) segments.push({ type:"text", v: remaining.slice(lastIdx, m.index) });
+          const label = m[1] || m[3];
+          const url   = m[2] || m[3];
+          segments.push({ type:"link", label, url });
+          lastIdx = m.index + m[0].length;
+        }
+        if (lastIdx < remaining.length) segments.push({ type:"text", v: remaining.slice(lastIdx) });
+
+        const rendered = segments.map((seg, si) => {
+          if (seg.type === "link") {
+            return (
+              <a key={si} href={seg.url} target="_blank" rel="noreferrer"
+                style={{color:C.gold,textDecoration:"underline",fontWeight:500,wordBreak:"break-all"}}>
+                {seg.label.length > 40 ? seg.label.slice(0,38)+"…" : seg.label}
+              </a>
+            );
+          }
+          // bold pass
+          const boldParts = [];
+          let bl = 0, bm;
+          boldRe.lastIndex = 0;
+          while ((bm = boldRe.exec(seg.v)) !== null) {
+            if (bm.index > bl) boldParts.push(seg.v.slice(bl, bm.index));
+            boldParts.push(<strong key={bm.index}>{bm[1]}</strong>);
+            bl = bm.index + bm[0].length;
+          }
+          if (bl < seg.v.length) boldParts.push(seg.v.slice(bl));
+          return <span key={si}>{boldParts}</span>;
+        });
+
+        return <div key={li} style={{marginBottom: li < lines.length-1 ? "0.4rem" : 0}}>{rendered}</div>;
+      })}
+    </div>
+  );
+}
+
+function ShikazConcierge({ listing, siteContent }) {
+  const [open, setOpen]         = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [input, setInput]       = useState("");
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState("");
+  const [showChips, setShowChips] = useState(true);
+  const bottomRef  = useRef(null);
+  const inputRef   = useRef(null);
+
+  // Greeting on first open
+  useEffect(() => {
+    if (open && messages.length === 0) {
+      const neighborhood = listing?.neighborhood || "Nairobi";
+      const greeting = `Karibu! 🌟 I'm **Amara**, your Shikaz Homes concierge. I'm here to make your Nairobi stay unforgettable.
+
+You're in **${neighborhood}** — one of the best spots in the city. I can help you book a **Bolt or Uber**, order **food delivery**, find incredible **restaurants**, plan **tours**, or discover the best **nightlife** nearby.
+
+What can I sort out for you?`;
+      setMessages([{ role:"assistant", content: greeting }]);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (bottomRef.current) bottomRef.current.scrollIntoView({ behavior:"smooth" });
+  }, [messages, loading]);
+
+  useEffect(() => {
+    if (open && inputRef.current) setTimeout(() => inputRef.current?.focus(), 300);
+  }, [open]);
+
+  const send = async (text) => {
+    const userText = (text || input).trim();
+    if (!userText || loading) return;
+    setInput("");
+    setShowChips(false);
+    setError("");
+
+    const newMessages = [...messages, { role:"user", content:userText }];
+    setMessages(newMessages);
+    setLoading(true);
+
+    try {
+      // Inject context about current listing if available
+      const ctx = listing
+        ? `[Context: Guest is staying at "${listing.name}" in ${listing.neighborhood}, Nairobi. Coordinates: ${listing.lat||"-1.2921"},${listing.lng||"36.8219"}]\n\n`
+        : "";
+      const msgsForApi = newMessages.map((m, i) =>
+        i === 0 && m.role === "user" ? { ...m, content: ctx + m.content } : m
+      );
+      const reply = await callGroq(msgsForApi);
+      setMessages(prev => [...prev, { role:"assistant", content:reply }]);
+    } catch(e) {
+      setError("Samahani — connection hiccup. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKey = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
+  };
+
+  // Typing indicator dots
+  const TypingDots = () => (
+    <div style={{display:"flex",gap:"4px",alignItems:"center",padding:"4px 0"}}>
+      {[0,1,2].map(i=>(
+        <div key={i} style={{width:"7px",height:"7px",borderRadius:"50%",background:C.gold,opacity:0.7,
+          animation:`typingDot 1.2s ease infinite`,animationDelay:`${i*0.2}s`}}/>
+      ))}
+    </div>
+  );
+
+  return (
+    <>
+      {/* ── FAB BUTTON ── */}
+      <button
+        onClick={() => setOpen(o => !o)}
+        aria-label="Open Shikaz AI Concierge"
+        style={{
+          position:"fixed", bottom:"1.5rem", right:"1.5rem", zIndex:8500,
+          width:"60px", height:"60px", borderRadius:"50%", border:"none",
+          background:`linear-gradient(135deg,#0E2B1F 0%,#1a3d2b 50%,${C.gold} 150%)`,
+          boxShadow: open
+            ? `0 0 0 3px ${C.gold}55, 0 8px 32px rgba(197,151,58,0.5)`
+            : `0 4px 24px rgba(14,43,31,0.5), 0 0 0 1px rgba(197,151,58,0.3)`,
+          cursor:"pointer",
+          transition:"all 0.3s cubic-bezier(0.34,1.56,0.64,1)",
+          transform: open ? "rotate(45deg) scale(1.05)" : "scale(1)",
+          display:"flex", alignItems:"center", justifyContent:"center",
+        }}
+        onMouseEnter={e=>!open&&(e.currentTarget.style.transform="scale(1.12)")}
+        onMouseLeave={e=>!open&&(e.currentTarget.style.transform="scale(1)")}
+      >
+        {open
+          ? <span style={{fontSize:"1.4rem",color:"#fff"}}>✕</span>
+          : <span style={{fontSize:"1.5rem"}}>✨</span>
+        }
+      </button>
+
+      {/* Pulse ring when closed */}
+      {!open && (
+        <div style={{
+          position:"fixed", bottom:"1.5rem", right:"1.5rem", zIndex:8499,
+          width:"60px", height:"60px", borderRadius:"50%",
+          border:`2px solid ${C.gold}`,
+          animation:"conciergeRing 2.5s ease-out infinite",
+          pointerEvents:"none",
+        }}/>
+      )}
+
+      {/* ── CHAT PANEL ── */}
+      {open && (
+        <div style={{
+          position:"fixed", bottom:"5.5rem", right:"1.5rem", zIndex:8500,
+          width:"min(420px, calc(100vw - 2rem))",
+          height:"min(580px, calc(100vh - 8rem))",
+          background:"#fff",
+          border:`1px solid ${C.border}`,
+          borderRadius:"16px",
+          boxShadow:"0 32px 80px rgba(14,43,31,0.25), 0 0 0 1px rgba(197,151,58,0.15)",
+          display:"flex", flexDirection:"column",
+          overflow:"hidden",
+          animation:"conciergeOpen 0.4s cubic-bezier(0.34,1.56,0.64,1) both",
+        }}>
+
+          {/* Header */}
+          <div style={{
+            background:"linear-gradient(135deg,#0E2B1F 0%,#1a3d2b 60%,#0E2B1F 100%)",
+            padding:"1rem 1.2rem",
+            flexShrink:0,
+            borderBottom:`1px solid rgba(197,151,58,0.2)`,
+            position:"relative",
+            overflow:"hidden",
+          }}>
+            {/* Subtle pattern */}
+            <div style={{position:"absolute",inset:0,backgroundImage:"radial-gradient(circle at 2px 2px,rgba(197,151,58,0.06) 1px,transparent 0)",backgroundSize:"24px 24px",pointerEvents:"none"}}/>
+            <div style={{position:"relative",zIndex:1,display:"flex",alignItems:"center",gap:"0.9rem"}}>
+              <div style={{
+                width:"44px",height:"44px",borderRadius:"50%",flexShrink:0,
+                background:`linear-gradient(135deg,${C.gold},#8B6914)`,
+                display:"flex",alignItems:"center",justifyContent:"center",
+                fontSize:"1.3rem",
+                boxShadow:`0 0 0 2px rgba(197,151,58,0.3), 0 4px 12px rgba(197,151,58,0.3)`,
+              }}>✨</div>
+              <div style={{flex:1}}>
+                <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1rem",color:"#F7F2EA",fontWeight:500,letterSpacing:"0.01em"}}>Amara</div>
+                <div style={{fontSize:"0.65rem",color:"rgba(247,242,234,0.55)",letterSpacing:"0.15em",textTransform:"uppercase"}}>Shikaz Concierge · Nairobi</div>
+              </div>
+              <div style={{display:"flex",alignItems:"center",gap:"0.4rem"}}>
+                <div style={{width:"6px",height:"6px",borderRadius:"50%",background:"#4CAF7D",animation:"glowPulse 2s ease infinite"}}/>
+                <span style={{fontSize:"0.62rem",color:"rgba(247,242,234,0.5)",letterSpacing:"0.1em"}}>Online</span>
+              </div>
+            </div>
+            {listing && (
+              <div style={{position:"relative",zIndex:1,marginTop:"0.6rem",padding:"0.4rem 0.7rem",background:"rgba(197,151,58,0.1)",border:"1px solid rgba(197,151,58,0.2)",borderRadius:"4px",fontSize:"0.68rem",color:"rgba(247,242,234,0.65)",display:"flex",alignItems:"center",gap:"0.4rem"}}>
+                <span>📍</span>
+                <span>{listing.neighborhood}, Nairobi</span>
+              </div>
+            )}
+          </div>
+
+          {/* Messages */}
+          <div style={{
+            flex:1, overflowY:"auto", padding:"1rem",
+            display:"flex", flexDirection:"column", gap:"0.8rem",
+            background:"#FDFAF5",
+          }}>
+            {messages.map((m, i) => (
+              <div key={i} style={{
+                display:"flex",
+                flexDirection: m.role==="user" ? "row-reverse" : "row",
+                alignItems:"flex-end",
+                gap:"0.5rem",
+                animation:"fadeUp 0.3s ease both",
+              }}>
+                {m.role==="assistant" && (
+                  <div style={{width:"28px",height:"28px",borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},#8B6914)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.8rem",flexShrink:0}}>✨</div>
+                )}
+                <div style={{
+                  maxWidth:"80%",
+                  padding:"0.75rem 1rem",
+                  borderRadius: m.role==="user" ? "16px 4px 16px 16px" : "4px 16px 16px 16px",
+                  background: m.role==="user"
+                    ? `linear-gradient(135deg,#0E2B1F,#1a3d2b)`
+                    : "#fff",
+                  color: m.role==="user" ? "#F7F2EA" : "#1C1C1C",
+                  fontSize:"0.85rem",
+                  lineHeight:1.6,
+                  boxShadow: m.role==="user"
+                    ? "0 2px 12px rgba(14,43,31,0.2)"
+                    : `0 2px 8px rgba(14,43,31,0.06), 0 0 0 1px ${C.border}`,
+                }}>
+                  {m.role==="assistant"
+                    ? <MessageContent text={m.content}/>
+                    : m.content
+                  }
+                </div>
+              </div>
+            ))}
+
+            {/* Typing indicator */}
+            {loading && (
+              <div style={{display:"flex",alignItems:"flex-end",gap:"0.5rem",animation:"fadeUp 0.3s ease"}}>
+                <div style={{width:"28px",height:"28px",borderRadius:"50%",background:`linear-gradient(135deg,${C.gold},#8B6914)`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:"0.8rem"}}>✨</div>
+                <div style={{padding:"0.75rem 1rem",borderRadius:"4px 16px 16px 16px",background:"#fff",border:`1px solid ${C.border}`,boxShadow:"0 2px 8px rgba(14,43,31,0.06)"}}>
+                  <TypingDots/>
+                </div>
+              </div>
+            )}
+
+            {error && (
+              <div style={{textAlign:"center",fontSize:"0.75rem",color:C.error,padding:"0.5rem 1rem",background:"rgba(224,82,82,0.07)",borderRadius:"6px",border:"1px solid rgba(224,82,82,0.2)"}}>{error}</div>
+            )}
+
+            {/* Quick action chips */}
+            {showChips && messages.length <= 1 && (
+              <div style={{display:"flex",flexWrap:"wrap",gap:"0.5rem",marginTop:"0.4rem"}}>
+                {QUICK_ACTIONS.map(a=>(
+                  <button key={a.label} onClick={()=>send(a.label)}
+                    style={{
+                      padding:"0.45rem 0.8rem",background:"#fff",
+                      border:`1px solid ${C.border}`,borderRadius:"20px",
+                      fontSize:"0.72rem",color:"#0E2B1F",cursor:"pointer",
+                      display:"flex",alignItems:"center",gap:"0.3rem",
+                      transition:"all 0.2s",fontWeight:500,
+                      boxShadow:"0 1px 4px rgba(14,43,31,0.06)",
+                    }}
+                    onMouseEnter={e=>{e.currentTarget.style.borderColor=C.gold;e.currentTarget.style.background=C.goldDim;}}
+                    onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.background="#fff";}}>
+                    <span>{a.icon}</span>{a.label}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            <div ref={bottomRef}/>
+          </div>
+
+          {/* Input */}
+          <div style={{
+            padding:"0.8rem 1rem",
+            borderTop:`1px solid ${C.border}`,
+            background:"#fff",
+            flexShrink:0,
+          }}>
+            <div style={{display:"flex",gap:"0.6rem",alignItems:"flex-end"}}>
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={e=>setInput(e.target.value)}
+                onKeyDown={handleKey}
+                placeholder="Ask me anything about Nairobi…"
+                rows={1}
+                style={{
+                  flex:1, padding:"0.7rem 0.9rem",
+                  border:`1.5px solid ${C.border}`,
+                  borderRadius:"10px", fontSize:"0.85rem",
+                  outline:"none", resize:"none", lineHeight:1.5,
+                  fontFamily:"inherit", color:"#1C1C1C",
+                  background:"#FDFAF5",
+                  transition:"border-color 0.2s",
+                  maxHeight:"80px", overflowY:"auto",
+                }}
+                onFocus={e=>e.target.style.borderColor=C.gold}
+                onBlur={e=>e.target.style.borderColor=C.border}
+                onInput={e=>{e.target.style.height="auto";e.target.style.height=Math.min(e.target.scrollHeight,80)+"px";}}
+              />
+              <button onClick={()=>send()} disabled={!input.trim()||loading}
+                style={{
+                  width:"40px",height:"40px",borderRadius:"10px",flexShrink:0,
+                  background: input.trim()&&!loading ? `linear-gradient(135deg,#0E2B1F,#1a3d2b)` : "#E5E7EB",
+                  border:"none",cursor:input.trim()&&!loading?"pointer":"default",
+                  display:"flex",alignItems:"center",justifyContent:"center",
+                  fontSize:"1rem",transition:"all 0.2s",
+                  boxShadow:input.trim()&&!loading?"0 4px 12px rgba(14,43,31,0.3)":"none",
+                }}>
+                {loading
+                  ? <div style={{width:"14px",height:"14px",border:"2px solid rgba(255,255,255,0.3)",borderTop:"2px solid #fff",borderRadius:"50%",animation:"spin 0.8s linear infinite"}}/>
+                  : <span style={{color:input.trim()?"#fff":"#9CA3AF"}}>↑</span>
+                }
+              </button>
+            </div>
+            <div style={{marginTop:"0.45rem",fontSize:"0.6rem",color:C.muted,textAlign:"center",letterSpacing:"0.08em"}}>
+              Powered by Shikaz AI · Nairobi concierge
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -2613,6 +3381,9 @@ function AdminLogin({ onLogin }) {
 @keyframes flagWave{0%,100%{transform:skewX(0deg)}25%{transform:skewX(-3deg)}75%{transform:skewX(3deg)}}
 @keyframes drip{0%{transform:scaleY(0);transform-origin:top}100%{transform:scaleY(1);transform-origin:top}}
 @keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes typingDot{0%,60%,100%{transform:translateY(0);opacity:0.5}30%{transform:translateY(-6px);opacity:1}}
+@keyframes conciergeRing{0%{transform:scale(1);opacity:0.6}100%{transform:scale(1.9);opacity:0}}
+@keyframes conciergeOpen{0%{opacity:0;transform:scale(0.85) translateY(20px);transform-origin:bottom right}100%{opacity:1;transform:scale(1) translateY(0)}}
 @keyframes scanline{0%{top:0%}100%{top:100%}}
 @keyframes disco{0%{filter:hue-rotate(0deg)}100%{filter:hue-rotate(360deg)}}`}</style>
 
@@ -2884,15 +3655,13 @@ function SettingsPanel({ onLogout }) {
         {msg&&<div style={{fontSize:"0.78rem",color:msg.type==="error"?C.error:C.success,padding:"0.5rem 0.8rem",background:msg.type==="error"?"rgba(224,82,82,0.08)":"rgba(76,175,125,0.08)",borderRadius:"4px",marginBottom:"0.8rem"}}>{msg.text}</div>}
         <button onClick={changePin} style={{background:C.gold,color:C.obsidian,border:"none",padding:"0.8rem 1.8rem",borderRadius:"5px",fontSize:"0.8rem",fontWeight:600,letterSpacing:"0.12em",cursor:"pointer",transition:"all 0.2s"}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>Update PIN</button>
       </div>
-      {/* Contact info */}
-      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:"10px",padding:"1.8rem",marginBottom:"1.5rem",maxWidth:"480px"}}>
-        <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.1rem",color:"#0E2B1F",marginBottom:"0.8rem",fontWeight:400}}>Business Information</div>
-        {[["Property Name","Shikaz Homes"],["WhatsApp","+254 745 802 200"],["Email","hello@shikazhomes.co.ke"],["City","Nairobi, Kenya"]].map(([l,v])=>(
-          <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"0.5rem 0",borderBottom:`1px solid ${C.border}`,fontSize:"0.83rem"}}>
-            <span style={{color:C.muted}}>{l}</span><span style={{color:"#1C1C1C"}}>{v}</span>
-          </div>
-        ))}
-        <div style={{marginTop:"1rem",fontSize:"0.72rem",color:C.muted}}>Contact your developer to update business information.</div>
+      {/* Link to Site Content */}
+      <div style={{background:C.goldDim,border:`1px solid rgba(197,151,58,0.35)`,borderRadius:"10px",padding:"1.4rem 1.6rem",marginBottom:"1.5rem",maxWidth:"480px",display:"flex",alignItems:"center",gap:"1rem"}}>
+        <span style={{fontSize:"1.5rem",flexShrink:0}}>✏️</span>
+        <div style={{flex:1}}>
+          <div style={{fontSize:"0.85rem",fontWeight:600,color:"#0E2B1F",marginBottom:"0.2rem"}}>Update Contact & About Info</div>
+          <div style={{fontSize:"0.75rem",color:C.muted}}>Edit your contact details and About Us content from the Site Content tab.</div>
+        </div>
       </div>
       {/* Logout */}
       <button onClick={onLogout} style={{background:"rgba(224,82,82,0.1)",color:C.error,border:"1px solid rgba(224,82,82,0.25)",padding:"0.7rem 1.8rem",borderRadius:"5px",fontSize:"0.8rem",fontWeight:500,cursor:"pointer",transition:"all 0.2s"}} onMouseEnter={e=>{e.currentTarget.style.background="rgba(224,82,82,0.18)";}} onMouseLeave={e=>{e.currentTarget.style.background="rgba(224,82,82,0.1)";}}>
@@ -4379,7 +5148,7 @@ function ICalSyncManager({ listings, bookings, onListingUpdate }) {
 }
 
 // ── Admin Shell ───────────────────────────────────────────────────
-function AdminDashboard({ listings, bookings, onNavigate, onListingUpdate, onListingCreate, onListingDelete, promoConfig, onPromoSave }) {
+function AdminDashboard({ listings, bookings, onNavigate, onListingUpdate, onListingCreate, onListingDelete, promoConfig, onPromoSave, siteContent, onSiteContentSave }) {
   const [tab,setTab]=useState("dashboard");
   const [sideOpen,setSideOpen]=useState(true);
 
@@ -4388,6 +5157,7 @@ function AdminDashboard({ listings, bookings, onNavigate, onListingUpdate, onLis
     {id:"bookings",icon:"📅",label:"Bookings"},
     {id:"listings",icon:"🏠",label:"Listings"},
     {id:"promos",icon:"🎉",label:"Promotions"},
+    {id:"content",icon:"✏️",label:"Site Content"},
     {id:"ical",icon:"🔄",label:"iCal Sync"},
     {id:"settings",icon:"⚙",label:"Settings"},
   ];
@@ -4429,6 +5199,7 @@ function AdminDashboard({ listings, bookings, onNavigate, onListingUpdate, onLis
         {tab==="bookings" &&<BookingsManager listings={listings} bookings={bookings}/>}
         {tab==="listings" &&<AdminListings listings={listings} bookings={bookings} onUpdate={onListingUpdate} onCreate={onListingCreate} onDelete={onListingDelete}/>}
         {tab==="promos"   &&<PromosManager promoConfig={promoConfig||{}} onSave={onPromoSave}/>}
+        {tab==="content"  &&<SiteContentManager siteContent={siteContent} onSave={onSiteContentSave}/>}
         {tab==="ical"     &&<ICalSyncManager listings={listings} bookings={bookings} onListingUpdate={onListingUpdate}/>}
         {tab==="settings"&&<SettingsPanel onLogout={handleLogout}/>}
       </div>
@@ -4437,10 +5208,10 @@ function AdminDashboard({ listings, bookings, onNavigate, onListingUpdate, onLis
 }
 
 // ── Admin Root (login gate) ───────────────────────────────────────
-function AdminRoot({ listings, bookings, onNavigate, onListingUpdate, onListingCreate, onListingDelete, promoConfig, onPromoSave }) {
+function AdminRoot({ listings, bookings, onNavigate, onListingUpdate, onListingCreate, onListingDelete, promoConfig, onPromoSave, siteContent, onSiteContentSave }) {
   const [authed,setAuthed]=useState(false);
   if(!authed) return <AdminLogin onLogin={()=>setAuthed(true)}/>;
-  return <AdminDashboard listings={listings} bookings={bookings} onNavigate={onNavigate} onListingUpdate={onListingUpdate} onListingCreate={onListingCreate} onListingDelete={onListingDelete} promoConfig={promoConfig} onPromoSave={onPromoSave}/>;
+  return <AdminDashboard listings={listings} bookings={bookings} onNavigate={onNavigate} onListingUpdate={onListingUpdate} onListingCreate={onListingCreate} onListingDelete={onListingDelete} promoConfig={promoConfig} onPromoSave={onPromoSave} siteContent={siteContent} onSiteContentSave={onSiteContentSave}/>;
 }
 
 // ─── FOOTER ───────────────────────────────────────────────────────
@@ -4465,7 +5236,7 @@ function Footer({ onNavigate, onMyBookings }) {
 }
 
 // ─── HOME PAGE ─────────────────────────────────────────────────────
-function HomePage({ listings, onSelect, onNavigate, promoConfig }) {
+function HomePage({ listings, onSelect, onNavigate, promoConfig, activeHoliday, onSelectWithHoliday }) {
   const upcoming = getUpcomingHolidays(promoConfig || {}, 6);
   return (
     <>
@@ -4478,7 +5249,7 @@ function HomePage({ listings, onSelect, onNavigate, promoConfig }) {
             <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(2rem,4vw,3rem)",color:"#0E2B1F",fontWeight:400}}>Handpicked <em style={{color:C.gold,fontStyle:"italic"}}>for you</em></h2>
           </div>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(340px,1fr))",gap:"1.8rem"}}>
-            {listings.slice(0,3).map(l=><ListingCard key={l.id} listing={l} onClick={()=>onSelect(l)}/>)}
+            {listings.slice(0,3).map(l=><ListingCard key={l.id} listing={l} onClick={()=>activeHoliday&&onSelectWithHoliday?onSelectWithHoliday(l,activeHoliday):onSelect(l)} activeHoliday={activeHoliday}/>)}
           </div>
           <div style={{textAlign:"center",marginTop:"3rem"}}>
             <button onClick={()=>onNavigate("listings")} style={{background:"transparent",color:C.gold,border:`1px solid ${C.border}`,padding:"0.9rem 2.5rem",fontSize:"0.8rem",fontWeight:500,letterSpacing:"0.18em",textTransform:"uppercase",borderRadius:"2px",cursor:"pointer",transition:"all 0.2s"}} onMouseEnter={e=>{e.target.style.borderColor=C.gold;e.target.style.background=C.goldDim;}} onMouseLeave={e=>{e.target.style.borderColor=C.border;e.target.style.background="transparent";}}>
@@ -4487,7 +5258,7 @@ function HomePage({ listings, onSelect, onNavigate, promoConfig }) {
           </div>
         </div>
       </section>
-      <UpcomingPromosSection promoConfig={promoConfig || {}} onNavigate={onNavigate}/>
+      <UpcomingPromosSection promoConfig={promoConfig || {}} onNavigate={onNavigate} listings={listings} onSelectWithHoliday={onSelectWithHoliday}/>
       <section style={{padding:"4rem 1.5rem",background:"#F7F2EA"}}>
         <div style={{maxWidth:"1200px",margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:"3.5rem"}}>
@@ -4520,14 +5291,16 @@ export default function App() {
   const [promoConfig,setPromoConfig]=useState({});
   const [activeHoliday,setActiveHoliday]=useState(null);
   const [showHolidayPopup,setShowHolidayPopup]=useState(false);
+  const [pendingHoliday,setPendingHoliday]=useState(null);
+  const [siteContent,setSiteContent]=useState(DEFAULT_SITE_CONTENT);
+  const [showConcierge,setShowConcierge]=useState(false);
 
   useEffect(()=>{
-    Promise.all([loadListings(),loadBookings(),loadPromos()]).then(([ls,bs,pc])=>{
-      setListings(ls); setBookings(bs); setPromoConfig(pc); setLoading(false);
+    Promise.all([loadListings(),loadBookings(),loadPromos(),loadSiteContent()]).then(([ls,bs,pc,sc])=>{
+      setListings(ls); setBookings(bs); setPromoConfig(pc); setSiteContent(sc); setLoading(false);
       const holiday = getActiveHoliday(pc);
       if(holiday){
         setActiveHoliday(holiday);
-        // Show popup after 2.5s — not immediately jarring
         const seen = sessionStorage.getItem("shikaz_promo_seen_"+holiday.id);
         if(!seen){ setTimeout(()=>setShowHolidayPopup(true),2500); }
       }
@@ -4537,13 +5310,26 @@ export default function App() {
   const handlePromoSave = async(cfg) => {
     setPromoConfig(cfg);
     await savePromos(cfg);
-    // Recompute active holiday with new config
     const holiday = getActiveHoliday(cfg);
     setActiveHoliday(holiday);
   };
 
+  const handleSiteContentSave = async(sc) => {
+    setSiteContent(sc);
+    await saveSiteContent(sc);
+  };
+
   const navigate=(p)=>{ setPage(p); window.scrollTo(0,0); };
   const selectListing=(l)=>{ setSelectedListing(l); setPage("listing"); window.scrollTo(0,0); };
+  // Navigate to a listing AND pre-load a holiday discount into the booking widget
+  const selectListingWithHoliday=(l, holiday)=>{
+    setSelectedListing(l);
+    setPendingHoliday(holiday);
+    setPage("listing");
+    window.scrollTo(0,0);
+  };
+  // Clear pendingHoliday once it's been consumed by ListingPage
+  const consumePendingHoliday=()=>{ const h=pendingHoliday; setPendingHoliday(null); return h; };
 
   const handleListingUpdate=async(updated)=>{
     const updatedListings=listings.map(l=>l.id===updated.id?updated:l);
@@ -4604,20 +5390,23 @@ export default function App() {
   const handleHolidayBook = () => {
     setShowHolidayPopup(false);
     if(activeHoliday) sessionStorage.setItem("shikaz_promo_seen_"+activeHoliday.id,"1");
-    navigate("listings");
+    // Go to first available listing with discount pre-applied
+    const target = listings.find(l=>l.available);
+    if(target) selectListingWithHoliday(target, activeHoliday);
+    else navigate("listings");
   };
 
   return (
     <>
       <style>{GS}</style>
       <Nav onNavigate={navigate}/>
-      {page==="home"    &&<HomePage listings={listings} onSelect={selectListing} onNavigate={navigate} promoConfig={promoConfig}/>}
-      {page==="listings"&&<ListingsPage listings={listings} onSelect={selectListing} promoConfig={promoConfig}/>}
-      {page==="listing" &&selectedListing&&<ListingPage listing={selectedListing} onBack={()=>navigate("listings")} onNavigate={navigate} onBookingMade={handleBookingMade} activeHoliday={activeHoliday}/>}
-      {page==="about"   &&<AboutPage/>}
-      {page==="contact" &&<ContactPage/>}
+      {page==="home"    &&<HomePage listings={listings} onSelect={selectListing} onNavigate={navigate} promoConfig={promoConfig} activeHoliday={activeHoliday} onSelectWithHoliday={selectListingWithHoliday}/>}
+      {page==="listings"&&<ListingsPage listings={listings} onSelect={selectListing} promoConfig={promoConfig} activeHoliday={activeHoliday} onSelectWithHoliday={selectListingWithHoliday}/>}
+      {page==="listing" &&selectedListing&&<ListingPage listing={selectedListing} onBack={()=>navigate("listings")} onNavigate={navigate} onBookingMade={handleBookingMade} activeHoliday={pendingHoliday||activeHoliday}/>}
+      {page==="about"   &&<AboutPage siteContent={siteContent}/>}
+      {page==="contact" &&<ContactPage siteContent={siteContent}/>}
       {page==="mybooking"&&<MyBookingPage bookings={bookings}/>}
-      {page==="admin"   &&<AdminRoot listings={listings} bookings={bookings} onNavigate={navigate} onListingUpdate={handleListingUpdate} onListingCreate={handleListingCreate} onListingDelete={handleListingDelete} promoConfig={promoConfig} onPromoSave={handlePromoSave}/>}
+      {page==="admin"   &&<AdminRoot listings={listings} bookings={bookings} onNavigate={navigate} onListingUpdate={handleListingUpdate} onListingCreate={handleListingCreate} onListingDelete={handleListingDelete} promoConfig={promoConfig} onPromoSave={handlePromoSave} siteContent={siteContent} onSiteContentSave={handleSiteContentSave}/>}
       {page!=="home"&&page!=="admin"&&<Footer onNavigate={navigate} onMyBookings={()=>setShowMyBookings(true)}/>}
       {page==="home"    &&<Footer onNavigate={navigate} onMyBookings={()=>setShowMyBookings(true)}/>}
       {showMyBookings&&<MyBookingsPanel bookings={bookings} onClose={()=>setShowMyBookings(false)}/>}
@@ -4626,6 +5415,12 @@ export default function App() {
       )}
       {!showHolidayPopup&&activeHoliday&&page!=="admin"&&(
         <PromoBanner holiday={activeHoliday} onOpen={()=>setShowHolidayPopup(true)}/>
+      )}
+      {page!=="admin"&&(
+        <ShikazConcierge
+          listing={page==="listing"?selectedListing:null}
+          siteContent={siteContent}
+        />
       )}
     </>
   );
