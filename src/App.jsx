@@ -3202,57 +3202,65 @@ function ShikazConcierge({ listing, siteContent }) {
   // status: "idle" | "requesting" | "granted" | "denied" | "unavailable"
   const [locStatus, setLocStatus] = useState("idle");
   const [userLocation, setUserLocation] = useState(null); // { lat, lng, accuracy, area }
+  const locAttempted = useRef(false); // prevent double-fire
 
   // Reverse-geocode using Nominatim (free, no API key)
   const reverseGeocode = useCallback(async (lat, lng) => {
     try {
       const res = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=14`,
-        { headers: { "Accept-Language": "en", "User-Agent": "ShikazHomes/1.0" } }
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=14&accept-language=en`,
+        { headers: { "User-Agent": "ShikazHomes/1.0" } }
       );
+      if (!res.ok) return null;
       const data = await res.json();
-      // Build a human-readable area name from Nominatim's address parts
       const addr = data.address || {};
-      const area =
+      return (
         addr.suburb || addr.neighbourhood || addr.quarter ||
-        addr.city_district || addr.town || addr.county || "Nairobi";
-      return area;
+        addr.city_district || addr.town || addr.county || null
+      );
     } catch {
       return null;
     }
   }, []);
 
-  // Request location when chat opens
+  // Request location once when chat first opens
   useEffect(() => {
     if (!open) return;
-    if (locStatus !== "idle") return; // already tried
-    if (!navigator.geolocation) { setLocStatus("unavailable"); return; }
+    if (locAttempted.current) return; // already tried this session
+    locAttempted.current = true;
+
+    if (!navigator?.geolocation) {
+      setLocStatus("unavailable");
+      return;
+    }
 
     setLocStatus("requesting");
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude: lat, longitude: lng, accuracy } = pos.coords;
-        const area = await reverseGeocode(lat, lng);
+        // Try reverse geocode but don't block on it
+        let area = null;
+        try { area = await reverseGeocode(lat, lng); } catch {}
         setUserLocation({ lat, lng, accuracy, area });
         setLocStatus("granted");
       },
-      () => setLocStatus("denied"),
-      { timeout: 8000, maximumAge: 60000, enableHighAccuracy: false }
+      (err) => {
+        // err.code: 1=denied, 2=unavailable, 3=timeout
+        setLocStatus(err.code === 1 ? "denied" : "unavailable");
+      },
+      { timeout: 12000, maximumAge: 300000, enableHighAccuracy: false }
     );
-  }, [open, locStatus, reverseGeocode]);
+  }, [open]); // intentionally only depends on `open`
 
   // Greeting on first open
   useEffect(() => {
     if (open && messages.length === 0) {
       const neighborhood = listing?.neighborhood || "Nairobi";
-      const locLine = locStatus === "granted" && userLocation?.area
-        ? `Niko na location yako — uko karibu na **${userLocation.area}**. Sawa, I can give you exact distances and sort your ride with one tap.`
-        : `You're in **${neighborhood}** — poa area. I know it well.`;
       const greeting = `Sasa! 🌟 Mimi ni **Amara**, your Nairobi insider from Shikaz Homes.
 
-${locLine}
+You're staying in **${neighborhood}** — poa area, I know it well. Niko hapa to sort you out.
 
-Niambie — unataka nini? I can sort you a **Bolt or Uber**, find somewhere great to **eat**, plan a **tour or safari**, or tell you where to go tonight. What's the move?`;
+Niambie — unataka nini? I can get you a **Bolt or Uber**, find somewhere great to **eat**, plan a **tour or safari**, or tell you where to go tonight. What's the move?`;
       setMessages([{ role:"assistant", content: greeting }]);
     }
   }, [open]);
@@ -3415,10 +3423,10 @@ Niambie — unataka nini? I can sort you a **Bolt or Uber**, find somewhere grea
                     {listing ? `${listing.neighborhood}, Nairobi` : "Nairobi, Kenya"}
                   </span>
                   <button
-                    onClick={() => setLocStatus("idle")}
+                    onClick={() => { locAttempted.current = false; setLocStatus("idle"); }}
                     title="Retry location"
                     style={{marginLeft:"auto",background:"none",border:"none",cursor:"pointer",color:"rgba(197,151,58,0.7)",fontSize:"0.7rem",padding:0,flexShrink:0}}
-                  >↺</button>
+                  >↺ retry</button>
                 </>
               )}
               {locStatus === "idle" && listing && (
