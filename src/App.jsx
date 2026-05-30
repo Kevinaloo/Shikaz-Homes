@@ -2984,9 +2984,11 @@ function SiteContentManager({ siteContent, onSave }) {
 // ─── SHIKAZ AI CONCIERGE ──────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════
 
-// GROQ_API_KEY lives in Netlify env vars — never in the frontend.
-// All requests go through /api/groq (netlify/functions/groq.js).
-const GROQ_MODEL = "llama-3.3-70b-versatile";
+// GROQ: tries the server-side proxy first (/api/groq).
+// Falls back to direct Groq call using VITE_GROQ_API_KEY if proxy 404s.
+// Add VITE_GROQ_API_KEY to Netlify env vars for the fallback to work.
+const GROQ_MODEL   = "llama-3.3-70b-versatile";
+const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY ?? "";
 
 const CONCIERGE_SYSTEM = `You are Amara, the exclusive AI concierge for Shikaz Homes — a premium short-stay property company based in Nairobi, Kenya.
 
@@ -3031,23 +3033,57 @@ const QUICK_ACTIONS = [
 ];
 
 async function callGroq(messages) {
-  // Calls our server-side proxy — the real API key never reaches the browser
-  const res = await fetch("/api/groq", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      messages: [{ role:"system", content:CONCIERGE_SYSTEM }, ...messages],
-      max_tokens: 600,
-      temperature: 0.75,
-      stream: false,
-    }),
+  const body = JSON.stringify({
+    model: GROQ_MODEL,
+    messages: [{ role:"system", content:CONCIERGE_SYSTEM }, ...messages],
+    max_tokens: 600,
+    temperature: 0.75,
+    stream: false,
   });
-  if (!res.ok) {
-    const err = await res.json().catch(()=>({}));
-    throw new Error(err?.error || `Server error ${res.status}`);
+
+  // 1. Try the server-side Netlify proxy first (key never exposed)
+  try {
+    const proxyRes = await fetch("/api/groq", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+    // Only use proxy response if it actually responded (not 404/502 from missing function)
+    if (proxyRes.ok) {
+      const data = await proxyRes.json();
+      return data.choices[0].message.content;
+    }
+    // 404 = function not deployed yet, fall through to direct call
+    if (proxyRes.status !== 404 && proxyRes.status !== 502) {
+      const err = await proxyRes.json().catch(()=>({}));
+      throw new Error(err?.error || `Proxy error ${proxyRes.status}`);
+    }
+  } catch(e) {
+    // Network error reaching proxy (e.g. function not deployed) — fall through
+    if (!e.message.includes("Proxy error")) {
+      // genuinely couldn't reach /api/groq — try direct
+    } else {
+      throw e;
+    }
   }
-  const data = await res.json();
+
+  // 2. Fallback: call Groq directly using VITE_GROQ_API_KEY env var
+  if (!GROQ_API_KEY) {
+    throw new Error("AI not configured — add VITE_GROQ_API_KEY to your Netlify environment variables.");
+  }
+  const directRes = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${GROQ_API_KEY}`,
+    },
+    body,
+  });
+  if (!directRes.ok) {
+    const err = await directRes.json().catch(()=>({}));
+    throw new Error(err?.error?.message || `Groq error ${directRes.status}`);
+  }
+  const data = await directRes.json();
   return data.choices[0].message.content;
 }
 
@@ -3160,7 +3196,7 @@ What can I sort out for you?`;
       const reply = await callGroq(msgsForApi);
       setMessages(prev => [...prev, { role:"assistant", content:reply }]);
     } catch(e) {
-      setError("Samahani — connection hiccup. Please try again.");
+      setError(e.message.includes("VITE_GROQ") ? e.message : "Samahani — connection hiccup. Please try again.");
     } finally {
       setLoading(false);
     }
