@@ -2993,17 +2993,14 @@ const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY ?? "";
 const buildConciergeSystem = (userLocation, locStatus) => {
   const locationSection = userLocation
     ? `
-GUEST'S CURRENT LOCATION (GPS — already detected automatically, DO NOT ask them to enable anything):
-- Coordinates: ${userLocation.lat.toFixed(5)}, ${userLocation.lng.toFixed(5)}
+CONFIRMED GPS LOCATION (use this — do NOT say you don't know the guest's location):
 - Area: ${userLocation.area || "Nairobi"}
+- Exact coords: ${userLocation.lat.toFixed(5)}, ${userLocation.lng.toFixed(5)}
 - Accuracy: ~${userLocation.accuracy ? Math.round(userLocation.accuracy) + "m" : "good"}
 
-Use this to:
-- Rank suggestions by proximity — closest spots first
-- Estimate travel times in Nairobi traffic (peak: double estimates; off-peak: normal)
-- Build pickup-aware Uber deep-links: https://m.uber.com/ul/?action=setPickup&pickup[latitude]=${userLocation.lat.toFixed(5)}&pickup[longitude]=${userLocation.lng.toFixed(5)}&dropoff[formatted_address]=[DESTINATION]+Nairobi
-- Build Google Maps turn-by-turn: https://www.google.com/maps/dir/${userLocation.lat.toFixed(5)},${userLocation.lng.toFixed(5)}/[DEST_LAT],[DEST_LNG]
-- Say things like "just 7 mins from you", "roughly 3km away", "quickest route is via Ngong Road"
+MANDATORY: You have the guest's location. Always use it. Give distances, rank by proximity, use coords in ride links. Never say "I don't know your location" or "could you share your location".
+- Uber pickup link: https://m.uber.com/ul/?action=setPickup&pickup[latitude]=${userLocation.lat.toFixed(5)}&pickup[longitude]=${userLocation.lng.toFixed(5)}&dropoff[formatted_address]=[DESTINATION]+Nairobi
+- Google Maps from here: https://www.google.com/maps/dir/${userLocation.lat.toFixed(5)},${userLocation.lng.toFixed(5)}/[DEST_LAT],[DEST_LNG]
 `
     : locStatus === "requesting"
     ? `
@@ -3285,13 +3282,25 @@ Niambie — unataka nini? I can get you a **Bolt or Uber**, find somewhere great
     setLoading(true);
 
     try {
-      // Inject context about current listing if available
-      const ctx = listing
-        ? `[Context: Guest is staying at "${listing.name}" in ${listing.neighborhood}, Nairobi. Coordinates: ${listing.lat||"-1.2921"},${listing.lng||"36.8219"}]\n\n`
-        : "";
-      const msgsForApi = newMessages.map((m, i) =>
-        i === 0 && m.role === "user" ? { ...m, content: ctx + m.content } : m
+      // Build a rich context block injected into the FIRST user message
+      // so the AI always has location + listing data, regardless of when location resolved
+      const locCtx = userLocation
+        ? `[GUEST LOCATION CONFIRMED via GPS: ${userLocation.area ? userLocation.area + ", " : ""}Nairobi (${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}). Use this as pickup point for all ride links and rank suggestions by proximity.]`
+        : locStatus === "requesting"
+        ? `[GUEST LOCATION: Still detecting — use listing neighborhood as reference.]`
+        : `[GUEST LOCATION: Unavailable — use listing neighborhood as reference.]`;
+
+      const listingCtx = listing
+        ? `[GUEST STAYING AT: "${listing.name}", ${listing.neighborhood}, Nairobi — coords ${listing.lat},${listing.lng}]`
+        : `[GUEST STAYING AT: Shikaz Homes, Nairobi]`;
+
+      const ctxBlock = `${locCtx}\n${listingCtx}\n\n`;
+
+      // Inject context into every user message so it's always visible to the model
+      const msgsForApi = newMessages.map((m) =>
+        m.role === "user" ? { ...m, content: ctxBlock + m.content } : m
       );
+
       const reply = await callGroq(msgsForApi, userLocation, locStatus);
       setMessages(prev => [...prev, { role:"assistant", content:reply }]);
     } catch(e) {
