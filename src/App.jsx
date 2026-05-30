@@ -2984,8 +2984,9 @@ function SiteContentManager({ siteContent, onSave }) {
 // ─── SHIKAZ AI CONCIERGE ──────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════════════
 
-const GROQ_API_KEY = "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";
-const GROQ_MODEL   = "llama-3.3-70b-versatile";
+// GROQ_API_KEY lives in Netlify env vars — never in the frontend.
+// All requests go through /api/groq (netlify/functions/groq.js).
+const GROQ_MODEL = "llama-3.3-70b-versatile";
 
 const CONCIERGE_SYSTEM = `You are Amara, the exclusive AI concierge for Shikaz Homes — a premium short-stay property company based in Nairobi, Kenya.
 
@@ -3030,12 +3031,10 @@ const QUICK_ACTIONS = [
 ];
 
 async function callGroq(messages) {
-  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+  // Calls our server-side proxy — the real API key never reaches the browser
+  const res = await fetch("/api/groq", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${GROQ_API_KEY}`,
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       model: GROQ_MODEL,
       messages: [{ role:"system", content:CONCIERGE_SYSTEM }, ...messages],
@@ -3044,7 +3043,10 @@ async function callGroq(messages) {
       stream: false,
     }),
   });
-  if (!res.ok) throw new Error(`Groq error ${res.status}`);
+  if (!res.ok) {
+    const err = await res.json().catch(()=>({}));
+    throw new Error(err?.error || `Server error ${res.status}`);
+  }
   const data = await res.json();
   return data.choices[0].message.content;
 }
@@ -3395,6 +3397,526 @@ What can I sort out for you?`;
         </div>
       )}
     </>
+  );
+}
+
+
+// ─── MY BOOKING PAGE ─────────────────────────────────────────────
+function MyBookingPage({ bookings, listings, onBookingMade }) {
+  const today = toKey(new Date());
+  const [phone, setPhone]       = useState("");
+  const [submitted, setSubmitted] = useState(false);
+  const [err, setErr]           = useState("");
+  // Balance payment modal state
+  const [payingBalance, setPayingBalance] = useState(null); // booking obj
+
+  const normalise = p => {
+    const c = p.replace(/[\s\-]/g,"");
+    if(/^07\d{8}$/.test(c)) return "254"+c.slice(1);
+    if(/^\+254[17]\d{8}$/.test(c)) return c.slice(1);
+    return c;
+  };
+  const validate = p => /^(254|\+?254|0)[17]\d{8}$/.test(p.replace(/[\s\-]/g,""));
+
+  const handleSearch = () => {
+    if(!phone.trim()){ setErr("Please enter your phone number."); return; }
+    if(!validate(phone)){ setErr("Enter a valid Safaricom number (07xx or 254xx)."); return; }
+    setErr(""); setSubmitted(true);
+  };
+
+  const handleReset = () => { setPhone(""); setSubmitted(false); setErr(""); };
+
+  // Filter: match phone + checkout hasn't passed
+  const myBookings = submitted
+    ? bookings.filter(b => {
+        const normB = normalise(b.phone||"");
+        const normQ = normalise(phone);
+        return normB===normQ && b.checkOut && b.checkOut>=today;
+      })
+    : [];
+
+  // Deposit bookings that still have a balance
+  const depositBookings = myBookings.filter(b => b.isDeposit && b.balanceDue > 0);
+  const fullBookings    = myBookings.filter(b => !b.isDeposit || b.balanceDue <= 0);
+
+  const statusOf = b => {
+    if(b.checkIn<=today && b.checkOut>today) return "active";
+    if(b.checkIn>today)  return "upcoming";
+    return "past";
+  };
+
+  const STATUS_LABEL  = { active:"Checked In", upcoming:"Upcoming", past:"Past" };
+  const STATUS_COLOR  = { active:C.success, upcoming:C.gold, past:C.muted };
+  const STATUS_BG     = { active:"rgba(22,163,74,0.1)", upcoming:"rgba(197,151,58,0.12)", past:"rgba(107,107,95,0.1)" };
+  const STATUS_BORDER = { active:"rgba(22,163,74,0.3)", upcoming:"rgba(197,151,58,0.35)", past:"rgba(107,107,95,0.2)" };
+
+  // Days until check-in
+  const daysUntil = b => {
+    const d = Math.ceil((new Date(b.checkIn+"-01").setDate(parseInt(b.checkIn.split("-")[2])) - Date.now()) / 86400000);
+    const ci = new Date(b.checkIn.replace(/-/g,"/"));
+    return Math.ceil((ci - new Date()) / 86400000);
+  };
+
+  // Find the listing object for a booking
+  const listingFor = b => listings?.find(l => l.id===b.listing?.id) || b.listing;
+
+  return (
+    <div style={{minHeight:"100vh",paddingTop:"72px",background:"#FDFAF5"}}>
+
+      {/* ── Hero band ── */}
+      <div style={{background:"linear-gradient(135deg,#0E2B1F 0%,#1a3d2b 100%)",padding:"3.5rem 1.5rem 4rem",position:"relative",overflow:"hidden"}}>
+        <div style={{position:"absolute",inset:0,backgroundImage:"url(https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1400&q=40)",backgroundSize:"cover",backgroundPosition:"center",opacity:0.07,pointerEvents:"none"}}/>
+        <div style={{maxWidth:"640px",margin:"0 auto",textAlign:"center",position:"relative"}}>
+          <div style={{fontSize:"0.65rem",letterSpacing:"0.38em",textTransform:"uppercase",color:C.gold,marginBottom:"0.9rem"}}>Booking Lookup</div>
+          <h1 style={{fontFamily:"'Playfair Display',serif",fontSize:"clamp(2rem,5vw,3.2rem)",color:"#F7F2EA",fontWeight:400,marginBottom:"0.8rem",lineHeight:1.2}}>
+            Find Your <em style={{color:C.gold,fontStyle:"italic"}}>Reservation</em>
+          </h1>
+          <p style={{fontSize:"0.92rem",color:"rgba(247,242,234,0.65)",lineHeight:1.8,maxWidth:"420px",margin:"0 auto 2.2rem"}}>
+            Enter the phone number you used to book. We'll show your reservations and any outstanding balances.
+          </p>
+
+          {/* Search box */}
+          <div style={{background:"#fff",borderRadius:"8px",padding:"1.6rem",boxShadow:"0 24px 80px rgba(0,0,0,0.35)"}}>
+            {!submitted ? (
+              <>
+                <label style={{display:"block",fontSize:"0.62rem",letterSpacing:"0.2em",textTransform:"uppercase",color:C.muted,marginBottom:"0.5rem",textAlign:"left"}}>M-Pesa / Booking Phone Number</label>
+                <div style={{display:"flex",gap:"0.6rem"}}>
+                  <input type="tel" value={phone} onChange={e=>{setPhone(e.target.value);setErr("");}}
+                    onKeyDown={e=>e.key==="Enter"&&handleSearch()}
+                    placeholder="e.g. 0712 345 678"
+                    style={{flex:1,padding:"0.85rem 1rem",border:`1.5px solid ${err?C.error:C.border}`,borderRadius:"5px",fontSize:"1rem",outline:"none",background:"#FDFAF5",color:"#1C1C1C",transition:"border-color 0.2s"}}
+                    onFocus={e=>e.target.style.borderColor=C.gold}
+                    onBlur={e=>e.target.style.borderColor=err?C.error:C.border}/>
+                  <button onClick={handleSearch}
+                    style={{padding:"0.85rem 1.6rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"5px",fontWeight:700,fontSize:"0.82rem",letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer",flexShrink:0,transition:"background 0.2s"}}
+                    onMouseEnter={e=>e.target.style.background=C.goldLight}
+                    onMouseLeave={e=>e.target.style.background=C.gold}>Search</button>
+                </div>
+                {err&&<div style={{fontSize:"0.76rem",color:C.error,marginTop:"0.5rem",textAlign:"left"}}>{err}</div>}
+              </>
+            ) : (
+              <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:"0.6rem"}}>
+                <div style={{textAlign:"left"}}>
+                  <div style={{fontSize:"0.62rem",letterSpacing:"0.18em",textTransform:"uppercase",color:C.muted,marginBottom:"0.2rem"}}>Showing results for</div>
+                  <div style={{fontWeight:600,color:"#0E2B1F",fontSize:"1rem"}}>+{normalise(phone)}</div>
+                </div>
+                <button onClick={handleReset}
+                  style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:"4px",padding:"0.5rem 1rem",fontSize:"0.75rem",color:C.muted,cursor:"pointer",transition:"all 0.2s"}}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor=C.gold;e.currentTarget.style.color=C.gold;}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.muted;}}>
+                  ✕ New Search
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Results ── */}
+      <div style={{maxWidth:"720px",margin:"0 auto",padding:"2.5rem 1.5rem 6rem"}}>
+
+        {/* Empty state */}
+        {!submitted&&(
+          <div style={{textAlign:"center",paddingTop:"2rem",color:C.muted}}>
+            <div style={{fontSize:"3rem",marginBottom:"1rem",opacity:0.35}}>🔍</div>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.2rem",color:C.sage,marginBottom:"0.4rem"}}>Your reservations, at a glance</div>
+            <div style={{fontSize:"0.85rem",lineHeight:1.8,color:C.muted}}>Enter your phone number above to see upcoming reservations and any outstanding balances.</div>
+          </div>
+        )}
+
+        {/* No results */}
+        {submitted&&myBookings.length===0&&(
+          <div style={{textAlign:"center",paddingTop:"1.5rem"}}>
+            <div style={{fontSize:"3rem",marginBottom:"1rem",opacity:0.4}}>📭</div>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.3rem",color:C.sage,marginBottom:"0.6rem"}}>No reservations found</div>
+            <div style={{fontSize:"0.88rem",color:C.muted,lineHeight:1.8,maxWidth:"380px",margin:"0 auto"}}>
+              We couldn't find upcoming bookings for that number. Check that it matches the number you used to pay via M-Pesa, or contact us on WhatsApp.
+            </div>
+            <a href="https://wa.me/254745802200" target="_blank" rel="noreferrer"
+              style={{display:"inline-flex",alignItems:"center",gap:"0.5rem",marginTop:"1.5rem",padding:"0.75rem 1.6rem",background:"rgba(76,175,125,0.1)",border:"1px solid rgba(76,175,125,0.3)",borderRadius:"5px",color:"#4CAF7D",fontSize:"0.8rem",fontWeight:600,textDecoration:"none"}}>
+              📱 Contact us on WhatsApp
+            </a>
+          </div>
+        )}
+
+        {/* ── OUTSTANDING BALANCES (shown first, prominent) ── */}
+        {submitted&&depositBookings.length>0&&(
+          <div style={{marginBottom:"2.5rem",animation:"fadeUp 0.5s ease"}}>
+            <div style={{display:"flex",alignItems:"center",gap:"0.8rem",marginBottom:"1.2rem"}}>
+              <div style={{flex:1,height:"1px",background:"rgba(197,151,58,0.3)"}}/>
+              <div style={{padding:"0.3rem 0.9rem",background:"rgba(197,151,58,0.1)",border:"1px solid rgba(197,151,58,0.3)",borderRadius:"20px",fontSize:"0.65rem",fontWeight:700,letterSpacing:"0.2em",textTransform:"uppercase",color:C.gold,flexShrink:0}}>
+                💰 Outstanding Balances
+              </div>
+              <div style={{flex:1,height:"1px",background:"rgba(197,151,58,0.3)"}}/>
+            </div>
+
+            {depositBookings.map((b,i)=>{
+              const st = statusOf(b);
+              const dl = daysUntil(b);
+              const urgency = dl<=3?"urgent":dl<=7?"soon":"plan";
+              const urgColor = {urgent:C.error,soon:"#F59E0B",plan:C.gold}[urgency];
+              return (
+                <div key={i} style={{
+                  background:"#fff",borderRadius:"12px",overflow:"hidden",
+                  border:`2px solid ${C.gold}44`,
+                  boxShadow:`0 8px 32px rgba(197,151,58,0.15)`,
+                  marginBottom:"1rem",
+                  animation:`fadeUp 0.4s ease ${i*0.08}s both`,
+                }}>
+                  {/* Gold top bar */}
+                  <div style={{height:"4px",background:`linear-gradient(90deg,${C.gold},${C.goldLight},${C.gold})`}}/>
+
+                  <div style={{padding:"1.4rem 1.6rem"}}>
+                    {/* Header */}
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:"0.6rem",marginBottom:"1rem"}}>
+                      <div>
+                        <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.15rem",color:"#0E2B1F",marginBottom:"0.2rem"}}>{b.listing?.name}</div>
+                        <div style={{fontSize:"0.75rem",color:C.muted}}>{b.listing?.neighborhood}, Nairobi</div>
+                      </div>
+                      <span style={{fontSize:"0.62rem",fontWeight:700,padding:"0.2rem 0.6rem",background:"rgba(197,151,58,0.12)",color:C.gold,border:`1px solid rgba(197,151,58,0.35)`,borderRadius:"3px",letterSpacing:"0.1em",textTransform:"uppercase",flexShrink:0}}>Deposit Paid</span>
+                    </div>
+
+                    {/* Dates */}
+                    <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:"0.6rem",padding:"0.9rem 1rem",background:"#F7F2EA",borderRadius:"6px",marginBottom:"1rem"}}>
+                      <div>
+                        <div style={{fontSize:"0.58rem",letterSpacing:"0.18em",textTransform:"uppercase",color:C.muted,marginBottom:"0.2rem"}}>Check-in</div>
+                        <div style={{fontWeight:600,color:"#0E2B1F",fontSize:"0.9rem"}}>{fmtDate(b.checkIn)}</div>
+                      </div>
+                      <div style={{fontSize:"1.2rem",color:C.gold,textAlign:"center"}}>→</div>
+                      <div style={{textAlign:"right"}}>
+                        <div style={{fontSize:"0.58rem",letterSpacing:"0.18em",textTransform:"uppercase",color:C.muted,marginBottom:"0.2rem"}}>Check-out</div>
+                        <div style={{fontWeight:600,color:"#0E2B1F",fontSize:"0.9rem"}}>{fmtDate(b.checkOut)}</div>
+                      </div>
+                    </div>
+
+                    {/* Payment summary */}
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:"0.5rem",marginBottom:"1.1rem"}}>
+                      {[
+                        {label:"Deposit Paid",   val:`KES ${fmt(b.depositAmount||b.total)}`, color:C.success},
+                        {label:"Balance Due",    val:`KES ${fmt(b.balanceDue)}`,             color:C.gold},
+                        {label:"Full Total",     val:`KES ${fmt((b.depositAmount||b.total)+b.balanceDue)}`, color:"#1C1C1C"},
+                      ].map(({label,val,color})=>(
+                        <div key={label} style={{padding:"0.7rem 0.8rem",background:"#FDFAF5",borderRadius:"5px",border:`1px solid ${C.border}`,textAlign:"center"}}>
+                          <div style={{fontSize:"0.55rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,marginBottom:"0.2rem"}}>{label}</div>
+                          <div style={{fontSize:"0.88rem",fontWeight:700,color}}>{val}</div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Urgency nudge */}
+                    {dl>0&&(
+                      <div style={{padding:"0.6rem 0.9rem",background:`${urgColor}11`,border:`1px solid ${urgColor}33`,borderRadius:"5px",marginBottom:"1rem",fontSize:"0.75rem",color:urgColor,display:"flex",alignItems:"center",gap:"0.5rem"}}>
+                        <span>{urgency==="urgent"?"⚠️":urgency==="soon"?"⏰":"📅"}</span>
+                        <span>
+                          {urgency==="urgent"
+                            ? `Check-in in ${dl} day${dl===1?"":"s"} — please settle your balance soon.`
+                            : urgency==="soon"
+                            ? `${dl} days until check-in — pay your balance to confirm your stay.`
+                            : `${dl} days until check-in — pay your balance at your convenience before arrival.`}
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Pay balance CTA */}
+                    <button onClick={()=>setPayingBalance(b)}
+                      style={{width:"100%",padding:"1rem",background:`linear-gradient(135deg,#0E2B1F,#1a3d2b)`,color:"#fff",border:`2px solid ${C.gold}`,borderRadius:"8px",fontSize:"0.85rem",fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.25s",boxShadow:`0 4px 16px rgba(197,151,58,0.2)`}}
+                      onMouseEnter={e=>{e.currentTarget.style.background=`linear-gradient(135deg,${C.gold},${C.goldLight})`;e.currentTarget.style.color=C.obsidian;}}
+                      onMouseLeave={e=>{e.currentTarget.style.background="linear-gradient(135deg,#0E2B1F,#1a3d2b)";e.currentTarget.style.color="#fff";}}>
+                      💳 Pay Remaining Balance — KES {fmt(b.balanceDue)}
+                    </button>
+
+                    <div style={{textAlign:"center",marginTop:"0.5rem",fontSize:"0.68rem",color:C.muted}}>
+                      Ref: <strong style={{color:C.gold,letterSpacing:"0.06em"}}>{b.ref}</strong>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* ── CONFIRMED BOOKINGS ── */}
+        {submitted&&fullBookings.length>0&&(
+          <div style={{animation:"fadeUp 0.5s ease"}}>
+            {depositBookings.length>0&&(
+              <div style={{display:"flex",alignItems:"center",gap:"0.8rem",marginBottom:"1.2rem"}}>
+                <div style={{flex:1,height:"1px",background:C.border}}/>
+                <div style={{fontSize:"0.65rem",letterSpacing:"0.2em",textTransform:"uppercase",color:C.muted,flexShrink:0}}>Confirmed Bookings</div>
+                <div style={{flex:1,height:"1px",background:C.border}}/>
+              </div>
+            )}
+            {!depositBookings.length&&(
+              <div style={{fontSize:"0.68rem",letterSpacing:"0.25em",textTransform:"uppercase",color:C.gold,marginBottom:"1.4rem"}}>
+                {fullBookings.length} Reservation{fullBookings.length>1?"s":""} Found
+              </div>
+            )}
+            <div style={{display:"flex",flexDirection:"column",gap:"1.1rem"}}>
+              {fullBookings.map((b,i)=>{
+                const st = statusOf(b);
+                return (
+                  <div key={i} style={{background:"#fff",border:`1px solid ${STATUS_BORDER[st]}`,borderRadius:"10px",overflow:"hidden",boxShadow:"0 4px 20px rgba(14,43,31,0.07)",animation:`fadeUp 0.4s ease ${i*0.07}s both`}}>
+                    <div style={{height:"4px",background:STATUS_COLOR[st]}}/>
+                    <div style={{padding:"1.4rem 1.6rem"}}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:"1rem",flexWrap:"wrap",gap:"0.6rem"}}>
+                        <div>
+                          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.15rem",color:"#0E2B1F",marginBottom:"0.2rem"}}>{b.listing?.name}</div>
+                          <div style={{fontSize:"0.75rem",color:C.muted}}>{b.listing?.neighborhood}, Nairobi</div>
+                        </div>
+                        <span style={{fontSize:"0.65rem",fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",padding:"0.22rem 0.65rem",background:STATUS_BG[st],color:STATUS_COLOR[st],border:`1px solid ${STATUS_BORDER[st]}`,borderRadius:"3px"}}>
+                          {STATUS_LABEL[st]}
+                        </span>
+                      </div>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",alignItems:"center",gap:"0.6rem",padding:"0.9rem 1rem",background:"#F7F2EA",borderRadius:"6px",marginBottom:"1rem"}}>
+                        <div>
+                          <div style={{fontSize:"0.58rem",letterSpacing:"0.18em",textTransform:"uppercase",color:C.muted,marginBottom:"0.2rem"}}>Check-in</div>
+                          <div style={{fontWeight:600,color:"#0E2B1F",fontSize:"0.9rem"}}>{fmtDate(b.checkIn)}</div>
+                        </div>
+                        <div style={{fontSize:"1.2rem",color:C.gold,textAlign:"center"}}>→</div>
+                        <div style={{textAlign:"right"}}>
+                          <div style={{fontSize:"0.58rem",letterSpacing:"0.18em",textTransform:"uppercase",color:C.muted,marginBottom:"0.2rem"}}>Check-out</div>
+                          <div style={{fontWeight:600,color:"#0E2B1F",fontSize:"0.9rem"}}>{fmtDate(b.checkOut)}</div>
+                        </div>
+                      </div>
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0.5rem",marginBottom:"1rem"}}>
+                        {[
+                          ["Nights",`${b.nights} night${b.nights>1?"s":""}`],
+                          ["Guests",`${b.guests} guest${b.guests>1?"s":""}`],
+                          ["Total Paid",`KES ${fmt(b.total)}`],
+                          ["Booking Ref",b.ref],
+                        ].map(([label,val])=>(
+                          <div key={label} style={{padding:"0.6rem 0.8rem",background:"#FDFAF5",borderRadius:"5px",border:`1px solid ${C.border}`}}>
+                            <div style={{fontSize:"0.58rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,marginBottom:"0.15rem"}}>{label}</div>
+                            <div style={{fontSize:"0.88rem",fontWeight:600,color:label==="Total Paid"?C.gold:label==="Booking Ref"?C.success:"#0E2B1F"}}>{val}</div>
+                          </div>
+                        ))}
+                      </div>
+                      <div style={{display:"flex",justifyContent:"flex-end",paddingTop:"0.6rem",borderTop:`1px solid ${C.border}`}}>
+                        <a href={`https://wa.me/254745802200?text=${encodeURIComponent(`Hi, I need help with booking ${b.ref} at ${b.listing?.name}.`)}`}
+                          target="_blank" rel="noreferrer"
+                          style={{display:"inline-flex",alignItems:"center",gap:"0.35rem",fontSize:"0.72rem",color:"#4CAF7D",fontWeight:600,textDecoration:"none",padding:"0.35rem 0.8rem",border:"1px solid rgba(76,175,125,0.3)",borderRadius:"4px",transition:"all 0.2s"}}
+                          onMouseEnter={e=>e.currentTarget.style.background="rgba(76,175,125,0.08)"}
+                          onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
+                          📱 Need help?
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── BALANCE PAYMENT MODAL ── */}
+      {payingBalance&&(
+        <BalancePaymentModal
+          booking={payingBalance}
+          listing={listingFor(payingBalance)}
+          onClose={()=>setPayingBalance(null)}
+          onSuccess={(updatedBooking)=>{
+            setPayingBalance(null);
+            if(onBookingMade) onBookingMade(updatedBooking);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── BALANCE PAYMENT MODAL ────────────────────────────────────────
+function BalancePaymentModal({ booking, listing, onClose, onSuccess }) {
+  const [step,setStep]       = useState("confirm"); // confirm|sending|waitPin|polling|success|failed
+  const [err,setErr]         = useState("");
+  const [statusMsg,setStatusMsg] = useState("");
+  const pollRef = useRef(null);
+  const [phRef, setPhRef]   = useState(null);
+
+  const amount = booking.balanceDue;
+  const phone  = booking.phone;
+  const name   = booking.name;
+
+  useEffect(()=>()=>{ if(pollRef.current) clearInterval(pollRef.current); },[]);
+
+  const normalisePhone = p => {
+    const c = p.replace(/[\s\-]/g,"");
+    return c.startsWith("0") ? "254"+c.slice(1) : c;
+  };
+
+  const payNow = async() => {
+    if(!PH_USER||!PH_PASS||!PH_CHANNEL){
+      setErr("Payment not configured — check PayHero env vars.");
+      return;
+    }
+    setErr(""); setStep("sending");
+    try {
+      const data = await phStkPush({
+        phone: normalisePhone(phone),
+        amount,
+        ref: "BAL-"+booking.ref,
+      });
+      const extRef = data?.reference || data?.CheckoutRequestID || data?.checkout_request_id || ("BAL-"+booking.ref);
+      setPhRef(extRef);
+      setStep("waitPin");
+      setTimeout(()=>startPolling(extRef), 6000);
+    } catch(e) {
+      setErr(`STK push failed: ${e.message}`);
+      setStep("confirm");
+    }
+  };
+
+  const startPolling = ref => {
+    setStep("polling"); setStatusMsg("Verifying payment…");
+    let attempts = 0;
+    const MAX = 20;
+    pollRef.current = setInterval(async()=>{
+      attempts++;
+      try {
+        const data = await phCheckStatus(ref);
+        const st = (data?.status||"").toUpperCase();
+        if(["SUCCESS","COMPLETE","COMPLETED"].includes(st)){
+          clearInterval(pollRef.current);
+          setStep("success");
+        } else if(["FAILED","CANCELLED","CANCELED","REJECTED"].includes(st)){
+          clearInterval(pollRef.current);
+          setErr(data?.message||"Payment was not completed. Please try again.");
+          setStep("failed");
+        } else if(attempts>=MAX){
+          clearInterval(pollRef.current);
+          setErr(`Verification timed out. If you entered your PIN, contact us with ref: BAL-${booking.ref}`);
+          setStep("failed");
+        } else {
+          setStatusMsg(`Waiting for M-Pesa confirmation… (${attempts}/${MAX})`);
+        }
+      } catch {}
+    }, 5000);
+  };
+
+  const overlay = {position:"fixed",inset:0,background:"rgba(14,43,31,0.78)",zIndex:1000,display:"flex",alignItems:"center",justifyContent:"center",padding:"1rem",backdropFilter:"blur(8px)"};
+  const box = {background:"#fff",border:`1px solid ${C.border}`,borderRadius:"12px",width:"100%",maxWidth:"460px",padding:"2.2rem",animation:"slideUp 0.35s ease",position:"relative",boxShadow:"0 32px 80px rgba(0,0,0,0.5)",maxHeight:"92vh",overflowY:"auto"};
+
+  return (
+    <div style={overlay} onClick={e=>e.target===e.currentTarget&&onClose()}>
+      <div style={box}>
+        <button onClick={onClose} style={{position:"absolute",top:"1rem",right:"1rem",background:"none",border:"none",color:C.muted,fontSize:"1.3rem",cursor:"pointer"}}>✕</button>
+
+        {/* Header */}
+        <div style={{marginBottom:"1.5rem"}}>
+          <div style={{fontSize:"0.65rem",letterSpacing:"0.25em",textTransform:"uppercase",color:C.gold,marginBottom:"0.3rem"}}>
+            {step==="success"?"Balance Cleared":"Pay Remaining Balance"}
+          </div>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.3rem",color:"#0E2B1F",marginBottom:"0.2rem"}}>{booking.listing?.name}</div>
+          <div style={{fontSize:"0.8rem",color:C.muted}}>{fmtDate(booking.checkIn)} → {fmtDate(booking.checkOut)}</div>
+        </div>
+
+        {/* ── CONFIRM ── */}
+        {step==="confirm"&&(
+          <div style={{animation:"fadeIn 0.3s ease"}}>
+            {/* Booking summary */}
+            <div style={{background:"#F7F2EA",border:`1px solid ${C.border}`,borderRadius:"8px",padding:"1rem 1.2rem",marginBottom:"1.2rem"}}>
+              {[
+                ["Guest",name],
+                ["Phone",normalisePhone(phone)],
+                ["Deposit Paid",`KES ${fmt(booking.depositAmount||booking.total)}`],
+                ["Balance Due",`KES ${fmt(amount)}`],
+                ["Booking Ref",booking.ref],
+              ].map(([l,r])=>(
+                <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:"0.8rem",padding:"0.3rem 0",borderBottom:`1px solid ${C.border}`}}>
+                  <span style={{color:C.muted}}>{l}</span>
+                  <span style={{color:l==="Balance Due"?C.gold:l==="Booking Ref"?C.success:"#1C1C1C",fontWeight:l==="Balance Due"||l==="Booking Ref"?600:400}}>{r}</span>
+                </div>
+              ))}
+            </div>
+            <div style={{padding:"0.7rem 1rem",background:"rgba(197,151,58,0.07)",border:`1px solid rgba(197,151,58,0.22)`,borderRadius:"5px",fontSize:"0.78rem",color:C.mutedLight,marginBottom:"1.2rem",lineHeight:1.6}}>
+              📱 An M-Pesa STK push will be sent to <strong style={{color:C.gold}}>+{normalisePhone(phone)}</strong> for <strong style={{color:C.gold}}>KES {fmt(amount)}</strong>.
+            </div>
+            {err&&<div style={{fontSize:"0.75rem",color:C.error,marginBottom:"0.8rem",padding:"0.5rem 0.8rem",background:"rgba(224,82,82,0.08)",borderRadius:"4px"}}>{err}</div>}
+            <button onClick={payNow}
+              style={{width:"100%",padding:"1rem",background:`linear-gradient(135deg,#0E2B1F,#1a3d2b)`,color:"#fff",border:`2px solid ${C.gold}`,borderRadius:"8px",fontSize:"0.85rem",fontWeight:700,letterSpacing:"0.15em",textTransform:"uppercase",cursor:"pointer",transition:"all 0.2s"}}
+              onMouseEnter={e=>{e.currentTarget.style.background=`linear-gradient(135deg,${C.gold},${C.goldLight})`;e.currentTarget.style.color=C.obsidian;}}
+              onMouseLeave={e=>{e.currentTarget.style.background="linear-gradient(135deg,#0E2B1F,#1a3d2b)";e.currentTarget.style.color="#fff";}}>
+              💳 Pay KES {fmt(amount)} Now
+            </button>
+          </div>
+        )}
+
+        {/* ── SENDING ── */}
+        {step==="sending"&&(
+          <div style={{textAlign:"center",padding:"2rem 0"}}>
+            <div style={{width:"50px",height:"50px",border:`3px solid ${C.goldDim}`,borderTop:`3px solid ${C.gold}`,borderRadius:"50%",animation:"spin 0.9s linear infinite",margin:"0 auto 1.5rem"}}/>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.1rem",color:"#0E2B1F",marginBottom:"0.4rem"}}>Sending STK push…</div>
+            <div style={{fontSize:"0.82rem",color:C.muted}}>Connecting to M-Pesa for +{normalisePhone(phone)}</div>
+          </div>
+        )}
+
+        {/* ── WAIT PIN ── */}
+        {step==="waitPin"&&(
+          <div style={{animation:"fadeIn 0.3s ease",textAlign:"center"}}>
+            <div style={{fontSize:"3rem",marginBottom:"0.7rem",animation:"heartBeat 1.8s ease infinite"}}>📱</div>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.2rem",color:"#0E2B1F",marginBottom:"0.5rem"}}>Check Your Phone</div>
+            <div style={{fontSize:"0.85rem",color:C.muted,lineHeight:1.7,marginBottom:"1.2rem"}}>
+              M-Pesa prompt sent to<br/><strong style={{color:C.gold}}>+{normalisePhone(phone)}</strong><br/>Enter your PIN to pay <strong style={{color:C.gold}}>KES {fmt(amount)}</strong>
+            </div>
+            <div style={{display:"flex",alignItems:"center",gap:"0.8rem",padding:"0.9rem 1rem",background:"rgba(197,151,58,0.07)",border:`1px solid rgba(197,151,58,0.25)`,borderRadius:"6px",fontSize:"0.75rem",color:C.mutedLight,lineHeight:1.5}}>
+              <div style={{width:"12px",height:"12px",borderRadius:"50%",border:`2px solid ${C.goldDim}`,borderTop:`2px solid ${C.gold}`,animation:"spin 0.9s linear infinite",flexShrink:0}}/>
+              Waiting for PIN confirmation… this verifies automatically.
+            </div>
+            <button onClick={()=>{setStep("confirm");setErr("");}} style={{marginTop:"1rem",background:"none",border:"none",color:C.muted,fontSize:"0.72rem",cursor:"pointer",textDecoration:"underline"}}>Didn't get it? Try again</button>
+          </div>
+        )}
+
+        {/* ── POLLING ── */}
+        {step==="polling"&&(
+          <div style={{textAlign:"center",padding:"2rem 0"}}>
+            <div style={{width:"50px",height:"50px",border:`3px solid ${C.goldDim}`,borderTop:`3px solid ${C.gold}`,borderRadius:"50%",animation:"spin 0.9s linear infinite",margin:"0 auto 1.5rem"}}/>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.1rem",color:"#0E2B1F",marginBottom:"0.4rem"}}>Verifying Payment…</div>
+            <div style={{fontSize:"0.8rem",color:C.muted}}>{statusMsg}</div>
+          </div>
+        )}
+
+        {/* ── SUCCESS ── */}
+        {step==="success"&&(
+          <div style={{animation:"fadeIn 0.4s ease",textAlign:"center"}}>
+            <div style={{width:"60px",height:"60px",background:C.successDim,border:`2px solid ${C.success}`,borderRadius:"50%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:"1.8rem",margin:"0 auto 1rem"}}>✓</div>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.4rem",color:"#0E2B1F",marginBottom:"0.4rem"}}>Balance Cleared! 🎉</div>
+            <div style={{fontSize:"0.85rem",color:C.muted,marginBottom:"1.5rem",lineHeight:1.7}}>
+              Your full balance of <strong style={{color:C.success}}>KES {fmt(amount)}</strong> has been received.<br/>Your booking at <strong>{booking.listing?.name}</strong> is fully confirmed.
+            </div>
+            <div style={{background:C.successDim,border:"1px solid rgba(76,175,125,0.25)",borderRadius:"8px",padding:"1rem 1.2rem",marginBottom:"1.2rem",textAlign:"left"}}>
+              {[
+                ["Property",booking.listing?.name],
+                ["Check-in",fmtDate(booking.checkIn)],
+                ["Check-out",fmtDate(booking.checkOut)],
+                ["Balance Paid",`KES ${fmt(amount)}`],
+                ["Booking Ref",booking.ref],
+              ].map(([l,r])=>(
+                <div key={l} style={{display:"flex",justifyContent:"space-between",fontSize:"0.8rem",padding:"0.3rem 0",borderBottom:"1px solid rgba(76,175,125,0.15)"}}>
+                  <span style={{color:C.muted}}>{l}</span>
+                  <span style={{color:l==="Balance Paid"||l==="Booking Ref"?C.success:"#1C1C1C",fontWeight:l==="Balance Paid"||l==="Booking Ref"?600:400}}>{r}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={()=>onSuccess({...booking,balanceDue:0,isDeposit:false,total:(booking.depositAmount||booking.total)+amount})}
+              style={{width:"100%",padding:"0.9rem",background:C.success,color:"#fff",border:"none",borderRadius:"6px",fontSize:"0.82rem",fontWeight:600,letterSpacing:"0.12em",textTransform:"uppercase",cursor:"pointer"}}>
+              Done ✓
+            </button>
+          </div>
+        )}
+
+        {/* ── FAILED ── */}
+        {step==="failed"&&(
+          <div style={{textAlign:"center",animation:"fadeIn 0.3s ease"}}>
+            <div style={{fontSize:"2.5rem",marginBottom:"0.8rem"}}>⚠️</div>
+            <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.2rem",color:"#0E2B1F",marginBottom:"0.5rem"}}>Payment Unsuccessful</div>
+            <div style={{fontSize:"0.83rem",color:C.muted,lineHeight:1.7,marginBottom:"1rem"}}>{err}</div>
+            <div style={{display:"flex",gap:"0.8rem"}}>
+              <button onClick={()=>{setStep("confirm");setErr("");}} style={{flex:1,padding:"0.9rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontSize:"0.8rem",fontWeight:600,cursor:"pointer"}}>Try Again</button>
+              <a href="https://wa.me/254745802200" target="_blank" rel="noreferrer" style={{flex:1,padding:"0.9rem",background:"transparent",color:C.success,border:`1px solid ${C.success}`,borderRadius:"6px",fontSize:"0.8rem",fontWeight:600,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:"0.3rem",textDecoration:"none"}}>📱 WhatsApp</a>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -5452,6 +5974,16 @@ export default function App() {
     if(selectedListing?.id===id) setSelectedListing(null);
   };
 
+  const handleBalancePayment=async(updatedBooking)=>{
+    // Called when a guest pays their deposit balance via MyBookingPage
+    // Update the booking record: mark balance as cleared
+    const newBookings = bookings.map(b=>
+      b.ref===updatedBooking.ref ? {...b, balanceDue:0, isDeposit:false, total:updatedBooking.total} : b
+    );
+    setBookings(newBookings);
+    await saveBookings(newBookings);
+  };
+
   const handleBookingMade=async(booking)=>{
     // Add booked dates to the listing
     const nights=booking.nights;
@@ -5506,7 +6038,7 @@ export default function App() {
       {page==="listing" &&selectedListing&&<ListingPage listing={selectedListing} onBack={()=>navigate("listings")} onNavigate={navigate} onBookingMade={handleBookingMade} activeHoliday={pendingHoliday||activeHoliday}/>}
       {page==="about"   &&<AboutPage siteContent={siteContent}/>}
       {page==="contact" &&<ContactPage siteContent={siteContent}/>}
-      {page==="mybooking"&&<MyBookingPage bookings={bookings}/>}
+      {page==="mybooking"&&<MyBookingPage bookings={bookings} listings={listings} onBookingMade={handleBalancePayment}/>}
       {page==="admin"   &&<AdminRoot listings={listings} bookings={bookings} onNavigate={navigate} onListingUpdate={handleListingUpdate} onListingCreate={handleListingCreate} onListingDelete={handleListingDelete} promoConfig={promoConfig} onPromoSave={handlePromoSave} siteContent={siteContent} onSiteContentSave={handleSiteContentSave}/>}
       {page!=="home"&&page!=="admin"&&<Footer onNavigate={navigate} onMyBookings={()=>setShowMyBookings(true)}/>}
       {page==="home"    &&<Footer onNavigate={navigate} onMyBookings={()=>setShowMyBookings(true)}/>}
