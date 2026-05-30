@@ -2990,25 +2990,54 @@ function SiteContentManager({ siteContent, onSave }) {
 const GROQ_MODEL   = "llama-3.3-70b-versatile";
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY ?? "";
 
-const CONCIERGE_SYSTEM = `You are Amara, the exclusive AI concierge for Shikaz Homes — a premium short-stay property company based in Nairobi, Kenya.
+const buildConciergeSystem = (userLocation) => {
+  const locationSection = userLocation
+    ? `
+GUEST'S CURRENT LOCATION (GPS-detected):
+- Coordinates: ${userLocation.lat.toFixed(5)}, ${userLocation.lng.toFixed(5)}
+- Area: ${userLocation.area || "Nairobi"}
+- Accuracy: ~${userLocation.accuracy ? Math.round(userLocation.accuracy) + "m" : "unknown"}
+
+Use this location to:
+- Estimate travel times and distances to destinations (use typical Nairobi traffic for estimates)
+- Generate precise Google Maps, Uber and Bolt deep-links with the guest's exact GPS as the pickup point
+- Recommend restaurants, attractions and services that are CLOSEST to them first
+- Give specific directions (e.g. "5 mins from where you are", "about 12km away")
+- For Uber: use lat/lng pickup coords — https://m.uber.com/ul/?action=setPickup&pickup[latitude]=${userLocation.lat.toFixed(5)}&pickup[longitude]=${userLocation.lng.toFixed(5)}&dropoff[formatted_address]=[DESTINATION]+Nairobi
+- For Google Maps from current position: https://www.google.com/maps/dir/${userLocation.lat.toFixed(5)},${userLocation.lng.toFixed(5)}/[DESTINATION_LAT],[DESTINATION_LNG]
+`
+    : `
+GUEST LOCATION: Not yet detected. If they ask for rides or directions, use "my_location" as the pickup point in deep-links and encourage them to enable location for better suggestions.
+`;
+
+  return `You are Amara, the exclusive AI concierge for Shikaz Homes — a premium short-stay property company based in Nairobi, Kenya.
 
 Your personality: warm, knowledgeable, sophisticated but never stuffy. You speak like a well-connected Nairobi local who knows every corner of the city. You use occasional Swahili words naturally (karibu, asante, sawa, pole pole, hakuna matata). You are helpful, proactive, and always steer people toward wonderful experiences.
-
+${locationSection}
 Your capabilities:
-1. RIDES — Help guests book Bolt or Uber rides. Give them the deep-link URLs to open the app with destination pre-filled. Always quote typical Nairobi fare ranges.
+1. RIDES — Help guests book Bolt or Uber rides. Give them the deep-link URLs to open the app with destination pre-filled. Always quote typical Nairobi fare ranges. When location is known, generate pickup-aware deep-links.
 2. FOOD DELIVERY — Help with Bolt Food or Uber Eats orders. Suggest popular Nairobi restaurants/cuisines for delivery. Give app deep-link URLs.
-3. TOURS & ACTIVITIES — Suggest tours, day trips, safaris, cultural experiences near Nairobi. Include: Nairobi National Park, Karen Blixen Museum, Giraffe Centre, Bomas of Kenya, Maasai Mara day trips, Hell's Gate, Lake Naivasha, Karura Forest walks, cycling tours, cooking classes, matatu art tours.
+3. TOURS & ACTIVITIES — Suggest tours, day trips, safaris, cultural experiences near Nairobi. Include: Nairobi National Park, Karen Blixen Museum, Giraffe Centre, Bomas of Kenya, Maasai Mara day trips, Hell's Gate, Lake Naivasha, Karura Forest walks, cycling tours, cooking classes, matatu art tours. Prioritize by distance from guest if location is known.
 4. NIGHTLIFE — Suggest top Nairobi clubs, bars, rooftop spots: Alchemist Bar (Westlands), B-Club, Galileo Lounge, The Terrace at Sankara, Mercury Lounge, Black Diamond, Havana Bar, Trademark Hotel, K1 Klub House.
-5. RESTAURANTS — Suggest great Nairobi dining: Carnivore, Tamarind, The Talisman (Karen), Java House, Artcaffe, Cultiva, About Thyme, Furusato Japanese, Mediterraneo, Mediteraneo Gigiri, Sarova Stanley restaurants, Tribe Hotel restaurant.
-6. SHOPPING — Village Market, Westgate, Two Rivers Mall, Sarit Centre, The Junction, Yaya Centre, Maasai Market (Tuesdays at Village Market).
+5. RESTAURANTS — Suggest great Nairobi dining: Carnivore, Tamarind, The Talisman (Karen), Java House, Artcaffe, Cultiva, About Thyme, Furusato Japanese, Mediterraneo, Mediteraneo Gigiri, Sarova Stanley restaurants, Tribe Hotel restaurant. When location is known, lead with the closest options and approximate distances.
+6. SHOPPING — Village Market, Westgate, Two Rivers Mall, Sarit Centre, The Junction, Yaya Centre, Maasai Market (Tuesdays at Village Market). Mention proximity when location is known.
 7. WELLNESS — Karura Forest, Ngong Hills hikes, Uhuru Gardens, Nairobi Arboretum.
+
+Nairobi landmark coordinates for distance calculations:
+- Westlands: -1.2676, 36.8119 | Karen: -1.3500, 36.7100 | Kilimani: -1.2921, 36.7863
+- CBD: -1.2864, 36.8172 | Parklands: -1.2593, 36.8219 | Riverside: -1.2872, 36.7981
+- Giraffe Centre: -1.3745, 36.7520 | Nairobi National Park: -1.3667, 36.8500
+- Carnivore Restaurant: -1.3319, 36.7748 | Village Market: -1.2260, 36.8031
+- Alchemist Bar: -1.2644, 36.8048 | Karen Blixen Museum: -1.3556, 36.7096
 
 Deep-link formats to use:
 - Bolt ride: https://bolt.eu/en/cities/nairobi/?destination=[DESTINATION]
-- Uber ride: https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=[DESTINATION]+Nairobi
+- Uber ride (with known pickup): https://m.uber.com/ul/?action=setPickup&pickup[latitude]=[PICKUP_LAT]&pickup[longitude]=[PICKUP_LNG]&dropoff[formatted_address]=[DESTINATION]+Nairobi
+- Uber ride (unknown pickup): https://m.uber.com/ul/?action=setPickup&pickup=my_location&dropoff[formatted_address]=[DESTINATION]+Nairobi
 - Bolt Food: https://food.bolt.eu/ (then suggest searching restaurant name)
 - Uber Eats: https://www.ubereats.com/ke/
-- Google Maps directions: https://www.google.com/maps/dir/?api=1&destination=[LAT],[LNG]
+- Google Maps from known location: https://www.google.com/maps/dir/[PICKUP_LAT],[PICKUP_LNG]/[DEST_LAT],[DEST_LNG]
+- Google Maps generic: https://www.google.com/maps/dir/?api=1&destination=[LAT],[LNG]
 
 When suggesting rides always mention both Bolt and Uber options. When mentioning food delivery mention both Bolt Food and Uber Eats.
 
@@ -3020,7 +3049,9 @@ Formatting rules:
 - Always be aware the guest is staying in Nairobi at a Shikaz Homes property
 - If asked about booking a Shikaz Homes property, refer them to the listings on the site
 - Keep responses concise — 3-5 sentences max unless listing multiple options
+- When location is known, be specific: "about 8 mins from you", "roughly 4km away"
 - End responses with a helpful follow-up question when natural`;
+};
 
 // Quick-action suggestion chips
 const QUICK_ACTIONS = [
@@ -3032,10 +3063,10 @@ const QUICK_ACTIONS = [
   { icon:"🛍️", label:"Shopping malls nearby" },
 ];
 
-async function callGroq(messages) {
+async function callGroq(messages, userLocation) {
   const body = JSON.stringify({
     model: GROQ_MODEL,
-    messages: [{ role:"system", content:CONCIERGE_SYSTEM }, ...messages],
+    messages: [{ role:"system", content:buildConciergeSystem(userLocation) }, ...messages],
     max_tokens: 600,
     temperature: 0.75,
     stream: false,
@@ -3153,13 +3184,63 @@ function ShikazConcierge({ listing, siteContent }) {
   const bottomRef  = useRef(null);
   const inputRef   = useRef(null);
 
+  // ── Location state ──
+  // status: "idle" | "requesting" | "granted" | "denied" | "unavailable"
+  const [locStatus, setLocStatus] = useState("idle");
+  const [userLocation, setUserLocation] = useState(null); // { lat, lng, accuracy, area }
+
+  // Reverse-geocode using Nominatim (free, no API key)
+  const reverseGeocode = useCallback(async (lat, lng) => {
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=14`,
+        { headers: { "Accept-Language": "en", "User-Agent": "ShikazHomes/1.0" } }
+      );
+      const data = await res.json();
+      // Build a human-readable area name from Nominatim's address parts
+      const addr = data.address || {};
+      const area =
+        addr.suburb || addr.neighbourhood || addr.quarter ||
+        addr.city_district || addr.town || addr.county || "Nairobi";
+      return area;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  // Request location when chat opens
+  useEffect(() => {
+    if (!open) return;
+    if (locStatus !== "idle") return; // already tried
+    if (!navigator.geolocation) { setLocStatus("unavailable"); return; }
+
+    setLocStatus("requesting");
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude: lat, longitude: lng, accuracy } = pos.coords;
+        const area = await reverseGeocode(lat, lng);
+        setUserLocation({ lat, lng, accuracy, area });
+        setLocStatus("granted");
+      },
+      () => setLocStatus("denied"),
+      { timeout: 8000, maximumAge: 60000, enableHighAccuracy: false }
+    );
+  }, [open, locStatus, reverseGeocode]);
+
   // Greeting on first open
   useEffect(() => {
     if (open && messages.length === 0) {
       const neighborhood = listing?.neighborhood || "Nairobi";
+      const locLine = locStatus === "granted" && userLocation?.area
+        ? `I can see you're around **${userLocation.area}** right now, so I'll tailor everything to your exact location.`
+        : locStatus === "requesting"
+          ? `I'm detecting your location to give you precise suggestions nearby.`
+          : `I can help you discover what's nearby once you allow location access.`;
       const greeting = `Karibu! 🌟 I'm **Amara**, your Shikaz Homes concierge. I'm here to make your Nairobi stay unforgettable.
 
-You're in **${neighborhood}** — one of the best spots in the city. I can help you book a **Bolt or Uber**, order **food delivery**, find incredible **restaurants**, plan **tours**, or discover the best **nightlife** nearby.
+You're staying in **${neighborhood}**. ${locLine}
+
+I can book you a **Bolt or Uber**, order **food delivery**, find great **restaurants**, plan **tours & safaris**, or discover the best **nightlife** close to you.
 
 What can I sort out for you?`;
       setMessages([{ role:"assistant", content: greeting }]);
@@ -3193,7 +3274,7 @@ What can I sort out for you?`;
       const msgsForApi = newMessages.map((m, i) =>
         i === 0 && m.role === "user" ? { ...m, content: ctx + m.content } : m
       );
-      const reply = await callGroq(msgsForApi);
+      const reply = await callGroq(msgsForApi, userLocation);
       setMessages(prev => [...prev, { role:"assistant", content:reply }]);
     } catch(e) {
       setError(e.message.includes("VITE_GROQ") ? e.message : "Samahani — connection hiccup. Please try again.");
@@ -3297,12 +3378,52 @@ What can I sort out for you?`;
                 <span style={{fontSize:"0.62rem",color:"rgba(247,242,234,0.5)",letterSpacing:"0.1em"}}>Online</span>
               </div>
             </div>
-            {listing && (
-              <div style={{position:"relative",zIndex:1,marginTop:"0.6rem",padding:"0.4rem 0.7rem",background:"rgba(197,151,58,0.1)",border:"1px solid rgba(197,151,58,0.2)",borderRadius:"4px",fontSize:"0.68rem",color:"rgba(247,242,234,0.65)",display:"flex",alignItems:"center",gap:"0.4rem"}}>
-                <span>📍</span>
-                <span>{listing.neighborhood}, Nairobi</span>
-              </div>
-            )}
+            {/* Location context pill */}
+            <div style={{position:"relative",zIndex:1,marginTop:"0.6rem",padding:"0.4rem 0.7rem",background:"rgba(197,151,58,0.1)",border:"1px solid rgba(197,151,58,0.2)",borderRadius:"4px",fontSize:"0.68rem",color:"rgba(247,242,234,0.65)",display:"flex",alignItems:"center",gap:"0.4rem"}}>
+              {locStatus === "requesting" && (
+                <>
+                  <div style={{width:"8px",height:"8px",borderRadius:"50%",border:"1.5px solid rgba(197,151,58,0.6)",borderTop:"1.5px solid rgba(197,151,58,1)",animation:"spin 0.9s linear infinite",flexShrink:0}}/>
+                  <span>Detecting your location…</span>
+                </>
+              )}
+              {locStatus === "granted" && userLocation && (
+                <>
+                  <span style={{color:C.gold,fontSize:"0.75rem"}}>📍</span>
+                  <span>
+                    {userLocation.area
+                      ? `Near ${userLocation.area}`
+                      : `${userLocation.lat.toFixed(3)}, ${userLocation.lng.toFixed(3)}`}
+                    {listing ? ` · Staying in ${listing.neighborhood}` : ""}
+                  </span>
+                  <span style={{marginLeft:"auto",padding:"0.1rem 0.4rem",background:"rgba(76,175,109,0.15)",border:"1px solid rgba(76,175,109,0.35)",borderRadius:"3px",color:"#4CAF7D",fontSize:"0.6rem",letterSpacing:"0.08em",flexShrink:0}}>LIVE</span>
+                </>
+              )}
+              {(locStatus === "denied" || locStatus === "unavailable") && (
+                <>
+                  <span>📍</span>
+                  <span>
+                    {listing ? `${listing.neighborhood}, Nairobi` : "Nairobi, Kenya"}
+                  </span>
+                  <button
+                    onClick={() => setLocStatus("idle")}
+                    title="Retry location"
+                    style={{marginLeft:"auto",background:"none",border:"none",cursor:"pointer",color:"rgba(197,151,58,0.7)",fontSize:"0.7rem",padding:0,flexShrink:0}}
+                  >↺</button>
+                </>
+              )}
+              {locStatus === "idle" && listing && (
+                <>
+                  <span>📍</span>
+                  <span>{listing.neighborhood}, Nairobi</span>
+                </>
+              )}
+              {locStatus === "idle" && !listing && (
+                <>
+                  <span>📍</span>
+                  <span>Nairobi, Kenya</span>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Messages */}
@@ -3427,7 +3548,9 @@ What can I sort out for you?`;
               </button>
             </div>
             <div style={{marginTop:"0.45rem",fontSize:"0.6rem",color:C.muted,textAlign:"center",letterSpacing:"0.08em"}}>
-              Powered by Shikaz AI · Nairobi concierge
+              {locStatus === "granted"
+                ? `📍 Location-aware · Shikaz AI`
+                : `Powered by Shikaz AI · Nairobi concierge`}
             </div>
           </div>
         </div>
