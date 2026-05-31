@@ -129,11 +129,19 @@ async function loadListings() {
   } catch { return DEFAULT_LISTINGS; }
 }
 async function saveListings(d) {
+  const { error } = await supabase.from("kv_store").upsert(
+    { key:"shikaz:listings", value:JSON.stringify(d) }, { onConflict:"key" }
+  );
+  if (error) { console.error("[Supabase] saveListings:", error.message); throw error; }
+}
+
+// Test Supabase connectivity — returns null on success or an error message
+async function testSupabase() {
   try {
-    await supabase.from("kv_store").upsert(
-      { key:"shikaz:listings", value:JSON.stringify(d) }, { onConflict:"key" }
-    );
-  } catch {}
+    const { error } = await supabase.from("kv_store").select("key").limit(1);
+    if (error) return error.message;
+    return null;
+  } catch(e) { return e.message || "Connection failed"; }
 }
 async function loadBookings() {
   try {
@@ -144,11 +152,10 @@ async function loadBookings() {
   } catch { return []; }
 }
 async function saveBookings(d) {
-  try {
-    await supabase.from("kv_store").upsert(
-      { key:"shikaz:bookings", value:JSON.stringify(d) }, { onConflict:"key" }
-    );
-  } catch {}
+  const { error } = await supabase.from("kv_store").upsert(
+    { key:"shikaz:bookings", value:JSON.stringify(d) }, { onConflict:"key" }
+  );
+  if (error) { console.error("[Supabase] saveBookings:", error.message); throw error; }
 }
 
 // ─── GLOBAL STYLES ────────────────────────────────────────────────
@@ -1744,11 +1751,10 @@ async function loadPromos() {
   } catch { return {}; }
 }
 async function savePromos(d) {
-  try {
-    await supabase.from("kv_store").upsert(
-      { key:"shikaz:promos", value:JSON.stringify(d) }, { onConflict:"key" }
-    );
-  } catch {}
+  const { error } = await supabase.from("kv_store").upsert(
+    { key:"shikaz:promos", value:JSON.stringify(d) }, { onConflict:"key" }
+  );
+  if (error) console.error("[Supabase] savePromos:", error.message);
 }
 
 // Find active holiday for today
@@ -2735,11 +2741,10 @@ async function loadSiteContent() {
 }
 
 async function saveSiteContent(d) {
-  try {
-    await supabase.from("kv_store").upsert(
-      { key:"shikaz:site_content", value:JSON.stringify(d) }, { onConflict:"key" }
-    );
-  } catch {}
+  const { error } = await supabase.from("kv_store").upsert(
+    { key:"shikaz:site_content", value:JSON.stringify(d) }, { onConflict:"key" }
+  );
+  if (error) console.error("[Supabase] saveSiteContent:", error.message);
 }
 
 
@@ -3974,7 +3979,8 @@ async function loadReferrals() {
   } catch { return {}; }
 }
 async function saveReferrals(d) {
-  try { await supabase.from("kv_store").upsert({ key:"shikaz:referrals", value:JSON.stringify(d) },{ onConflict:"key" }); } catch {}
+  const { error } = await supabase.from("kv_store").upsert({ key:"shikaz:referrals", value:JSON.stringify(d) },{ onConflict:"key" });
+  if (error) console.error("[Supabase] saveReferrals:", error.message);
 }
 async function loadCommissionSettings() {
   try {
@@ -3983,7 +3989,8 @@ async function loadCommissionSettings() {
   } catch { return DEFAULT_COMMISSION; }
 }
 async function saveCommissionSettings(d) {
-  try { await supabase.from("kv_store").upsert({ key:"shikaz:commission", value:JSON.stringify(d) },{ onConflict:"key" }); } catch {}
+  const { error } = await supabase.from("kv_store").upsert({ key:"shikaz:commission", value:JSON.stringify(d) },{ onConflict:"key" });
+  if (error) console.error("[Supabase] saveCommissionSettings:", error.message);
 }
 
 // ── Referral code generator ───────────────────────────────────────
@@ -4593,11 +4600,10 @@ async function loadAdminPin() {
   } catch { return HOST_PIN; }
 }
 async function saveAdminPin(p) {
-  try {
-    await supabase.from("kv_store").upsert(
-      { key:"shikaz:pin", value:p }, { onConflict:"key" }
-    );
-  } catch {}
+  const { error } = await supabase.from("kv_store").upsert(
+    { key:"shikaz:pin", value:p }, { onConflict:"key" }
+  );
+  if (error) console.error("[Supabase] saveAdminPin:", error.message);
 }
 
 // ── Login Screen ─────────────────────────────────────────────────
@@ -5527,6 +5533,449 @@ const BLANK_LISTING = () => ({
   locationNote: "",
 });
 
+// ── Import Listing from URL ───────────────────────────────────────
+// Strategy:
+//  1. Fetch page HTML via allorigins.win CORS proxy (free, no key needed)
+//  2. Parse og:image, og:title, JSON-LD, meta tags, and <img> tags from raw HTML
+//  3. If VITE_GROQ_API_KEY is set → send extracted text to Groq (free tier) for
+//     structured JSON extraction. Otherwise fall back to regex-based parsing.
+// Photos: pulled from og:image + all large <img> src attributes found in the HTML.
+
+// Import uses the same GROQ_API_KEY + GROQ_MODEL already declared near the concierge
+
+// Fetch page HTML through a CORS proxy
+async function fetchPageHtml(pageUrl) {
+  // allorigins returns { contents: "<html>..." }
+  const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(pageUrl)}`;
+  const res = await fetch(proxyUrl);
+  if (!res.ok) throw new Error(`Proxy fetch failed (${res.status})`);
+  const json = await res.json();
+  return json.contents || "";
+}
+
+// Extract all useful data from raw HTML
+function scrapeHtml(html, pageUrl) {
+  // ── Meta / og tags ──
+  const getMeta = (name) => {
+    const m = html.match(new RegExp(`<meta[^>]+(?:property|name)=["']${name}["'][^>]+content=["']([^"']+)["']`, "i"))
+           || html.match(new RegExp(`<meta[^>]+content=["']([^"']+)["'][^>]+(?:property|name)=["']${name}["']`, "i"));
+    return m ? m[1].trim() : "";
+  };
+
+  const title       = getMeta("og:title") || getMeta("twitter:title")
+                    || (html.match(/<title[^>]*>([^<]+)<\/title>/i)?.[1] || "").trim();
+  const description = getMeta("og:description") || getMeta("description") || getMeta("twitter:description");
+  const ogImage     = getMeta("og:image") || getMeta("twitter:image");
+  const siteName    = getMeta("og:site_name");
+
+  // ── JSON-LD structured data ──
+  let jsonld = {};
+  try {
+    const ldMatches = [...html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+    for (const m of ldMatches) {
+      try {
+        const obj = JSON.parse(m[1]);
+        const items = Array.isArray(obj) ? obj : [obj];
+        for (const item of items) {
+          if (item["@type"] && ["LodgingBusiness","Apartment","House","Room","VacationRental","Product","Offer"].some(t=>item["@type"]?.includes?.(t))) {
+            jsonld = { ...jsonld, ...item };
+          }
+        }
+      } catch {}
+    }
+  } catch {}
+
+  // ── Photos — gather all candidate image URLs ──
+  const photos = new Set();
+  if (ogImage) photos.add(ogImage);
+  // og:image:url variants
+  const ogImgUrls = html.matchAll(/property=["']og:image(?::url)?["'][^>]+content=["']([^"']+)["']/gi);
+  for (const m of ogImgUrls) photos.add(m[1]);
+  // JSON-LD images
+  if (jsonld.image) {
+    const imgs = Array.isArray(jsonld.image) ? jsonld.image : [jsonld.image];
+    imgs.forEach(i => { if (typeof i === "string") photos.add(i); else if (i?.url) photos.add(i.url); });
+  }
+  // Large <img> tags — src or data-src, filter tiny icons
+  const imgTags = html.matchAll(/<img[^>]+(?:src|data-src|data-lazy-src)=["']([^"']+)["'][^>]*>/gi);
+  for (const m of imgTags) {
+    const src = m[1];
+    if (src.startsWith("http") && !src.includes("icon") && !src.includes("logo") && !src.includes("avatar") && src.length > 40) {
+      photos.add(src);
+    }
+  }
+  // srcset — grab highest-res variant
+  const srcsets = html.matchAll(/srcset=["']([^"']+)["']/gi);
+  for (const m of srcsets) {
+    const parts = m[1].split(",").map(s=>s.trim().split(/\s+/)[0]);
+    parts.forEach(src => {
+      if (src.startsWith("http") && src.includes("jpg") || src.includes("jpeg") || src.includes("webp")) {
+        photos.add(src);
+      }
+    });
+  }
+
+  // ── Numeric extraction helpers ──
+  const findNum = (patterns) => {
+    for (const p of patterns) {
+      const m = html.match(p);
+      if (m) { const n = parseFloat(m[1]); if (!isNaN(n)) return n; }
+    }
+    return null;
+  };
+
+  const bedrooms = jsonld.numberOfRooms
+    || findNum([/(\d+)\s*(?:bed(?:room)?s?)/i, /"bedrooms?"\s*:\s*(\d+)/i, /(\d+)\s*BR\b/i]) || 1;
+  const bathrooms = findNum([/(\d+(?:\.\d+)?)\s*bath(?:room)?s?/i, /"bathrooms?"\s*:\s*(\d+)/i]) || 1;
+  const guests    = findNum([/(\d+)\s*(?:guest|person|people)/i, /"maximumAttendeeCapacity"\s*:\s*(\d+)/i]) || 2;
+  const sqm       = findNum([/(\d+)\s*(?:sqm|m²|sq\.?\s*m)/i, /(\d+)\s*square\s*met/i]) || null;
+  const rating    = findNum([/(\d+\.\d+)\s*(?:out of\s*5|\/5|\s*stars?)/i, /"ratingValue"\s*:\s*"?(\d+\.?\d*)"?/i]) || null;
+  const reviews   = findNum([/(\d[\d,]*)\s*review/i, /"reviewCount"\s*:\s*"?(\d+)"?/i]) || 0;
+
+  // ── Price — try to find a nightly rate ──
+  let priceRaw = jsonld.offers?.price || null;
+  if (!priceRaw) {
+    const pm = html.match(/[\$£€KSh]?\s*([\d,]+(?:\.\d+)?)\s*(?:\/\s*night|per\s*night|a\s*night)/i);
+    if (pm) priceRaw = pm[1].replace(/,/g,"");
+  }
+  let priceUSD = priceRaw ? parseFloat(String(priceRaw).replace(/,/g,"")) : null;
+  // Detect currency and convert to KES
+  const currency = jsonld.offers?.priceCurrency || getMeta("og:price:currency") || "";
+  let priceKES = 5000;
+  if (priceUSD) {
+    if (currency === "KES" || html.includes("KES") || html.includes("KSh")) priceKES = priceUSD;
+    else if (currency === "GBP" || html.includes("£")) priceKES = Math.round(priceUSD * 163);
+    else if (currency === "EUR" || html.includes("€")) priceKES = Math.round(priceUSD * 140);
+    else priceKES = Math.round(priceUSD * 129); // default USD→KES
+  }
+
+  // ── Location ──
+  const addressObj = jsonld.address || {};
+  const neighborhood = addressObj.addressLocality || addressObj.streetAddress
+    || getMeta("og:locality")
+    || findNum([/(?:in|at)\s+([A-Z][a-z]+(?:\s[A-Z][a-z]+)?),?\s*Nairobi/])?.[1] || "";
+  const city = addressObj.addressRegion || getMeta("og:region") || "Nairobi";
+  const lat  = jsonld.geo?.latitude  || null;
+  const lng  = jsonld.geo?.longitude || null;
+
+  // ── Amenities — scan for known keywords ──
+  const AMENITY_KEYWORDS = ["WiFi","wi-fi","wireless","Pool","Gym","Fitness","Parking","Kitchen","Netflix","TV","Air Conditioning","AC","Washing Machine","Laundry","Security","Generator","Fireplace","BBQ","Garden","Balcony","Workspace","Iron","Coffee","Dishwasher"];
+  const amenities = AMENITY_KEYWORDS.filter(a => new RegExp(a,"i").test(html)).map(a=>{
+    if(/wi-fi|wireless/i.test(a)) return "WiFi";
+    if(/AC$/i.test(a)) return "Air Conditioning";
+    return a;
+  });
+  const uniqueAmenities = [...new Set(amenities)];
+
+  // ── Property type ──
+  const typeKeywords = {
+    "Studio":["studio"], "Penthouse Suite":["penthouse"], "Loft Studio":["loft"],
+    "3-Bedroom Villa":["villa","3 bed","three bed"], "2-Bedroom Apartment":["2 bed","two bed","apartment","flat"],
+    "1-Bedroom Suite":["1 bed","one bed","suite"], "Cottage":["cottage","cabin"], "Entire Home":["entire home","whole house"],
+  };
+  let type = "Studio";
+  for (const [t, kws] of Object.entries(typeKeywords)) {
+    if (kws.some(k => new RegExp(k,"i").test(html+title))) { type = t; break; }
+  }
+
+  return {
+    title, description, photos: [...photos].slice(0,12),
+    bedrooms: Number(bedrooms)||1, bathrooms: Number(bathrooms)||1,
+    guests: Number(guests)||2, sqm: sqm ? Number(sqm) : 50,
+    rating: rating ? Number(rating) : null, reviews: Number(reviews)||0,
+    priceKES, neighborhood, city, lat, lng, amenities: uniqueAmenities, type,
+    siteName,
+  };
+}
+
+// Optional Groq AI refinement (free)
+async function refineWithGroq(scraped, pageUrl) {
+  if (!GROQ_API_KEY) return null;
+  try {
+    const prompt = `You are a property listing data extractor. Based on this scraped data from a short-stay rental listing, return an improved JSON object.
+
+Scraped data:
+- Title: ${scraped.title}
+- Description (first 800 chars): ${scraped.description?.slice(0,800)||""}
+- Site: ${scraped.siteName||pageUrl}
+- Bedrooms: ${scraped.bedrooms}, Bathrooms: ${scraped.bathrooms}, Guests: ${scraped.guests}
+- Detected price/night (KES): ${scraped.priceKES}
+- Location: ${scraped.neighborhood}, ${scraped.city}
+- Amenities found: ${scraped.amenities.join(", ")||"none"}
+- Type guess: ${scraped.type}
+
+Return ONLY a JSON object (no markdown) with:
+{
+  "name": "clean listing title",
+  "tagline": "catchy subtitle under 65 chars",
+  "neighborhood": "specific neighbourhood",
+  "city": "city",
+  "type": one of ["Studio","1-Bedroom Suite","2-Bedroom Apartment","3-Bedroom Villa","Penthouse Suite","Loft Studio","Cottage","Townhouse","Entire Home","Other"],
+  "description": "2-3 paragraph description rewritten for ShikazHomes",
+  "amenities": ["cleaned","list","of","amenities"],
+  "houseRules": ["No smoking","Check-in 2PM","Checkout 11AM"],
+  "badge": one of ["New","Guest Favourite","Popular","Business Pick","Design Pick","Luxury"],
+  "cleaningFeeEstimate": estimated cleaning fee in KES as a number
+}`;
+
+    const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type":"application/json", "Authorization":`Bearer ${GROQ_API_KEY}` },
+      body: JSON.stringify({
+        model: GROQ_MODEL,
+        messages: [{ role:"user", content: prompt }],
+        max_tokens: 1000, temperature: 0.3,
+      })
+    });
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || "";
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    return JSON.parse(match[0]);
+  } catch { return null; }
+}
+
+function buildDraft(scraped, groqResult, pageUrl) {
+  const g = groqResult || {};
+  // Name: prefer groq, fall back to scraped title, then domain
+  const name = g.name || scraped.title || new URL(pageUrl).hostname.replace("www.","");
+  // Tagline
+  const tagline = g.tagline || scraped.description?.split(/[.!?]/)[0]?.slice(0,65) || "Beautiful property";
+  // Photos: already scraped from HTML
+  const photos = scraped.photos.length > 0
+    ? scraped.photos
+    : ["https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=1200&q=85"];
+
+  return {
+    ...BLANK_LISTING(),
+    name,
+    tagline,
+    neighborhood: g.neighborhood || scraped.neighborhood || "",
+    city: g.city || scraped.city || "Nairobi",
+    type: g.type || scraped.type || "Studio",
+    bedrooms: scraped.bedrooms,
+    bathrooms: scraped.bathrooms,
+    guests: scraped.guests,
+    sqm: scraped.sqm || 50,
+    pricePerNight: scraped.priceKES || 5000,
+    cleaningFee: g.cleaningFeeEstimate || Math.round((scraped.priceKES||5000) * 0.15),
+    rating: scraped.rating || 5.0,
+    reviewCount: scraped.reviews || 0,
+    badge: g.badge || "New",
+    description: g.description || scraped.description || "",
+    amenities: g.amenities?.length ? g.amenities : (scraped.amenities.length ? scraped.amenities : ["WiFi"]),
+    houseRules: g.houseRules?.length ? g.houseRules : ["No smoking","Check-in 2PM","Checkout 11AM"],
+    photos,
+    lat: scraped.lat ? Number(scraped.lat) : null,
+    lng: scraped.lng ? Number(scraped.lng) : null,
+    locationNote: "",
+    available: false,
+  };
+}
+
+function ImportListingFromUrl({ onImport, onCancel }) {
+  const [url, setUrl] = useState("");
+  const [status, setStatus] = useState("idle"); // idle | fetching | parsing | review | error
+  const [statusMsg, setStatusMsg] = useState("");
+  const [errMsg, setErrMsg] = useState("");
+  const [draft, setDraft] = useState(null);
+  const [photoIdx, setPhotoIdx] = useState(0);
+  const [saving, setSaving] = useState(false);
+  // Editable fields in review
+  const [editDraft, setEditDraft] = useState(null);
+  const setEdit = (k,v) => setEditDraft(d=>({...d,[k]:v}));
+
+  const handleImport = async () => {
+    const u = url.trim();
+    if (!u) { setErrMsg("Please enter a URL."); return; }
+    if (!u.startsWith("http")) { setErrMsg("Please enter a full URL starting with https://"); return; }
+    setErrMsg("");
+    try {
+      setStatus("fetching"); setStatusMsg("Fetching page…");
+      const html = await fetchPageHtml(u);
+      if (!html || html.length < 200) throw new Error("Could not fetch the page. Make sure the URL is public and try again.");
+
+      setStatus("parsing"); setStatusMsg("Extracting listing data…");
+      const scraped = scrapeHtml(html, u);
+
+      let groqResult = null;
+      if (GROQ_KEY) {
+        setStatusMsg("Refining with AI…");
+        groqResult = await refineWithGroq(scraped, u);
+      }
+
+      const d = buildDraft(scraped, groqResult, u);
+      setDraft(d);
+      setEditDraft(d);
+      setPhotoIdx(0);
+      setStatus("review");
+    } catch(e) {
+      setErrMsg(e.message || "Import failed. Please try again.");
+      setStatus("error");
+    }
+  };
+
+  const handlePublish = () => { setSaving(true); onImport({...editDraft, available:true}); };
+  const handleDraft   = () => { setSaving(true); onImport({...editDraft, available:false}); };
+
+  const isLoading = status === "fetching" || status === "parsing";
+
+  const inp = {
+    width:"100%", background:"#fff", border:`1px solid ${C.border}`,
+    borderRadius:"6px", padding:"0.85rem 1rem", color:"#1C1C1C",
+    fontSize:"0.88rem", outline:"none", transition:"border-color 0.2s",
+  };
+
+  return (
+    <div style={{animation:"fadeIn 0.3s ease"}}>
+      {/* Header */}
+      <div style={{marginBottom:"2rem"}}>
+        <button onClick={onCancel} style={{background:"none",border:"none",color:C.muted,cursor:"pointer",fontSize:"0.78rem",letterSpacing:"0.12em",textTransform:"uppercase",padding:0,marginBottom:"0.5rem"}} onMouseEnter={e=>e.target.style.color=C.gold} onMouseLeave={e=>e.target.style.color=C.muted}>← Back to Listings</button>
+        <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:"1.7rem",color:"#0E2B1F",fontWeight:400}}>Import <em style={{color:C.gold}}>from URL</em></h2>
+        <p style={{fontSize:"0.84rem",color:C.muted,marginTop:"0.4rem",lineHeight:1.6}}>
+          Paste any property URL — Airbnb, Booking.com, VRBO, or your own site. Photos, description, and details are extracted automatically.
+          {GROQ_API_KEY ? <span style={{color:C.success}}> AI refinement enabled (llama-3.3-70b).</span> : <span style={{color:C.muted,fontStyle:"italic"}}> Add VITE_GROQ_API_KEY to enable AI refinement.</span>}
+        </p>
+      </div>
+
+      {/* URL input — shown in idle/error/review (so user can re-import) */}
+      {status !== "fetching" && status !== "parsing" && (
+        <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:"10px",padding:"1.6rem 2rem",marginBottom:"1.5rem",boxShadow:"0 2px 12px rgba(14,43,31,0.06)"}}>
+          <div style={{fontSize:"0.62rem",letterSpacing:"0.2em",textTransform:"uppercase",color:C.muted,marginBottom:"0.5rem"}}>Property URL</div>
+          <div style={{display:"flex",gap:"0.6rem"}}>
+            <input value={url} onChange={e=>{setUrl(e.target.value);setErrMsg("");}}
+              placeholder="https://www.airbnb.com/rooms/12345678"
+              style={inp}
+              onFocus={e=>e.target.style.borderColor=C.gold}
+              onBlur={e=>e.target.style.borderColor=C.border}
+              onKeyDown={e=>e.key==="Enter"&&handleImport()}/>
+            <button onClick={handleImport} style={{padding:"0.85rem 1.5rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontWeight:700,fontSize:"0.83rem",cursor:"pointer",flexShrink:0,whiteSpace:"nowrap",transition:"background 0.2s"}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>🪄 Import</button>
+          </div>
+          {errMsg && <div style={{marginTop:"0.6rem",padding:"0.5rem 0.8rem",background:"rgba(220,38,38,0.07)",border:"1px solid rgba(220,38,38,0.2)",borderRadius:"5px",fontSize:"0.78rem",color:C.error}}>{errMsg}</div>}
+          {status==="idle"&&(
+            <div style={{marginTop:"1rem",display:"flex",flexWrap:"wrap",gap:"0.4rem"}}>
+              {["airbnb.com","booking.com","vrbo.com","tripadvisor.com","+ any site"].map(s=>(
+                <span key={s} style={{padding:"0.25rem 0.7rem",background:"#F7F2EA",border:`1px solid ${C.border}`,borderRadius:"20px",fontSize:"0.7rem",color:C.muted}}>✓ {s}</span>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Loading */}
+      {isLoading && (
+        <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:"10px",padding:"3.5rem 2rem",textAlign:"center",boxShadow:"0 2px 12px rgba(14,43,31,0.06)"}}>
+          <div style={{width:"48px",height:"48px",border:`3px solid ${C.goldDim}`,borderTop:`3px solid ${C.gold}`,borderRadius:"50%",animation:"spin 0.9s linear infinite",margin:"0 auto 1.5rem"}}/>
+          <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.15rem",color:"#0E2B1F",marginBottom:"0.5rem"}}>{statusMsg}</div>
+          <div style={{fontSize:"0.8rem",color:C.muted,fontFamily:"monospace",wordBreak:"break-all",maxWidth:"460px",margin:"0 auto",opacity:0.6}}>{url}</div>
+        </div>
+      )}
+
+      {/* Review */}
+      {status === "review" && editDraft && (
+        <div style={{animation:"fadeIn 0.3s ease"}}>
+          <div style={{background:"rgba(22,163,74,0.08)",border:"1px solid rgba(22,163,74,0.25)",borderRadius:"8px",padding:"0.85rem 1.2rem",marginBottom:"1.5rem",display:"flex",alignItems:"center",gap:"0.7rem"}}>
+            <span>✓</span>
+            <div>
+              <div style={{fontSize:"0.82rem",fontWeight:600,color:C.success}}>Imported {editDraft.photos.length} photo{editDraft.photos.length!==1?"s":""} and listing details</div>
+              <div style={{fontSize:"0.74rem",color:C.muted,marginTop:"0.1rem"}}>Review and tweak below, then publish or save as draft. All fields are fully editable after saving too.</div>
+            </div>
+          </div>
+
+          {/* Photo carousel */}
+          {editDraft.photos.length > 0 && (
+            <div style={{position:"relative",height:"260px",borderRadius:"10px",overflow:"hidden",marginBottom:"1.5rem",background:"#111"}}>
+              {editDraft.photos.map((p,i)=>(
+                <img key={i} src={p} alt={`Photo ${i+1}`}
+                  style={{position:"absolute",inset:0,width:"100%",height:"100%",objectFit:"cover",opacity:i===photoIdx?1:0,transition:"opacity 0.4s ease"}}
+                  onError={e=>{ e.target.style.display="none"; }}/>
+              ))}
+              {/* Prev/next */}
+              {editDraft.photos.length > 1 && (<>
+                <button onClick={()=>setPhotoIdx(i=>(i-1+editDraft.photos.length)%editDraft.photos.length)} style={{position:"absolute",left:"0.7rem",top:"50%",transform:"translateY(-50%)",background:"rgba(0,0,0,0.5)",border:"none",color:"#fff",width:"34px",height:"34px",borderRadius:"50%",cursor:"pointer",fontSize:"1.1rem",backdropFilter:"blur(4px)"}}>‹</button>
+                <button onClick={()=>setPhotoIdx(i=>(i+1)%editDraft.photos.length)} style={{position:"absolute",right:"0.7rem",top:"50%",transform:"translateY(-50%)",background:"rgba(0,0,0,0.5)",border:"none",color:"#fff",width:"34px",height:"34px",borderRadius:"50%",cursor:"pointer",fontSize:"1.1rem",backdropFilter:"blur(4px)"}}>›</button>
+              </>)}
+              {/* Counter */}
+              <div style={{position:"absolute",bottom:"0.7rem",right:"0.7rem",background:"rgba(0,0,0,0.6)",backdropFilter:"blur(6px)",borderRadius:"20px",padding:"0.2rem 0.7rem",fontSize:"0.7rem",color:"#fff"}}>
+                {photoIdx+1} / {editDraft.photos.length}
+              </div>
+              {/* Dot strip */}
+              {editDraft.photos.length > 1 && (
+                <div style={{position:"absolute",bottom:"0.7rem",left:"50%",transform:"translateX(-50%)",display:"flex",gap:"5px"}}>
+                  {editDraft.photos.slice(0,10).map((_,i)=>(
+                    <div key={i} onClick={()=>setPhotoIdx(i)} style={{width:"6px",height:"6px",borderRadius:"50%",background:i===photoIdx?"#fff":"rgba(255,255,255,0.4)",cursor:"pointer",transition:"background 0.2s"}}/>
+                  ))}
+                </div>
+              )}
+              {/* Thumbnail strip */}
+              <div style={{position:"absolute",bottom:0,left:0,right:0,display:"flex",gap:"3px",padding:"3px",overflowX:"auto",background:"rgba(0,0,0,0.4)",backdropFilter:"blur(4px)"}}>
+                {editDraft.photos.slice(0,8).map((p,i)=>(
+                  <img key={i} src={p} alt="" onClick={()=>setPhotoIdx(i)}
+                    style={{height:"44px",width:"60px",objectFit:"cover",borderRadius:"3px",cursor:"pointer",opacity:i===photoIdx?1:0.6,border:i===photoIdx?`2px solid ${C.gold}`:"2px solid transparent",transition:"all 0.2s",flexShrink:0}}
+                    onError={e=>e.target.style.display="none"}/>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Editable fields */}
+          <div style={{background:"#fff",border:`1px solid ${C.border}`,borderRadius:"10px",padding:"1.5rem 2rem",marginBottom:"1.2rem",boxShadow:"0 2px 8px rgba(14,43,31,0.05)"}}>
+            <div style={{fontSize:"0.62rem",letterSpacing:"0.18em",textTransform:"uppercase",color:C.gold,marginBottom:"1.2rem"}}>Listing Details — edit before saving</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"1rem"}}>
+              {[{l:"Name",k:"name"},{l:"Tagline",k:"tagline"},{l:"Neighbourhood",k:"neighborhood"},{l:"City",k:"city"}].map(({l,k})=>(
+                <div key={k}>
+                  <div style={{fontSize:"0.6rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,marginBottom:"0.3rem"}}>{l}</div>
+                  <input value={editDraft[k]||""} onChange={e=>setEdit(k,e.target.value)}
+                    style={{...inp,padding:"0.6rem 0.8rem",fontSize:"0.84rem"}}
+                    onFocus={e=>e.target.style.borderColor=C.gold} onBlur={e=>e.target.style.borderColor=C.border}/>
+                </div>
+              ))}
+              {[{l:"Price / night (KES)",k:"pricePerNight"},{l:"Cleaning Fee (KES)",k:"cleaningFee"},{l:"Bedrooms",k:"bedrooms"},{l:"Bathrooms",k:"bathrooms"},{l:"Max Guests",k:"guests"}].map(({l,k})=>(
+                <div key={k}>
+                  <div style={{fontSize:"0.6rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,marginBottom:"0.3rem"}}>{l}</div>
+                  <input type="number" value={editDraft[k]||0} onChange={e=>setEdit(k,Number(e.target.value))}
+                    style={{...inp,padding:"0.6rem 0.8rem",fontSize:"0.84rem"}}
+                    onFocus={e=>e.target.style.borderColor=C.gold} onBlur={e=>e.target.style.borderColor=C.border}/>
+                </div>
+              ))}
+            </div>
+            {editDraft.description && (
+              <div style={{marginTop:"1rem"}}>
+                <div style={{fontSize:"0.6rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,marginBottom:"0.3rem"}}>Description</div>
+                <textarea value={editDraft.description} onChange={e=>setEdit("description",e.target.value)} rows={4}
+                  style={{...inp,resize:"vertical",lineHeight:1.7,fontSize:"0.84rem",padding:"0.6rem 0.8rem"}}
+                  onFocus={e=>e.target.style.borderColor=C.gold} onBlur={e=>e.target.style.borderColor=C.border}/>
+              </div>
+            )}
+            {editDraft.amenities.length > 0 && (
+              <div style={{marginTop:"1rem"}}>
+                <div style={{fontSize:"0.6rem",letterSpacing:"0.15em",textTransform:"uppercase",color:C.muted,marginBottom:"0.5rem"}}>Detected Amenities ({editDraft.amenities.length})</div>
+                <div style={{display:"flex",flexWrap:"wrap",gap:"0.4rem"}}>
+                  {editDraft.amenities.map(a=>(
+                    <span key={a} style={{padding:"0.25rem 0.7rem",background:C.goldDim,border:`1px solid ${C.border}`,borderRadius:"20px",fontSize:"0.73rem",color:C.gold}}>{a}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{fontSize:"0.76rem",color:C.muted,marginBottom:"1.4rem",display:"flex",alignItems:"center",gap:"0.5rem"}}>
+            <span style={{color:C.gold}}>ℹ</span> All fields including photos can be edited further from the listing editor after saving.
+          </div>
+
+          <div style={{display:"flex",gap:"0.7rem",flexWrap:"wrap"}}>
+            <button onClick={()=>{setStatus("idle");setDraft(null);setEditDraft(null);}} style={{padding:"0.75rem 1.2rem",background:"transparent",border:`1px solid ${C.border}`,borderRadius:"5px",color:C.muted,cursor:"pointer",fontSize:"0.8rem",transition:"all 0.2s"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.gold} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>← Try another URL</button>
+            <button onClick={handleDraft} disabled={saving} style={{padding:"0.75rem 1.4rem",background:"transparent",border:`1px solid ${C.border}`,borderRadius:"5px",color:C.mutedLight,cursor:"pointer",fontSize:"0.8rem",transition:"all 0.2s"}} onMouseEnter={e=>e.currentTarget.style.borderColor=C.gold} onMouseLeave={e=>e.currentTarget.style.borderColor=C.border}>Save as Draft</button>
+            <button onClick={handlePublish} disabled={saving} style={{padding:"0.75rem 1.8rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"5px",fontWeight:700,fontSize:"0.82rem",cursor:"pointer",transition:"background 0.2s",display:"flex",alignItems:"center",gap:"0.5rem"}} onMouseEnter={e=>{if(!saving)e.target.style.background=C.goldLight;}} onMouseLeave={e=>e.target.style.background=C.gold}>
+              {saving?<><div style={{width:"14px",height:"14px",border:`2px solid ${C.obsidian}`,borderTop:"2px solid transparent",borderRadius:"50%",animation:"spin 0.7s linear infinite"}}/>Saving…</>:"Publish Listing"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── New Listing Wizard ────────────────────────────────────────────
 function NewListingWizard({ onSave, onCancel }) {
   const [step, setStep] = useState(1); // 1=basics, 2=details, 3=photos, 4=pricing
@@ -5821,7 +6270,7 @@ function AdminListingCard({ listing, bookings, onEdit, onDelete }) {
 
 // ── AdminListings with create + delete ───────────────────────────
 function AdminListings({ listings, bookings, onUpdate, onCreate, onDelete }) {
-  const [mode,setMode]=useState("grid"); // "grid" | "new" | "edit"
+  const [mode,setMode]=useState("grid"); // "grid" | "new" | "edit" | "import-url"
   const [editing,setEditing]=useState(null);
   const [toast,setToast]=useState(null);
 
@@ -5844,6 +6293,7 @@ function AdminListings({ listings, bookings, onUpdate, onCreate, onDelete }) {
 
   if(mode==="edit"&&editing) return <ListingEditor listing={editing} onSave={handleSaveEdit} onCancel={()=>{setMode("grid");setEditing(null);}}/>;
   if(mode==="new") return <NewListingWizard onSave={handleCreate} onCancel={()=>setMode("grid")}/>;
+  if(mode==="import-url") return <ImportListingFromUrl onImport={handleCreate} onCancel={()=>setMode("grid")}/>;
 
   const live   = listings.filter(l=>l.available);
   const paused = listings.filter(l=>!l.available);
@@ -5861,19 +6311,29 @@ function AdminListings({ listings, bookings, onUpdate, onCreate, onDelete }) {
             <span style={{color:C.muted}}>{listings.length} Total</span>
           </div>
         </div>
-        <button onClick={()=>setMode("new")} style={{display:"flex",alignItems:"center",gap:"0.5rem",padding:"0.8rem 1.6rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontWeight:700,fontSize:"0.82rem",cursor:"pointer",transition:"background 0.2s",letterSpacing:"0.05em",flexShrink:0}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>
-          + New Listing
-        </button>
+        <div style={{display:"flex",gap:"0.6rem",flexWrap:"wrap"}}>
+          <button onClick={()=>setMode("import-url")} style={{display:"flex",alignItems:"center",gap:"0.5rem",padding:"0.8rem 1.4rem",background:"transparent",color:C.sage,border:`1px solid ${C.border}`,borderRadius:"6px",fontWeight:600,fontSize:"0.82rem",cursor:"pointer",transition:"all 0.2s",flexShrink:0}} onMouseEnter={e=>{e.currentTarget.style.borderColor=C.gold;e.currentTarget.style.color=C.gold;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.sage;}}>
+            🔗 Import from URL
+          </button>
+          <button onClick={()=>setMode("new")} style={{display:"flex",alignItems:"center",gap:"0.5rem",padding:"0.8rem 1.6rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontWeight:700,fontSize:"0.82rem",cursor:"pointer",transition:"background 0.2s",letterSpacing:"0.05em",flexShrink:0}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>
+            + New Listing
+          </button>
+        </div>
       </div>
 
       {listings.length===0?(
         <div style={{textAlign:"center",padding:"5rem 2rem",background:"#fff",border:`2px dashed ${C.border}`,borderRadius:"12px"}}>
           <div style={{fontSize:"3rem",marginBottom:"1rem"}}>🏠</div>
           <div style={{fontFamily:"'Playfair Display',serif",fontSize:"1.4rem",color:"#0E2B1F",marginBottom:"0.6rem"}}>No listings yet</div>
-          <div style={{fontSize:"0.85rem",color:C.muted,marginBottom:"1.5rem"}}>Create your first listing to get started.</div>
-          <button onClick={()=>setMode("new")} style={{padding:"0.8rem 2rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontWeight:700,fontSize:"0.82rem",cursor:"pointer"}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>
-            + Add First Listing
-          </button>
+          <div style={{fontSize:"0.85rem",color:C.muted,marginBottom:"1.5rem"}}>Create a listing manually or import one from Airbnb, Booking.com, and more.</div>
+          <div style={{display:"flex",gap:"0.7rem",justifyContent:"center",flexWrap:"wrap"}}>
+            <button onClick={()=>setMode("import-url")} style={{padding:"0.8rem 1.6rem",background:"transparent",color:C.sage,border:`1px solid ${C.border}`,borderRadius:"6px",fontWeight:600,fontSize:"0.82rem",cursor:"pointer",transition:"all 0.2s"}} onMouseEnter={e=>{e.currentTarget.style.borderColor=C.gold;e.currentTarget.style.color=C.gold;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.sage;}}>
+              🔗 Import from URL
+            </button>
+            <button onClick={()=>setMode("new")} style={{padding:"0.8rem 2rem",background:C.gold,color:C.obsidian,border:"none",borderRadius:"6px",fontWeight:700,fontSize:"0.82rem",cursor:"pointer"}} onMouseEnter={e=>e.target.style.background=C.goldLight} onMouseLeave={e=>e.target.style.background=C.gold}>
+              + Add Listing Manually
+            </button>
+          </div>
         </div>
       ):(
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:"1.2rem"}}>
@@ -5883,10 +6343,16 @@ function AdminListings({ listings, bookings, onUpdate, onCreate, onDelete }) {
               onDelete={handleDelete}
             />
           ))}
+          {/* Import from URL card */}
+          <button onClick={()=>setMode("import-url")} style={{background:"transparent",border:`2px dashed ${C.border}`,borderRadius:"10px",padding:"2rem",cursor:"pointer",transition:"all 0.25s",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"0.7rem",minHeight:"280px",color:C.muted}} onMouseEnter={e=>{e.currentTarget.style.borderColor=C.gold;e.currentTarget.style.color=C.sage;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.muted;}}>
+            <div style={{fontSize:"2rem",lineHeight:1}}>🔗</div>
+            <div style={{fontSize:"0.82rem",fontWeight:500,letterSpacing:"0.1em",textTransform:"uppercase"}}>Import from URL</div>
+            <div style={{fontSize:"0.7rem",color:"inherit",opacity:0.7,textAlign:"center",lineHeight:1.5}}>Airbnb · Booking.com<br/>VRBO · any site</div>
+          </button>
           {/* Add new card */}
           <button onClick={()=>setMode("new")} style={{background:"transparent",border:`2px dashed ${C.border}`,borderRadius:"10px",padding:"2rem",cursor:"pointer",transition:"all 0.25s",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:"0.7rem",minHeight:"280px",color:C.muted}} onMouseEnter={e=>{e.currentTarget.style.borderColor=C.gold;e.currentTarget.style.color=C.sage;}} onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.muted;}}>
             <div style={{fontSize:"2rem",lineHeight:1}}>+</div>
-            <div style={{fontSize:"0.82rem",fontWeight:500,letterSpacing:"0.1em",textTransform:"uppercase"}}>Add Listing</div>
+            <div style={{fontSize:"0.82rem",fontWeight:500,letterSpacing:"0.1em",textTransform:"uppercase"}}>Add Manually</div>
           </button>
         </div>
       )}
@@ -6022,11 +6488,10 @@ async function loadSyncConfigs() {
   } catch { return {}; }
 }
 async function saveSyncConfigs(d) {
-  try {
-    await supabase.from("kv_store").upsert(
-      { key:"shikaz:syncconfigs", value:JSON.stringify(d) }, { onConflict:"key" }
-    );
-  } catch {}
+  const { error } = await supabase.from("kv_store").upsert(
+    { key:"shikaz:syncconfigs", value:JSON.stringify(d) }, { onConflict:"key" }
+  );
+  if (error) console.error("[Supabase] saveSyncConfigs:", error.message);
 }
 async function loadSyncLog() {
   try {
@@ -6036,11 +6501,10 @@ async function loadSyncLog() {
   } catch { return []; }
 }
 async function saveSyncLog(d) {
-  try {
-    await supabase.from("kv_store").upsert(
-      { key:"shikaz:synclog", value:JSON.stringify(d) }, { onConflict:"key" }
-    );
-  } catch {}
+  const { error } = await supabase.from("kv_store").upsert(
+    { key:"shikaz:synclog", value:JSON.stringify(d) }, { onConflict:"key" }
+  );
+  if (error) console.error("[Supabase] saveSyncLog:", error.message);
 }
 
 // ── Import Modal ──────────────────────────────────────────────────
@@ -6643,8 +7107,11 @@ export default function App() {
   const [commissionSettings,setCommissionSettings]=useState(DEFAULT_COMMISSION);
   const [showReferralDashboard,setShowReferralDashboard]=useState(false);
   const [pendingRefCode,setPendingRefCode]=useState(null); // captured from URL ?ref=
+  const [supabaseError,setSupabaseError]=useState(null); // non-null = DB unreachable
 
   useEffect(()=>{
+    // Test DB connection in parallel with data loading
+    testSupabase().then(err => { if(err) setSupabaseError(err); });
     Promise.all([loadListings(),loadBookings(),loadPromos(),loadSiteContent(),loadReferrals(),loadCommissionSettings()]).then(([ls,bs,pc,sc,refs,cs])=>{
       setListings(ls); setBookings(bs); setPromoConfig(pc); setSiteContent(sc);
       setReferrals(refs); setCommissionSettings(cs); setLoading(false);
@@ -6793,6 +7260,19 @@ export default function App() {
     <>
       <style>{GS}</style>
       <Nav onNavigate={navigate}/>
+      {/* Supabase connectivity warning — only shown in admin */}
+      {supabaseError && page==="admin" && (
+        <div style={{position:"fixed",top:"64px",left:0,right:0,zIndex:800,background:"rgba(220,38,38,0.95)",backdropFilter:"blur(8px)",padding:"0.6rem 1.5rem",display:"flex",alignItems:"center",justifyContent:"space-between",gap:"1rem",flexWrap:"wrap"}}>
+          <div style={{display:"flex",alignItems:"center",gap:"0.7rem"}}>
+            <span style={{fontSize:"1rem"}}>⚠️</span>
+            <div>
+              <span style={{fontSize:"0.82rem",fontWeight:600,color:"#fff"}}>Database not saving — </span>
+              <span style={{fontSize:"0.78rem",color:"rgba(255,255,255,0.85)"}}>Supabase connection issue: {supabaseError}. Check your VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in .env, and ensure the kv_store table exists.</span>
+            </div>
+          </div>
+          <button onClick={()=>setSupabaseError(null)} style={{background:"rgba(255,255,255,0.2)",border:"none",color:"#fff",padding:"0.3rem 0.7rem",borderRadius:"4px",cursor:"pointer",fontSize:"0.78rem",flexShrink:0}}>Dismiss</button>
+        </div>
+      )}
       {page==="home"    &&<HomePage listings={listings} onSelect={selectListing} onNavigate={navigate} promoConfig={promoConfig} activeHoliday={activeHoliday} onSelectWithHoliday={selectListingWithHoliday} onOpenReferral={()=>setShowReferralDashboard(true)}/>}
       {page==="listings"&&<ListingsPage listings={listings} onSelect={selectListing} promoConfig={promoConfig} activeHoliday={activeHoliday} onSelectWithHoliday={selectListingWithHoliday}/>}
       {page==="listing" &&selectedListing&&<ListingPage listing={selectedListing} onBack={()=>navigate("listings")} onNavigate={navigate} onBookingMade={handleBookingMade} activeHoliday={pendingHoliday||activeHoliday}/>}
